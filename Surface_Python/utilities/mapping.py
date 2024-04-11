@@ -1,6 +1,6 @@
 import math
 
-from CustomArduSubReplacement.JankTempSetupBypassingPixhawkWithArduino.Surface_Python.utilities import Range
+from Surface_Python.utilities import Range
 
 tau = math.pi * 2
 

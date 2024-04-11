@@ -1,3 +1,6 @@
+"""Gets input from a controller and maps it to the controls in the config file."""
+# pylint: disable=wildcard-import, unused-import, unused-wildcard-import
+
 import os
 import pygame
 
@@ -5,8 +8,39 @@ from utilities.personal_functions import *
 
 
 class Controller:
+    """Class for handling controller input.
+    
+    Functions:
+    
+    get_inputs() -> dict[str, float]:
+        Retrieves the inputs from the controller.
 
-    def __init__(self):
+    get_buttons() -> dict[str, float]:
+        Returns a dictionary containing the current state of the buttons on the controller.
+
+    get_joysticks() -> dict[str, float]:
+        Returns a dictionary containing the values of various joystick axes.
+
+    get_hat() -> dict[str, float]:
+        Get the values of the D-Pad on the controller.
+
+    button(number: int) -> float:
+        Returns the state of the specified button on the joystick.
+
+    axis(number: int) -> float:
+        Returns the value of the specified axis on the joystick after applying a deadzone.
+
+    combine_triggers(trigger_1: float, trigger_2: float) -> float:
+        Combines the values of the two triggers into a single value.
+
+    apply_deadzone(value: float) -> float:
+        Applies a deadzone to the input value.
+
+    get_controls() -> dict:
+        Get the controls and map them to the keys in the file.
+        """
+
+    def __init__(self, main_system):
         pygame.init()
         pygame.joystick.init()
 
@@ -15,15 +49,28 @@ class Controller:
         if not pygame.joystick.get_count() == 0:
             self.joystick = pygame.joystick.Joystick(0)
             self.joystick.init()
-            self.get_controls()
+            self.control_map = self.get_controls()
         else:
             error("Warning! No controller detected!")
 
-    def get_inputs(self) -> list:
-        inputs = []
+    def get_inputs(self) -> dict[str, float]:
+        """Retrieves the inputs from the controller.
+
+        Returns:
+            dict: The inputs from the controller as float amplitude values (buttons are 1/0).
+        """
+        pygame.event.pump()
+        inputs = self.get_buttons() | self.get_joysticks() | self.get_hat()
+
         return inputs
 
-    def get_buttons(self) -> dict[str, bool]:
+    def get_buttons(self) -> dict[str, float]:
+        """Returns a dictionary containing the current state of the buttons on the controller.
+
+        Returns:
+            dict[str, float]: A dictionary mapping the button names to their states
+                which are formatted as 0 (off) or 1 (on).
+        """
         values = {
             "A": self.button(0),
             "B": self.button(1),
@@ -34,33 +81,8 @@ class Controller:
             "SELECT": self.button(6),
             "START": self.button(7),
         }
+
         return values
-
-    def button(self, number: int) -> bool:
-        """Returns the state of the specified button on the joystick.
-
-        Args:
-            number (int):
-                The button number to check.
-
-        Returns:
-            bool: True if the button is pressed, False otherwise.
-        """
-        return self.joystick.get_button(number)
-
-    def apply_deadzone(self, value: float) -> float:
-        """Applies a deadzone to the input value.
-
-        Args:
-            value (float):
-                The input value to apply the deadzone to.
-
-        Returns:
-            float: The input value with the deadzone applied.
-        """
-        if abs(value) < self.deadzone:
-            return 0
-        return value
 
     def get_joysticks(self) -> dict[str, float]:
         """Returns a dictionary containing the values of various joystick axes.
@@ -75,7 +97,36 @@ class Controller:
             "RIGHT_Y": self.axis(3),
             "TRIGGERS": self.combine_triggers(self.axis(4), self.axis(5)),
         }
+
         return values
+
+    def get_hat(self) -> dict[str, float]:
+        """Get the values of the D-Pad on the controller.
+            
+        Returns:
+            dict: The values of the D-Pad buttons in 1/0 format.
+        """
+        coords = self.joystick.get_hat(0)
+        values = {
+            "DPAD_UP": coords[1] == 1,
+            "DPAD_DOWN": coords[1] == -1,
+            "DPAD_LEFT": coords[0] == -1,
+            "DPAD_RIGHT": coords[0] == 1,
+        }
+
+        return values
+
+    def button(self, number: int) -> float:
+        """Returns the state of the specified button on the joystick.
+
+        Args:
+            number (int):
+                The button number to check.
+
+        Returns:
+            float: 1 if the button is pressed, 0 otherwise.
+        """
+        return 1 if self.joystick.get_button(number) else 0
 
     def axis(self, number: int) -> float:
         """Returns the value of the specified axis on the joystick after applying a deadzone.
@@ -106,25 +157,20 @@ class Controller:
 
         return trigger_1 - trigger_2
 
-    def get_hat(self, hat: int) -> dict[str, bool]:
-        """Get the values of the D-Pad on the controller.
-        
-        Args:
-            hat (int):
-                The hat number to get the values of.
-            
-        Returns:
-            dict: The values of the D-Pad in True/False format.
-        """
-        coords = self.joystick.get_hat(hat)
-        values = {
-            "DPAD_UP": coords[1] == 1,
-            "DPAD_DOWN": coords[1] == -1,
-            "DPAD_LEFT": coords[0] == -1,
-            "DPAD_RIGHT": coords[0] == 1,
-        }
-        return values
+    def apply_deadzone(self, value: float) -> float:
+        """Applies a deadzone to the input value.
 
+        Args:
+            value (float):
+                The input value to apply the deadzone to.
+
+        Returns:
+            float: The input value with the deadzone applied.
+        """
+        if abs(value) < self.deadzone:
+            return 0
+
+        return value
 
     def get_controls(self) -> dict:
         """Get the controls and map them to the keys in the file.
@@ -171,19 +217,23 @@ class Controller:
             "PITCH": None,
 
             # Other
-            "HALT": None,
+
+            # N/A
         }
 
+        # Get the control config file.
         path = os.path.dirname(os.path.realpath(__file__))
-        path = os.path.join(path, "data")
-        path = os.path.join(path, "default_controls.txt")
+        path = os.path.join(path, "config")
+        path = os.path.join(path, "config-controls.fngr")
 
+        # Extract data from the file.
         file = open(path, "r", encoding="UTF-8")
-
         file_lines = file.readlines()[:]
+        file.close()
 
         control_map = {}
 
+        # Turn the data into a dictionary, stopping at the first #.
         for line in file_lines:
 
             if line.startswith("#"):
@@ -198,7 +248,5 @@ class Controller:
                 control_map[ctrl] = []
 
             control_map[ctrl].append(button)
-
-        file.close()
 
         return control_map

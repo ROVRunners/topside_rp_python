@@ -3,6 +3,7 @@ LEFT/RIGHT = LEFT_X
 UP/DOWN = TRIGGERS
 YAW = RIGHT_X
 PITCH = RIGHT_Y
+
 HALT = START
 
 ####################
@@ -17,7 +18,6 @@ Add custom values on the left if you wish, but the following are required:
     UP/DOWN
     YAW
     PITCH
-    HALT
 
 ####################
 
