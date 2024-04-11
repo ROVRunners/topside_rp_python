@@ -1,0 +1,47 @@
+FORWARD/BACKWARD = LEFT_Y
+LEFT/RIGHT = LEFT_X
+UP/DOWN = TRIGGERS
+YAW = RIGHT_X
+PITCH = RIGHT_Y
+HALT = START
+
+####################
+Instructions:
+
+Modify the above keys as much as you wish.
+Capitalization does not matter, everything is converted to upper anyway.
+
+Add custom values on the left if you wish, but the following are required:
+    FORWARD/BACKWARD
+    LEFT/RIGHT
+    UP/DOWN
+    YAW
+    PITCH
+    HALT
+
+####################
+
+Available buttons:
+    A
+    B
+    X
+    Y
+    START
+    SELECT
+    DPAD_DOWN
+    DPAD_LEFT
+    DPAD_UP
+    DPAD_RIGHT
+    LEFT_BUMPER
+    RIGHT_BUMPER
+
+Available axes:
+    LEFT_X
+    LEFT_Y
+    RIGHT_X
+    RIGHT_Y
+    TRIGGERS
+
+
+
+
