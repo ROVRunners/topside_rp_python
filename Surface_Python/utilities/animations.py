@@ -16,10 +16,10 @@ import sys
 import os
 from time import sleep
 
-from CustomArduSubReplacement.JankTempSetupBypassingPixhawkWithArduino.Surface_Python.utilities import cursor
-from CustomArduSubReplacement.JankTempSetupBypassingPixhawkWithArduino.Surface_Python.utilities import color
-from CustomArduSubReplacement.JankTempSetupBypassingPixhawkWithArduino.Surface_Python.utilities import keyboard_input as keybd
-from CustomArduSubReplacement.JankTempSetupBypassingPixhawkWithArduino.Surface_Python.utilities import personal_functions
+from Surface_Python.utilities import cursor
+from Surface_Python.utilities import color
+from Surface_Python.utilities import keyboard_input as keybd
+from Surface_Python.utilities.personal_functions import *
 
 
 # def loading1(time: int = 5, message: str = "Loading:", container: str = "[ ]", length: int = 50,

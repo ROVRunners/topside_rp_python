@@ -25,8 +25,8 @@ import time
 # pylint: disable=no-member
 # pylint: disable=import-error
 
-from CustomArduSubReplacement.JankTempSetupBypassingPixhawkWithArduino.Surface_Python.utilities import color
-from CustomArduSubReplacement.JankTempSetupBypassingPixhawkWithArduino.Surface_Python.utilities import keyboard_input as keybd
+from Surface_Python.utilities import color
+from Surface_Python.utilities import keyboard_input as keybd
 
 
 # Input / Output

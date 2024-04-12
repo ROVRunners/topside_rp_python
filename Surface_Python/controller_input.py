@@ -1,10 +1,10 @@
 """Gets input from a controller and maps it to the controls in the config file."""
 # pylint: disable=wildcard-import, unused-import, unused-wildcard-import
-
 import os
 import pygame
 
 from utilities.personal_functions import *
+from config import ControllerConfig
 
 
 class Controller:
@@ -40,11 +40,12 @@ class Controller:
         Get the controls and map them to the keys in the file.
         """
 
-    def __init__(self, main_system):
+    def __init__(self, config: ControllerConfig):
         pygame.init()
         pygame.joystick.init()
 
-        self.deadzone = 0.1
+
+        self.config = config
 
         if not pygame.joystick.get_count() == 0:
             self.joystick = pygame.joystick.Joystick(0)
@@ -178,48 +179,6 @@ class Controller:
         Returns:
             dict: The controls and their keys.
         """
-        self.name_numeral_button_map = {
-            "A": 0,
-            "B": 1,
-            "X": 2,
-            "Y": 3,
-            "LEFT_BUMPER": 4,
-            "RIGHT_BUMPER": 5,
-            "SELECT": 6,
-            "START": 7,
-        }
-        self.name_numeral_variable_map = {
-            "LEFT_X": 0,
-            "LEFT_Y": 1,
-            "RIGHT_X": 2,
-            "RIGHT_Y": 3,
-        }
-        self.name_trigger_map = {
-            "LEFT_TRIGGER": 4,
-            "RIGHT_TRIGGER": 5,
-        }
-        self.name_numeral_dpad_map = {
-            "DPAD_LEFT": (-1, 0),
-            "DPAD_RIGHT": (1, 0),
-            "DPAD_UP": (0, 1),
-            "DPAD_DOWN": (0, -1),
-        }
-
-        self.action_number_map = {
-            # Lateral movement
-            "FORWARD/BACKWARD": None,
-            "LEFT/RIGHT": None,
-            "UP/DOWN": None,
-
-            # Rotational movement
-            "YAW": None,
-            # "ROLL": None,    Maybe add in future
-            "PITCH": None,
-
-            # Other
-
-            # N/A
-        }
 
         # Get the control config file.
         path = os.path.dirname(os.path.realpath(__file__))

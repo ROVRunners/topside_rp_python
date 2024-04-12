@@ -63,7 +63,8 @@ if __name__ == '__main__':
     ap.add_argument("-o", "--port", type=int, required=False,
                     help="ephemeral port number of the server (1024 to 65535)")
     args = vars(ap.parse_args())
-
+    ip = None
+    port = None
     if args["ip"] is None:
         ip = intext("Please provide the IP address of the Raspberry Pi." +
                     f"Defaults to \"{DEFAULT_IP}\"").strip()
