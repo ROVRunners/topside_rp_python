@@ -67,6 +67,7 @@ def is_newly_pressed(key: str, function: callable or None = None) -> bool:
 
     return result
 
+
 def is_currently_pressed(key: str, function: callable or None = None) -> bool:
     """Check to see if a key is currently pressed.
 

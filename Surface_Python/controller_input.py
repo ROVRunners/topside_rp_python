@@ -1,10 +1,32 @@
 """Gets input from a controller and maps it to the controls in the config file."""
+
 # pylint: disable=wildcard-import, unused-import, unused-wildcard-import
-import os
+
 import pygame
 
 from utilities.personal_functions import *
+
 from config import ControllerConfig
+
+from surface_main import MainSystem
+
+
+def combine_triggers(trigger_1: float, trigger_2: float) -> float:
+    """Combines the values of the two triggers into a single value.
+
+    Args:
+        trigger_1 (float):
+            The value of the first trigger.
+        trigger_2 (float):
+            The value of the second trigger.
+
+    Returns:
+        float: The combined value of the triggers.
+    """
+    trigger_1 = (trigger_1 + 1) / 2
+    trigger_2 = (trigger_2 + 1) / 2
+
+    return trigger_1 - trigger_2
 
 
 class Controller:
@@ -40,18 +62,22 @@ class Controller:
         Get the controls and map them to the keys in the file.
         """
 
-    def __init__(self, config: ControllerConfig):
+    def __init__(self, main_system: MainSystem, config: ControllerConfig):
         pygame.init()
         pygame.joystick.init()
 
+        self.main_system = main_system
         self.config = config
-        self.control_map = {}
 
-        if not pygame.joystick.get_count() == 0:
+        self.control_map = {}
+        self.deadzone = 0.1
+
+        if pygame.joystick.get_count() != 0:
             self.joystick = pygame.joystick.Joystick(0)
             self.joystick.init()
-            self.get_controls()
+            self._get_controls()
         else:
+            # TODO Replace error()
             error("Warning! No controller detected!")
 
     def get_inputs(self) -> dict[str, float]:
@@ -61,11 +87,11 @@ class Controller:
             dict: The inputs from the controller as float amplitude values (buttons are 1/0).
         """
         pygame.event.pump()
-        inputs = self.get_buttons() | self.get_joysticks() | self.get_hat()
+        inputs = self._get_buttons() | self._get_joysticks() | self._get_hat()
 
         return inputs
 
-    def get_buttons(self) -> dict[str, float]:
+    def _get_buttons(self) -> dict[str, float]:
         """Returns a dictionary containing the current state of the buttons on the controller.
 
         Returns:
@@ -73,35 +99,35 @@ class Controller:
                 which are formatted as 0 (off) or 1 (on).
         """
         values = {
-            "A": self.button(0),
-            "B": self.button(1),
-            "X": self.button(2),
-            "Y": self.button(3),
-            "LEFT_BUMPER": self.button(4),
-            "RIGHT_BUMPER": self.button(5),
-            "SELECT": self.button(6),
-            "START": self.button(7),
+            "A": self._button(0),
+            "B": self._button(1),
+            "X": self._button(2),
+            "Y": self._button(3),
+            "LEFT_BUMPER": self._button(4),
+            "RIGHT_BUMPER": self._button(5),
+            "SELECT": self._button(6),
+            "START": self._button(7),
         }
 
         return values
 
-    def get_joysticks(self) -> dict[str, float]:
+    def _get_joysticks(self) -> dict[str, float]:
         """Returns a dictionary containing the values of various joystick axes.
 
         Returns:
             dict: The values of the joystick and trigger axes ("Chop chop!").
         """
         values = {
-            "LEFT_X": self.axis(0),
-            "LEFT_Y": self.axis(1),
-            "RIGHT_X": self.axis(2),
-            "RIGHT_Y": self.axis(3),
-            "TRIGGERS": self.combine_triggers(self.axis(4), self.axis(5)),
+            "LEFT_X": self._axis(0),
+            "LEFT_Y": self._axis(1),
+            "RIGHT_X": self._axis(2),
+            "RIGHT_Y": self._axis(3),
+            "TRIGGERS": combine_triggers(self._axis(4), self._axis(5)),
         }
 
         return values
 
-    def get_hat(self) -> dict[str, float]:
+    def _get_hat(self) -> dict[str, float]:
         """Get the values of the D-Pad on the controller.
             
         Returns:
@@ -117,7 +143,7 @@ class Controller:
 
         return values
 
-    def button(self, number: int) -> float:
+    def _button(self, number: int) -> float:
         """Returns the state of the specified button on the joystick.
 
         Args:
@@ -129,7 +155,7 @@ class Controller:
         """
         return 1 if self.joystick.get_button(number) else 0
 
-    def axis(self, number: int) -> float:
+    def _axis(self, number: int) -> float:
         """Returns the value of the specified axis on the joystick after applying a deadzone.
 
         Args:
@@ -139,26 +165,9 @@ class Controller:
         Returns:
             float: The value of the axis.
         """
-        return self.apply_deadzone(self.joystick.get_axis(number))
+        return self._apply_deadzone(self.joystick.get_axis(number))
 
-    def combine_triggers(self, trigger_1: float, trigger_2: float) -> float:
-        """Combines the values of the two triggers into a single value.
-
-        Args:
-            trigger_1 (float):
-                The value of the first trigger.
-            trigger_2 (float):
-                The value of the second trigger.
-
-        Returns:
-            float: The combined value of the triggers.
-        """
-        trigger_1 = (trigger_1 + 1) / 2
-        trigger_2 = (trigger_2 + 1) / 2
-
-        return trigger_1 - trigger_2
-
-    def apply_deadzone(self, value: float) -> float:
+    def _apply_deadzone(self, value: float) -> float:
         """Applies a deadzone to the input value.
 
         Args:
@@ -173,7 +182,7 @@ class Controller:
 
         return value
 
-    def get_controls(self) -> dict:
+    def _get_controls(self) -> dict:
         """Get the controls and map them to the keys in the file.
 
         Returns:
@@ -183,7 +192,7 @@ class Controller:
         # Get the control config file.
         path = os.path.dirname(os.path.realpath(__file__))
         path = os.path.join(path, "config")
-        path = os.path.join(path, "config-controls.fangr") # Funny Absolute Notation for Gamepad Readings
+        path = os.path.join(path, "config-controls.fangr")  # Funny Absolute Notation for Gamepad Readings
 
         # Extract data from the file.
         file = open(path, "r", encoding="UTF-8")
@@ -214,4 +223,3 @@ class Controller:
             control_map[ctrl].append(button)
 
         self.control_map = control_map
-

@@ -1,5 +1,6 @@
 import threading
 
+
 class TerminalListener:
     def __init__(self, main_system):
         self.main_system = main_system
@@ -22,7 +23,6 @@ class TerminalListener:
             with self.lock:
                 self.input_value = user_input
                 self.input_received = True
-
 
     def check_for_input(self) -> bool:
         """Check if an input value is available from the terminal listener.

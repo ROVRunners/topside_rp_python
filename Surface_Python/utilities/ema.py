@@ -33,6 +33,7 @@ class EMA:
 
     def add(self, value: float):
         self._last_ema_value = self.ema_value if self._num_samples_collected > 0 else value
-        self._num_samples_collected = self._num_samples_collected + 1 if self._num_samples_collected < self._num_samples else self._num_samples
+        self._num_samples_collected = (self._num_samples_collected + 1 if self._num_samples_collected <
+                                       self._num_samples else self._num_samples)
         self._current_value = value
         self._current_ema_value = None

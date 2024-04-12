@@ -3,7 +3,6 @@
 # pylint: disable=wildcard-import, unused-import, unused-wildcard-import
 
 import argparse
-import sys
 
 import terminal_listener
 import socket_handler
@@ -24,29 +23,48 @@ class MainSystem:
         Args:
             pi_ip (str):
                 The IP address of the Raspberry Pi.
-            port (str, optional):
+            pi_port (str, optional):
                 The port number to use for the socket connection.
                 Defaults to "5600".
         """
+        self.pi_ip = pi_ip
+        self.pi_port = pi_port
+
         self.terminal = terminal_listener.TerminalListener(self)
-        self.socket_handler = socket_handler.SocketHandler(self, pi_ip, pi_port)
+        self.socket = socket_handler.SocketHandler(self, self.pi_ip, self.pi_port)
         self.controller = controller_input.Controller(self)
+
+        self.socket.start_listening()
+        self.terminal.start_listening()
 
         self.sensor_data = {}
         self.inputs = {}
-        self.command_buffer = []
+        self.command = ""
 
         self.run = True
 
     def main_loop(self) -> None:
         """Executes the main loop of the program."""
+        # Get controller inputs
         self.inputs = self.controller.get_inputs()
-        # self.sensor_data = self.socket_handler.get_sensor_data()
+
+        # Get sensor data
+        if self.socket.sensor_data_available:
+            self.sensor_data = self.socket.get_sensor_data()
+
+        # Check for terminal input
         if self.terminal.check_for_input():
-            self.command_buffer.append(self.terminal.get_input_value())
+            self.command = self.terminal.get_input_value()
+
         # Hand off for modification
+
         # Handle commands
-        # self.socket_handler.send_data(data)
+
+        # Convert controls to PWM signals
+
+        # Send data to the Raspberry Pi
+        # self.socket_handler.send_commands(data)
+
         # Display frames
 
         # example C++ code:
@@ -67,7 +85,12 @@ class MainSystem:
 
     def shutdown(self) -> None:
         """Shuts down the system and it's subsystems."""
-        self.socket_handler.shutdown()
+
+        self.run = False
+        # Delay to let things close properly
+        sleep(1)
+
+        self.socket.shutdown()
         sys.exit()
 
 

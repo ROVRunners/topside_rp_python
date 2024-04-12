@@ -6,9 +6,10 @@ The `get_status` function retrieves the current status of the ROV.
 """
 import thruster_pwm
 
+
 class ROVClass:
     """Basic class for an ROV used primarily for data storage."""
-    def __init__(self, thrusters, mode, temperature, pressure,depth , leak_detected, armed):
+    def __init__(self, thrusters, mode, temperature, pressure, depth, leak_detected, armed):
         self.thrusters = thrusters
         self.mode = mode
         self.temperature = temperature
@@ -19,7 +20,8 @@ class ROVClass:
 
 
 rov = ROVClass(thrusters=[0, 0, 0, 0, 0, 0], mode="Manual", temperature="69",
-                pressure="N/A", depth="N/A", leak_detected=-1, armed=False)
+               pressure="N/A", depth="N/A", leak_detected=-1, armed=False)
+
 
 def process_gamepad_input(data):
     """

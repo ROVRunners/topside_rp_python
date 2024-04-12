@@ -1,6 +1,6 @@
 """A collection of personal functions to call.
 
-    text(): print() alternative.
+    text(): print() alternative with optional letter scrolling and color effects.
     intext(): input() alternative using text().
     intput(): Integer-specific, error-catching input() alternative using intext().
     floatput(): Float-specific, error-catching input() alternative using intext().
@@ -11,7 +11,7 @@
     rand_choice(): Returns a random item from a given list using rand(). Use of a die is possible.
     die_parser(): Runs roll, but for as string input in the format of '1d4 + 5' or '2d8-2'.
     roll(): Rolls a number of dice and returns the result.
-    intvert(): int() alternative but catches failures and optionally returnes a failure value.
+    intvert(): int() alternative but catches failures and optionally returns a failure value.
     bound(): Combines min() and max() to make sure a value is between an upper and lower bound.
     merge(): Reverses split().
 """
@@ -146,9 +146,11 @@ def error(*message: object, unlist_list: bool = True, letter_time: float = 0.0, 
         if isinstance(message[0], (tuple, list)):
             message = message[0]
 
+    msg = color.WARN + " " + message + " " + color.WARN.strip()
+
     # Passes through the arguments to text() and adds the error modifiers.
-    text(message, unlist_list=unlist_list, letter_time=letter_time, line_delay=line_delay,
-         sep=sep, end=end, flush=flush, mods=[color.ERROR, color.WARN])
+    text(msg, unlist_list=unlist_list, letter_time=letter_time, line_delay=line_delay,
+         sep=sep, end=end, flush=flush, mods=[color.ERROR])
 
 
 def intext(*message: object, unlist_list: bool = True, letter_time: float = 0.0, line_delay: float = 0,

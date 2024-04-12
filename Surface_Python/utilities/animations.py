@@ -12,13 +12,7 @@
 # pylint: disable=undefined-variable
 
 
-import sys
-import os
-from time import sleep
-
 from Surface_Python.utilities import cursor
-from Surface_Python.utilities import color
-from Surface_Python.utilities import keyboard_input as keybd
 from Surface_Python.utilities.personal_functions import *
 
 
@@ -74,7 +68,7 @@ def loading_v3(loading_time: int = 5, message: str = "Loading:",
     """Generate a loading bar that counts up dynamically with an optional percentage.
 
     Args:
-        time (int, optional):
+        loading_time (int, optional):
             Amount of time in seconds to "load" for.
             Defaults to 5.
         message (str, optional):
@@ -144,8 +138,8 @@ def loading_v3(loading_time: int = 5, message: str = "Loading:",
             elif len(str(int(((i + 1) / length) * 100))) == 2:
                 text(" ", end="", letter_time=0)
 
-            text(rounder(((i + 1) / (length)) * 100),
-                letter_time=0, mods=percent_mods, end="\r")
+            text(rounder(((i + 1) / length) * 100),
+                 letter_time=0, mods=percent_mods, end="\r")
 
         cursor.cursor_right(start)
 
@@ -163,7 +157,7 @@ def drop_down(image: list, colors: dict, drop_time: int = 5,
             The list of lines of text to print.
         colors (dict):
             The dictionary of the colors to make each of the symbols in the image.
-        time (int, optional):
+        drop_time (int, optional):
             The time to spend on the animation.
             Defaults to 5.
         bottom_y (int, optional):

@@ -40,6 +40,7 @@ def cursor_up(num: int = 1):
     """
     print(f"\033[{num}A", end="")
 
+
 def cursor_down(num: int = 1):
     """Move the cursor a number of spaces down.
 
@@ -50,6 +51,7 @@ def cursor_down(num: int = 1):
     """
     print(f"\033[{num}B", end="")
 
+
 def cursor_right(num: int = 1):
     """Move the cursor a number of spaces right.
 
@@ -59,6 +61,7 @@ def cursor_right(num: int = 1):
             Defaults to 1.
     """
     print(f"\033[{num}C", end="")
+
 
 def cursor_left(num: int = 1):
     """Move the cursor a number of spaces left.
@@ -71,12 +74,12 @@ def cursor_left(num: int = 1):
     print(f"\033[{num}D", end="")
 
 
-
 # Go to line position
 
 def beginning():
     """Move the cursor to the beginning of the current line."""
     print("\r", end="")
+
 
 def _ending():
     """Move the cursor to the end of the current line.
@@ -86,22 +89,22 @@ def _ending():
     cursor_left()
 
 
-
 # Clearing single lines
 
 def clear_line_after():
     """Clear the current line after the cursor."""
     print("\033[K", end="")
 
+
 def clear_line_before():
     """Clear the current line before the cursor.
     Effectively replaces the preceding text with blank spaces."""
     print("\033[1K", end="")
 
+
 def clear_line():
     """Clear the current line from the beginning."""
     print("\033[2K", end="")
-
 
 
 # Clearing screens
@@ -110,14 +113,15 @@ def clear_screen_after():
     """Clear the screen after the cursor."""
     print("\033[J", end="")
 
+
 def clear_screen_before():
     """Clear the screen before the cursor."""
     print("\033[1J", end="")
 
+
 def clear_screen():
     """Clear the entire screen."""
     print("\033[2J", end="")
-
 
 
 # Prep to replace previous text
@@ -127,10 +131,10 @@ def replace_current():
     Used in preparation to print there again."""
     clear_line()
 
+
 def replace_previous():
     """Move the cursor back one line and clears it in preparation to print on it again."""
     print("\033[F\033[K", end="")
-
 
 
 # Save and load cursor position
@@ -139,10 +143,10 @@ def save():
     """Save the current position of the cursor. Can be loaded again using load()."""
     print("\033[s", end="")
 
+
 def load():
     """Load the previously saved cursor position. Position can be saved with save()."""
     print("\033[u", end="")
-
 
 
 # Set cursor position
@@ -161,17 +165,16 @@ def set_pos(line: int = 0, column: int = 0):
     print(f"\033[{line};{column}H", end="")
 
 
-
 # Hide and show cursor
 
 def hide():
     """Makes the cursor invisible. Can be undone with show()."""
     print("\033[?25l")
 
+
 def show():
     """Makes the cursor visible. Inverse of hide()."""
     print("\033[?25h")
-
 
 
 # Save and load screen
@@ -183,6 +186,7 @@ def load_screen():
     print("\033[?47l")
     save_screen()
 
+
 def save_screen():
     """Saves the screen and clears it. Can be undone by load_screen().
     Anything done between the save and the load will be hidden.
@@ -190,8 +194,8 @@ def save_screen():
     print("\033[?47h")
 
 
-
 # Testing
+
 if __name__ == "__main__":
     print("Hello"*5, end="", flush=True)
     time.sleep(3)

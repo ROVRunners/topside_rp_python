@@ -36,8 +36,9 @@ def shortest_angle_difference(angle1: float, angle2: float) -> float:
 
 # def optimize_state_improved(desired_state: kinematics.SwerveModuleState,
 #                             current_angle: geom.Rotation2d) -> kinematics.SwerveModuleState:
-#     """Returns the optimized angle for a swerve module.  This is a modified version of the wpilib implementation that uses
-#        the dot product to determine angle reversal and scales the output speed according to the dot product as well."""
+#     """Returns the optimized angle for a swerve module.  This is a modified version of the wpilib implementation that
+#        uses the dot product to determine angle reversal and scales the output speed according to the dot product as
+#        well."""
 #     desired_angle = desired_state.angle
 #     desired_vector = np.array([desired_angle.cos(), desired_angle.sin()])
 #     current_vector = np.array([current_angle.cos(), current_angle.sin()])
@@ -50,7 +51,8 @@ def shortest_angle_difference(angle1: float, angle2: float) -> float:
 #     if np.isclose(result, 0):  # If the dot product is 0, we don't need to change the angle
 #         desired_speed = 0
 #         desired_state = kinematics.SwerveModuleState(desired_speed, desired_angle)
-#     elif result < 0:  # If the dot product is negative, we need to reverse the desired angle, and scale speed by the dot product
+#     # If the dot product is negative, we need to reverse the desired angle, and scale speed by the dot product
+#     elif result < 0:
 #         desired_angle = desired_angle + geom.Rotation2d(math.pi)
 #         desired_state = kinematics.SwerveModuleState(desired_speed, desired_angle)
 #     else:  # No change needed to the desired angle

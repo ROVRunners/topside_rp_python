@@ -99,7 +99,7 @@ def lateral_thruster_calc(x: float, y: float, r: float) -> FrameThrusters:
 def map_to_circle(x: float, y: float) -> tuple[float, float]:
     """Map rectangular controller inputs to a circle."""
 
-    return (x*math.sqrt(1 - y**2/2.0), y*math.sqrt(1 - x**2/2.0))
+    return x*math.sqrt(1 - y**2/2.0), y*math.sqrt(1 - x**2/2.0)
 
 
 def lateral_thruster_calc_circular(x: float, y: float, r: float):

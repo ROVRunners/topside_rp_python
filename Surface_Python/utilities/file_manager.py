@@ -1,5 +1,6 @@
 """Does file-related stuff"""
 
+
 def file_to_dict(file_path: str, splitter: str = "=", comment: str = "#",
                  end_read: str = "|", line_count: int = -1) -> dict | None:
     """Convert the contents of a file into a dictionary of values.
@@ -55,7 +56,7 @@ def file_to_dict(file_path: str, splitter: str = "=", comment: str = "#",
     return dictionary
 
 
-def file_to_list(path: str) -> list:
+def file_to_list(path: str) -> list[str] | None:
     """Convert the contents of a file into a list of its lines.
 
     Args:
@@ -63,8 +64,8 @@ def file_to_list(path: str) -> list:
             The path to the file you want to read.
 
     Returns:
-        list:
-            An array of the lines in the file
+        list[str] | None:
+            An array of the lines in the file or None if the file doesn't open.
     """
     try:
         file = open(path, "r", encoding="UTF-8")
