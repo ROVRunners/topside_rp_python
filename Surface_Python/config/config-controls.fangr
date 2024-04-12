@@ -7,12 +7,16 @@ PITCH = RIGHT_Y
 HALT = START
 
 ####################
+
 Instructions:
 
 Modify the above keys as much as you wish.
 Capitalization does not matter, everything is converted to upper anyway.
 
-Add custom values on the left if you wish, but the following are required:
+The format is defined as:
+    
+
+Add custom values on the left if you wish to be handled manually, but the following are required by the system:
     FORWARD/BACKWARD
     LEFT/RIGHT
     UP/DOWN

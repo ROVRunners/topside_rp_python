@@ -224,7 +224,7 @@ class Controller:
         # Get the control config file.
         path = os.path.dirname(os.path.realpath(__file__))
         path = os.path.join(path, "config")
-        path = os.path.join(path, "config-controls.fngr")
+        path = os.path.join(path, "config-controls.fangr") # Funny Absolute Notation for Gamepad Readings
 
         # Extract data from the file.
         file = open(path, "r", encoding="UTF-8")

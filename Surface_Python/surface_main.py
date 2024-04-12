@@ -39,6 +39,7 @@ class MainSystem:
         self.run = True
 
     def main_loop(self) -> None:
+        """Executes the main loop of the program."""
         self.inputs = self.controller.get_inputs()
         # self.sensor_data = self.socket_handler.get_sensor_data()
         if self.terminal.check_for_input():
@@ -49,6 +50,7 @@ class MainSystem:
         # Display frames
 
     def shutdown(self) -> None:
+        """Shuts down the system and it's subsystems."""
         self.socket_handler.shutdown()
         sys.exit()
 
