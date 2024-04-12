@@ -44,13 +44,13 @@ class Controller:
         pygame.init()
         pygame.joystick.init()
 
-
         self.config = config
+        self.control_map = {}
 
         if not pygame.joystick.get_count() == 0:
             self.joystick = pygame.joystick.Joystick(0)
             self.joystick.init()
-            self.control_map = self.get_controls()
+            self.get_controls()
         else:
             error("Warning! No controller detected!")
 
@@ -213,4 +213,5 @@ class Controller:
 
             control_map[ctrl].append(button)
 
-        return control_map
+        self.control_map = control_map
+

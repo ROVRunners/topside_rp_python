@@ -69,6 +69,15 @@ class SocketHandler:
                 error("Connection refused. Retrying...")
                 sleep(self.timeout)
 
+    def start_listening(self) -> None:
+        """Start listening for input in a separate thread."""
+        threading.Thread(target=self._listen_for_input).start()
+
+    def _listen_for_input(self) -> None:
+        pass
+        # while self.main_system.run:
+
+
     def send_packet(self, command: str, pwm_values: list[int]) -> None:
         """Send a packet to the Raspberry Pi with the specified command and PWM values.
         

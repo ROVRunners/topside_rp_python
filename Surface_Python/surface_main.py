@@ -49,6 +49,22 @@ class MainSystem:
         # self.socket_handler.send_data(data)
         # Display frames
 
+        # example C++ code:
+        # for (int i = 0; i < gun_state.num_input_pins; i++) {
+        #   gun_state.input_state[i] = digitalRead(inputs[i]);
+        #   gun_state.input_state_changed[i] = gun_state.input_state[i] != gun_state.prev_input_state[i];
+        #   gun_state.prev_input_state[i] = gun_state.input_state[i];
+        # }
+        #
+        # bool any_changed = false;
+        #
+        # for (int i = 0; i < num_inputs; i++) {
+        #   if (gun_state.input_state_changed[i]) {
+        #     (*device_state_functions[i])(gun_state.input_state[i]);
+        #     any_changed = true;
+        #   }
+        # }
+
     def shutdown(self) -> None:
         """Shuts down the system and it's subsystems."""
         self.socket_handler.shutdown()
