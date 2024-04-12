@@ -32,17 +32,23 @@ from Surface_Python.utilities import keyboard_input as keybd
 # Input / Output
 
 
-def text(*message: object, letter_time: float = .025, line_delay: float = 0,
-         sep: str = " ", end: str = "\n", mods: list = None, flush: bool = True) -> None:
+def text(*message: object, unlist_list: bool = True, letter_time: float = 0.0,
+         line_delay: float = 0, sep: str = " ", end: str = "\n",
+         mods: list = None, flush: bool = True) -> None:
     """Mimic print() but with more functionality and a default time delay.
 
     Args:
         *message (str, optional):
-            A message or prompt to output to the user.
+            A message or prompt to output to the user. NOTE: If a list or tuple is passed in,
+            it will print each item in the list or tuple instead of the list or tuple itself.
             Defaults to "".
+        unlist_list (bool, optional):
+            If True, will print single-item lists and tuples as the contained item instead of the
+            list or tuple itself. If False, will print the list or tuple as is.
+            Defaults to True.
         letter_time (float, optional):
             Time delay between each letter printed.
-            Defaults to .025.
+            Defaults to 0.0.
         line_delay (int, optional):
             Additional time delay between each line printed.
             Defaults to 0.
@@ -61,107 +67,67 @@ def text(*message: object, letter_time: float = .025, line_delay: float = 0,
     """
     # Having a function have a default list is "dangerous" so this serves as an equivalent if None.
     # Otherwise, prints the markup escape codes.
-    for i in (mods if not mods is None else []):
-        print(i, end="")
+    for modifier in (mods if mods is not None else []):
+        print(modifier, end="")
 
     # Due to anything in the message slot being turned into a tuple, this checks to see if the 1st
     # item is a tuple as that usually indicates that it was passed on from intext() or one of the
     # 'put() functions. It also serves to allow for easy listing of items in a list.
     # Does not run if there's more than one argument, so adding a "" and setting sep to "" would
-    # override this.
-    if len(message) == 1:
+    # override this if you want to print a list or tuple with a single item.
+    if len(message) == 1 and unlist_list:
         if isinstance(message[0], (tuple, list)):
             message = message[0]
 
     # The speed multiplier. Added fow using esc to speed up outputs.
     speed = 1
 
-    # Cycles through and prints each letter with delay.
-    for j, i in enumerate(message):
+    if letter_time != 0:
+        # Cycles through and prints each letter with delay.
+        for i, item in enumerate(message):
 
-        if not j == 0:
-            for letter in sep:
+            if i != 0:
+                for letter in sep:
+
+                    if keybd.is_currently_pressed("esc"):
+                        speed = 0
+
+                    print(letter, end='', flush=flush)
+                    sleep(letter_time * speed)
+            for letter in str(item):
 
                 if keybd.is_currently_pressed("esc"):
                     speed = 0
 
                 print(letter, end='', flush=flush)
                 sleep(letter_time * speed)
-        for letter in str(i):
-
-            if keybd.is_currently_pressed("esc"):
-                speed = 0
-
-            print(letter, end='', flush=flush)
-            sleep(letter_time * speed)
+    else:
+        for i, item in enumerate(message):
+            if i != 0:
+                print(sep, end='', flush=flush)
+            print(item, end='', flush=flush)
 
     # Cleans up and optionally waits at the end.
     sleep(line_delay * speed)
-    if not mods is None:
-        print(color.END, end="")
+    print(color.END, end="")
     print(end=end)
 
 
-def color_print(*message: object, sep: str = " ", end: str = "\n",
-                mods: list = None, flush: bool = True) -> None:
-    """Mimic print() but with color.
-
-    Args:
-        *message (str, optional):
-            A message or prompt to output to the user.
-            Defaults to "".
-        sep (str, optional):
-            String inserted between values.
-            Defaults to " ".
-        end (str, optional):
-            String appended after the last value.
-            Defaults to "\\n".
-        mods (list, optional):
-            List of modifiers from the colorizer class to apply to the message.
-            Defaults to [].
-        flush (bool, optional):
-            Determines if the text is output immediately or not.
-            Defaults to True.
-    """
-    # Having a function have a default list is "dangerous" so this serves as an equivalent if None.
-    # Otherwise, prints the markup escape codes.
-    for i in (mods if not mods is None else []):
-        print(i, end="")
-
-    # Due to anything in the message slot being turned into a tuple, this checks to see if the 1st
-    # item is a tuple as that usually indicates that it was passed on from intext() or one of the
-    # 'put() functions. It also serves to allow for easy listing of items in a list.
-    # Does not run if there's more than one argument, so adding a "" and setting sep to "" would
-    # override this.
-    if len(message) == 1:
-        if isinstance(message[0], (tuple, list)):
-            message = message[0]
-
-    # Cycles through and prints each letter with delay.
-    for j, piece in enumerate(message):
-
-        if not j == 0:
-            print(sep, end='', flush=flush)
-
-        print(piece, end='', flush=flush)
-
-    # Cleans up and optionally waits at the end.
-    if not mods is None:
-        print(color.END, end="")
-    print(end=end)
-
-
-def error(*message: object, letter_time: float = .025, line_delay: float = 0,
-         sep: str = " ", end: str = "\n", flush: bool = True) -> None:
+def error(*message: object, unlist_list: bool = True, letter_time: float = 0.0, line_delay: float = 0,
+          sep: str = " ", end: str = "\n", flush: bool = True) -> None:
     """Same as text but designed for error messages.
 
     Args:
         *message (str, optional):
             A message or prompt to output to the user.
             Defaults to "".
+        unlist_list (bool, optional):
+            If True, will print single-item lists and tuples as the contained item instead of the
+            list or tuple itself. If False, will print the list or tuple as is.
+            Defaults to True.
         letter_time (float, optional):
             Time delay between each letter printed.
-            Defaults to .025.
+            Defaults to 0.0.
         line_delay (int, optional):
             Additional time delay between each line printed.
             Defaults to 0.
@@ -175,48 +141,17 @@ def error(*message: object, letter_time: float = .025, line_delay: float = 0,
             Determines if the text is output immediately or not.
             Defaults to True.
     """
-    # Having a function have a default list is "dangerous" so this serves as an equivalent if None.
-    # Otherwise, prints the markup escape codes.
-    print(color.ERROR + color.WARN, end=" ")
-
-    # Due to anything in the message slot being turned into a tuple, this checks to see if the 1st
-    # item is a tuple as that usually indicates that it was passed on from intext() or one of the
-    # 'put() functions. It also serves to allow for easy listing of items in a list.
-    # Does not run if there's more than one argument, so adding a "" and setting sep to "" would
-    # override this.
+    # See the equivalent in text().
     if len(message) == 1:
         if isinstance(message[0], (tuple, list)):
             message = message[0]
 
-    # The speed multiplier. Added fow using esc to speed up outputs.
-    speed = 1
-
-    # Cycles through and prints each letter with delay.
-    for j, i in enumerate(message):
-
-        if not j == 0:
-            for letter in sep:
-
-                if keybd.is_currently_pressed("esc"):
-                    speed = 0
-
-                print(letter, end='', flush=flush)
-                sleep(letter_time * speed)
-        for letter in str(i):
-
-            if keybd.is_currently_pressed("esc"):
-                speed = 0
-
-            print(letter, end='', flush=flush)
-            sleep(letter_time * speed)
-
-    # Cleans up and optionally waits at the end.
-    sleep(line_delay * speed)
-    print(" " + color.WARN + color.END, end="")
-    print(end=end)
+    # Passes through the arguments to text() and adds the error modifiers.
+    text(message, unlist_list=unlist_list, letter_time=letter_time, line_delay=line_delay,
+         sep=sep, end=end, flush=flush, mods=[color.ERROR, color.WARN])
 
 
-def intext(*message: object, letter_time: float = .025, line_delay: float = 0,
+def intext(*message: object, unlist_list: bool = True, letter_time: float = 0.0, line_delay: float = 0,
            sep: str = " ", end: str = " ", mods: list = None) -> str:
     """Mimic input() but use text() instead of print() and add a space at the end for convenience.
 
@@ -224,9 +159,13 @@ def intext(*message: object, letter_time: float = .025, line_delay: float = 0,
         *message (str, optional):
             A message or prompt to output to the user.
             Defaults to "".
+        unlist_list (bool, optional):
+            If True, will print single-item lists and tuples as the contained item instead of the
+            list or tuple itself. If False, will print the list or tuple as is.
+            Defaults to True.
         letter_time (float, optional):
             Time delay between each letter printed.
-            Defaults to .025.
+            Defaults to 0.0.
         line_delay (int, optional):
             Additional time delay between each line printed.
             Defaults to 0.
@@ -249,25 +188,29 @@ def intext(*message: object, letter_time: float = .025, line_delay: float = 0,
             message = message[0]
 
     # Passes through the arguments to text() and returns the input.
-    text(message, letter_time=letter_time, sep=sep,
+    text(message, unlist_list=unlist_list, letter_time=letter_time, sep=sep,
          line_delay=line_delay, end=end, mods=mods)
     return input()
 
 
-def intput(*message: object, letter_time: int = .025, line_delay: int = 0,
-           sep: str = " ", end: str = " ", fail_mods: list = None, mods: list = None,
-           fail_message: str = ("⚠  That's not an integer within acceptable bounds. ⚠  " +
-                                "Please enter a integer within bounds:"), auto_bound: bool = False,
-           minimum: int | None = None, maximum: int | None = None) -> int:
+def intput(*message: object, unlist_list: bool = True, letter_time: int = 0.0, line_delay: int = 0,
+           sep: str = " ", end: str = " ", fail_message: str =
+           ("⚠  That's not an integer within acceptable bounds. ⚠  " +
+            "Please enter an integer within bounds:"), fail_mods: list = None, mods: list = None,
+           auto_bound: bool = False, minimum: int | None = None, maximum: int | None = None) -> int:
     """Get an integer input from the user or loop if invalid.
 
     Args:
         *message (str, optional):
             A message or prompt to output to the user.
             Defaults to "".
+        unlist_list (bool, optional):
+            If True, will print single-item lists and tuples as the contained item instead of the
+            list or tuple itself. If False, will print the list or tuple as is.
+            Defaults to True.
         letter_time (float, optional):
             Time delay between each letter printed.
-            Defaults to .025.
+            Defaults to 0.0.
         line_delay (int, optional):
             Additional time delay between each line printed.
             Defaults to 0.
@@ -280,26 +223,35 @@ def intput(*message: object, letter_time: int = .025, line_delay: int = 0,
         mods (list, optional):
             List of modifiers from the colorizer class to apply to the message.
             Defaults to [].
-        fail_message (str, optional):
-            The message to give if the original input is invalid.
-            Defaults to "That's not an integer. Please enter an integer:"
         fail_mods (str, optional):
             The message to give if the original input is invalid.
             Defaults to [color.ERROR]
+        fail_message (str, optional):
+            The message to give if the original input is invalid.
+            Defaults to "That's not an integer. Please enter an integer:"
+        auto_bound (bool, optional):
+            If True, will automatically bound the input to the given minimum and maximum.
+            Defaults to False.
+        minimum (int, optional):
+            The minimum value the input can be if auto_bound is True.
+            Defaults to None.
+        maximum (int, optional):
+            The maximum value the input can be if auto_bound is True.
+            Defaults to None.
 
     Returns:
-        int: The integer value of the user's input.
+        int: The integer value of the user's input within any specified bounds.
     """
 
     # Having a function have a default list is "dangerous" so this serves as an equivalent if None.
     fail_mods = [color.ERROR] if fail_mods is None else fail_mods
 
-    # Attempts to get an input and loops until it's valid.
+    # Attempts to get an input and loops until it is valid.
     # Changes the message and mods after the 1st attempt.
     msg = message
     while True:
         try:
-            num = int(intext(msg, letter_time=letter_time, sep=sep,
+            num = int(intext(msg, unlist_list=unlist_list, letter_time=letter_time, sep=sep,
                              line_delay=line_delay, end=end, mods=mods))
             if auto_bound:
                 return bound(num, minimum, maximum)
@@ -312,19 +264,26 @@ def intput(*message: object, letter_time: int = .025, line_delay: int = 0,
             mods = fail_mods
 
 
-def floatput(*message: str, sep: str = " ", letter_time: float = .025,
+def floatput(*message: str, unlist_list: bool = True, sep: str = " ", letter_time: float = 0.0,
              line_delay: float = 0, end: str = " ", fail_message: str =
-             "⚠  That's not a floating point value. ⚠  Please enter a floating point value:",
-             fail_mods: list = None, mods: list = None) -> float:
+             "⚠  That's not a floating point value within acceptable bounds. ⚠  " +
+             "Please enter a floating point value within bounds:",
+             fail_mods: list = None, mods: list = None,
+             auto_bound: bool = False, minimum: int | None = None,
+             maximum: int | None = None) -> float:
     """Get a floating point input from the user or loop if invalid.
 
     Args:
         *message (str, optional):
             A message or prompt to output to the user.
             Defaults to "".
+        unlist_list (bool, optional):
+            If True, will print single-item lists and tuples as the contained item instead of the
+            list or tuple itself. If False, will print the list or tuple as is.
+            Defaults to True.
         letter_time (float, optional):
             Time delay between each letter printed.
-            Defaults to .025.
+            Defaults to 0.0.
         line_delay (int, optional):
             Additional time delay between each line printed.
             Defaults to 0.
@@ -338,33 +297,47 @@ def floatput(*message: str, sep: str = " ", letter_time: float = .025,
             List of modifiers from the colorizer class to apply to the message.
             Defaults to [].
         fail_message (str, optional):
-            The message to give if the original input is invalid. Defaults to
-            "That's not a floating point value. Please enter a floating point value:"
+            The message to give if the original input is invalid.
+            Defaults to "That's not a floating point value. Please enter a floating point value:"
         fail_mods (str, optional):
-            The message to give if the original input is invalid. Defaults to
-            [color.ERROR]
+            The message to give if the original input is invalid.
+            Defaults to [color.ERROR]
+        auto_bound (bool, optional):
+            If True, will automatically bound the input to the given minimum and maximum.
+            Defaults to False.
+        minimum (int, optional):
+            The minimum value the input can be if auto_bound is True.
+            Defaults to None.
+        maximum (int, optional):
+            The maximum value the input can be if auto_bound is True.
+            Defaults to None.
 
     Returns:
-        float: The floating point value of the user's input.
+        float: The floating point value of the user's input within any specified bounds.
     """
 
     # Having a function have a default list is "dangerous" so this serves as an equivalent if None.
     fail_mods = [color.ERROR] if fail_mods is None else fail_mods
 
-    # Attempts to get an input and loops until it's valid.
+    # Attempts to get an input and loops until it is valid.
     # Changes the message and mods after the 1st attempt.
     msg = message
     while True:
         try:
-            num = float(intext(msg, letter_time=letter_time, sep=sep,
+            num = float(intext(msg, unlist_list=unlist_list, letter_time=letter_time, sep=sep,
                                line_delay=line_delay, end=end, mods=mods))
+            if auto_bound:
+                return bound(num, minimum, maximum)
+            if not (minimum is None or maximum is None):
+                if not minimum < num < maximum:
+                    raise ValueError
             return num
         except ValueError:
             msg = fail_message if len(fail_message) > 0 else msg
             mods = fail_mods
 
 
-def boolput(*message: str, sep: str = " ", letter_time: float = .025,
+def boolput(*message: str, unlist_list: bool = True, sep: str = " ", letter_time: float = 0.0,
             line_delay: float = 0, end: str = " ", add_true: list = None,
             add_false: list = None, mods: list = None) -> bool:
     """Get a boolean input from the user.
@@ -373,9 +346,13 @@ def boolput(*message: str, sep: str = " ", letter_time: float = .025,
         *message (str, optional):
             A message or prompt to output to the user.
             Defaults to "".
+        unlist_list (bool, optional):
+            If True, will print single-item lists and tuples as the contained item instead of the
+            list or tuple itself. If False, will print the list or tuple as is.
+            Defaults to True.
         letter_time (float, optional):
             Time delay between each letter printed.
-            Defaults to .025.
+            Defaults to 0.0.
         line_delay (int, optional):
             Additional time delay between each line printed.
             Defaults to 0.
@@ -405,8 +382,8 @@ def boolput(*message: str, sep: str = " ", letter_time: float = .025,
     if add_false is None:
         add_false = []
 
-    # I listed every reasonable affirmative and negative word I could think of.
-    # I also added the ability to add more.
+    # I listed every reasonable (and one or two unreasonable) affirmative and negative word I could
+    # think of and added the ability to add more.
     positive_answers = (['ok', 'okay', 'yes', 'y', 'sure', '1', 'true', 'affirmative',
                          'alright', 't', 'yeah', 'yup', 'ye', 'yea'] + add_true)
     negative_answers = (['no', 'nope', 'negative', 'nein', '0',
@@ -414,7 +391,7 @@ def boolput(*message: str, sep: str = " ", letter_time: float = .025,
 
     # Gets the response and checks it against both lists.
     # If there are no matches, it simply casts to bool.
-    reply = intext(message, letter_time=letter_time, sep=sep,
+    reply = intext(message, unlist_list=unlist_list, letter_time=letter_time, sep=sep,
                    line_delay=line_delay, end=end, mods=mods).lower()
 
     answer = None
@@ -434,10 +411,11 @@ def boolput(*message: str, sep: str = " ", letter_time: float = .025,
 
 
 def rounder(num: float) -> int:
-    """Round a nummber better than the default function.
+    """Round a number better than the default function because default rounds down on .5 sometimes.
 
     Args:
-        num (float): The number you wish to round.
+        num (float):
+            The number you wish to round.
 
     Returns:
         int: The input rounded to the nearest whole number.
@@ -466,7 +444,7 @@ def rand(num1: int, num2: int = None) -> int:
     Returns:
         int: A random number within the given range.
     """
-    # Generates a 128 bit number, then depending on the number of inputs,
+    # Generates a 128-bit number, then depending on the number of inputs,
     # finds a number in the given range.
     random = int.from_bytes(os.urandom(128), sys.byteorder)
     if num2 is None:
@@ -478,14 +456,14 @@ def rand_choice(options: list, die: str | None = None) -> object | None:
     """Choose a random item from the given list. Use dice if desired.
 
     Args:
-        input (list):
+        options (list):
             The list to choose an item from randomly.
         die (str | None, optional):
             The die to use to determine the item chosen. Example: "5d12"
 
-            Warning: Do not use modifiers; They will be overridden.\n
+            Warning: Do not use modifiers; They will be overridden.
             It is recommended that the sum of the options is equal to the range of the die roll.
-            None may be returned if this is not true.\n
+            None may be returned if this is not true and an out-of-bounds option is chosen.
             Defaults to None.
 
     Returns:
@@ -553,7 +531,7 @@ def die_parser(command: str, option_chooser: bool = False) -> int | None:
         return None
 
 
-def roll(number=1, die=10, mod=0):
+def roll(number=1, die=6, mod=0):
     """Roll a number of any type of dice with any modifier.
 
     Args:
@@ -562,7 +540,7 @@ def roll(number=1, die=10, mod=0):
             Defaults to 1.
         die (int, optional):
             Number of sides on the die.
-            Defaults to 10.
+            Defaults to 6.
         mod (int, optional):
             Modifier to add.
             Defaults to 0.
@@ -599,7 +577,7 @@ def intvert(string: str, fail_message: str = None,
     try:
         return int(string)
     except ValueError as ex:
-        if not fail_message is None:
+        if fail_message is not None:
             text(fail_message)
         if throw:
             raise ex
@@ -689,7 +667,8 @@ def shuffle(array: list, depth: int) -> list:
 
 
 def pause_nanoseconds(nanoseconds: int) -> None:
-    """Sleep for a specified amount of nanoseconds.
+    """Sleep for a specified amount of nanoseconds.\n
+    NOTE: Kinda sucks, don't use it in important code.
 
     Args:
         nanoseconds (int):
