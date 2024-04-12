@@ -10,8 +10,9 @@ from utilities.personal_functions import *
 
 class SocketHandler:
     """Class for handling socket communication with the Raspberry Pi."""
-    def __init__(self, main_system, ip_address: str, port: str="5600", timeout: float=.25,
-                max_attempts: int=40, buffer_size: int=1024, encoding: str='utf-8') -> None:
+
+    def __init__(self, main_system, ip_address: str, port: str = "5600", timeout: float = .25,
+                 max_attempts: int = 40, buffer_size: int = 1024, encoding: str = 'utf-8') -> None:
         """Initialize the SocketHandler object.
 
         Args:

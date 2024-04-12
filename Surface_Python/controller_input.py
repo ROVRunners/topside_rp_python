@@ -142,13 +142,13 @@ class Controller:
 
     def combine_triggers(self, trigger_1: float, trigger_2: float) -> float:
         """Combines the values of the two triggers into a single value.
-        
+
         Args:
             trigger_1 (float):
                 The value of the first trigger.
             trigger_2 (float):
                 The value of the second trigger.
-                
+
         Returns:
             float: The combined value of the triggers.
         """
@@ -238,13 +238,18 @@ class Controller:
 
             if line.startswith("#"):
                 return control_map
+            elif line == "\n":
+                continue
+
+            # Remove comments and whitespace.
+            line = line.split("#")[0].strip()
 
             control = line.split("=")
 
             button = control[1].strip().upper()
             ctrl = control[0].strip().upper()
 
-            if not ctrl in control_map:
+            if ctrl not in control_map:
                 control_map[ctrl] = []
 
             control_map[ctrl].append(button)
