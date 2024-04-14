@@ -11,7 +11,9 @@ class TerminalListener:
 
     def start_listening(self) -> None:
         """Start listening for input in a separate thread."""
+        print("Starting up the terminal listener...")
         threading.Thread(target=self._listen_for_input).start()
+        print("Terminal listener started!")
 
     def _listen_for_input(self) -> None:
         """Listens for user input from the terminal and updates the input value.

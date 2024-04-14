@@ -6,9 +6,9 @@ import pygame
 
 from utilities.personal_functions import *
 
-from config import ControllerConfig
-
-from surface_main import MainSystem
+# from config import ControllerConfig
+#
+# from surface_main import MainSystem
 
 
 def combine_triggers(trigger_1: float, trigger_2: float) -> float:
@@ -26,7 +26,7 @@ def combine_triggers(trigger_1: float, trigger_2: float) -> float:
     trigger_1 = (trigger_1 + 1) / 2
     trigger_2 = (trigger_2 + 1) / 2
 
-    return trigger_1 - trigger_2
+    return trigger_2 - trigger_1
 
 
 class Controller:
@@ -62,12 +62,14 @@ class Controller:
         Get the controls and map them to the keys in the file.
         """
 
-    def __init__(self, main_system: MainSystem, config: ControllerConfig):
+    # , main_system: MainSystem, config: ControllerConfig
+    def __init__(self, rov_dir: str):
         pygame.init()
         pygame.joystick.init()
 
-        self.main_system = main_system
-        self.config = config
+        # self.main_system = main_system
+        # self.config = config
+        self.rov_dir = rov_dir
 
         self.control_map = {}
         self.deadzone = 0.1
@@ -75,10 +77,10 @@ class Controller:
         if pygame.joystick.get_count() != 0:
             self.joystick = pygame.joystick.Joystick(0)
             self.joystick.init()
-            self._get_controls()
+            self._get_control_map()
         else:
             # TODO Replace error()
-            error("Warning! No controller detected!")
+            print("Warning! No controller detected!")
 
     def get_inputs(self) -> dict[str, float]:
         """Retrieves the inputs from the controller.
@@ -87,9 +89,34 @@ class Controller:
             dict: The inputs from the controller as float amplitude values (buttons are 1/0).
         """
         pygame.event.pump()
-        inputs = self._get_buttons() | self._get_joysticks() | self._get_hat()
+        inputs: dict = self._get_buttons() | self._get_joysticks() | self._get_hat()
 
         return inputs
+
+    def get_controller_commands(self) -> dict[str, float]:
+        """Get the commands from the controller.
+
+        Returns:
+            dict[str, float]: The commands from the controller and their emphasis.
+        """
+        commands = {}
+        controller_inputs = self.get_inputs()
+
+        print("Control map: " + str(self.control_map))
+
+        # Sorts through all buttons attached to listed commands.
+        for control in self.control_map:
+            for button in self.control_map[control]:
+
+                # Set the default value in case something screws up.
+                commands[control] = 0
+
+                # If the button is pressed, and it's more than the current value, update the value.
+                if controller_inputs[button]:
+                    commands[control] = (controller_inputs[button] if abs(controller_inputs[button])
+                                         >= abs(commands[control]) else commands[control])
+
+        return commands
 
     def _get_buttons(self) -> dict[str, float]:
         """Returns a dictionary containing the current state of the buttons on the controller.
@@ -119,9 +146,9 @@ class Controller:
         """
         values = {
             "LEFT_X": self._axis(0),
-            "LEFT_Y": self._axis(1),
+            "LEFT_Y": -self._axis(1),
             "RIGHT_X": self._axis(2),
-            "RIGHT_Y": self._axis(3),
+            "RIGHT_Y": -self._axis(3),
             "TRIGGERS": combine_triggers(self._axis(4), self._axis(5)),
         }
 
@@ -182,7 +209,7 @@ class Controller:
 
         return value
 
-    def _get_controls(self) -> dict:
+    def _get_control_map(self) -> dict:
         """Get the controls and map them to the keys in the file.
 
         Returns:
@@ -190,36 +217,48 @@ class Controller:
         """
 
         # Get the control config file.
-        path = os.path.dirname(os.path.realpath(__file__))
-        path = os.path.join(path, "config")
-        path = os.path.join(path, "config-controls.fangr")  # Funny Absolute Notation for Gamepad Readings
+        path = os.path.join(self.rov_dir, "config-controls.fangr")  # Funny Absolute Notation for Gamepad Readings
 
         # Extract data from the file.
         file = open(path, "r", encoding="UTF-8")
         file_lines = file.readlines()[:]
         file.close()
 
-        control_map = {}
+        self.control_map = {}
 
         # Turn the data into a dictionary, stopping at the first #.
         for line in file_lines:
+            print(line.strip())
 
             if line.startswith("#"):
-                return control_map
+                print("Returning: " + str(self.control_map))
+                return
             elif line == "\n":
                 continue
 
             # Remove comments and whitespace.
             line = line.split("#")[0].strip()
 
+            # Split the line into the control and button.
             control = line.split("=")
 
             button = control[1].strip().upper()
             ctrl = control[0].strip().upper()
 
-            if ctrl not in control_map:
-                control_map[ctrl] = []
+            # Add the control to the dictionary.
+            if ctrl not in self.control_map:
+                self.control_map[ctrl] = []
 
-            control_map[ctrl].append(button)
+            self.control_map[ctrl].append(button)
 
-        self.control_map = control_map
+
+if __name__ == "__main__":
+    # Test the controller code
+    controller = Controller("rov_config/spike")
+
+    while True:
+        inputs = controller.get_controller_commands()
+
+        print(inputs)
+
+        time.sleep(0.1)
