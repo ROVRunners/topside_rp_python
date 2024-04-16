@@ -1,7 +1,6 @@
 
 Simple guide to configs 
 
-
 from typing import NamedTuple
 import commands2
 import rev
