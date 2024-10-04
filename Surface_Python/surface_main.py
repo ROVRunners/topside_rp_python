@@ -6,7 +6,7 @@ import sys
 import argparse
 from time import sleep
 
-import terminal_listener
+# import terminal_listener
 import socket_handler
 import controller_input
 
@@ -48,7 +48,7 @@ class MainSystem:
         self.pi_ip = pi_ip
         self.pi_port = pi_port
 
-        self.terminal = terminal_listener.TerminalListener(self)
+        # self.terminal = terminal_listener.TerminalListener(self)
         self.socket = socket_handler.SocketHandler(self, self.pi_ip, self.pi_port)
         self.controller = controller_input.Controller(rov_dir)
         self.ROV = rov_config.ROVConfig()
