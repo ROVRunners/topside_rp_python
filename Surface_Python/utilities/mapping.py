@@ -6,7 +6,7 @@ tau = math.pi * 2
 
 
 def wrap_angle(angle: float, min_val: float = 0) -> float:
-    """Wrap the angle to the range of 0 to 2pi"""
+    """Wrap the angle to the range of 0 to tau (2pi)"""
     clamped = angle % tau
 
     max_val = min_val + tau
@@ -18,7 +18,7 @@ def wrap_angle(angle: float, min_val: float = 0) -> float:
 
 
 def wrap_angle_degrees(angle: float, min_val: float = 0) -> float:
-    """Wrap the angle to the range of 0 to 2pi"""
+    """Wrap the angle to the range of 0 to tau (2pi)"""
     clamped = angle % 360.0
     max_val = min_val + 360.0
     while clamped >= max_val:  # TODO Do the math and multiply instead of adding

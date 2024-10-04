@@ -6,10 +6,6 @@ import pygame
 
 from utilities.personal_functions import *
 
-# from config import ControllerConfig
-#
-# from surface_main import MainSystem
-
 
 def combine_triggers(trigger_1: float, trigger_2: float) -> float:
     """Combines the values of the two triggers into a single value.
@@ -60,15 +56,12 @@ class Controller:
 
     get_controls() -> dict:
         Get the controls and map them to the keys in the file.
-        """
+    """
 
-    # , main_system: MainSystem, config: ControllerConfig
     def __init__(self, rov_dir: str):
         pygame.init()
         pygame.joystick.init()
 
-        # self.main_system = main_system
-        # self.config = config
         self.rov_dir = rov_dir
 
         self.control_map = {}
@@ -89,9 +82,9 @@ class Controller:
             dict: The inputs from the controller as float amplitude values (buttons are 1/0).
         """
         pygame.event.pump()
-        inputs: dict = self._get_buttons() | self._get_joysticks() | self._get_hat()
+        controller_inputs: dict = self._get_buttons() | self._get_joysticks() | self._get_hat()
 
-        return inputs
+        return controller_inputs
 
     def get_controller_commands(self) -> dict[str, float]:
         """Get the commands from the controller.
@@ -209,7 +202,6 @@ class Controller:
 
     def _get_control_map(self) -> None:
         """Get the controls and map them to the keys in the file."""
-
         # Get the control config file.
         path = os.path.join(self.rov_dir, "config-controls.fangr")  # Funny Absolute Notation for Gamepad Readings
 
@@ -250,7 +242,6 @@ if __name__ == "__main__":
 
     while True:
         inputs = controller.get_controller_commands()
-
         print(inputs)
 
         time.sleep(0.1)
