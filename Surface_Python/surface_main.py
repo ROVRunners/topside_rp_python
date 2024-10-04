@@ -52,6 +52,7 @@ class MainSystem:
         self.socket = socket_handler.SocketHandler(self, self.pi_ip, self.pi_port)
         self.controller = controller_input.Controller(rov_dir)
         self.ROV = rov_config.ROVConfig()
+        self.man_class = self.ROV.manual_class(self)
 
         self.safe_pwm_values = self.ROV.stationary_pwm_values
 
@@ -74,27 +75,33 @@ class MainSystem:
         # Get sensor data from previous loop returns.
         if self.socket.sensor_data_available:
             self.sensor_data = self.socket.get_sensor_data()
+        else:
+            self.sensor_data = {}
+        print("Sensor data:", self.sensor_data)
 
         # Check for terminal input
-        if self.terminal.check_for_input():
-            self.command = self.terminal.get_input_value()
-            print("Command: " + self.command)
+        # if self.terminal.check_for_input():
+        #     self.command = self.terminal.get_input_value()
+        #     print("Command: " + self.command)
+        self.command = ""
 
         # Hand off for modification and custom commands
 
         # Handle commands
 
         # Convert controls to PWM signals
-        self.pwm_values = self.ROV.pwm_conversion_function(self.inputs["FORWARD/BACKWARD"],
-                                                           self.inputs["LEFT/RIGHT"],
-                                                           self.inputs["UP/DOWN"],
-                                                           self.inputs["YAW"],
-                                                           self.inputs["PITCH"],
-                                                           0)
+        # self.pwm_values = self.ROV.pwm_conversion_function(self.inputs["FORWARD/BACKWARD"],
+        #                                                    self.inputs["LEFT/RIGHT"],
+        #                                                    self.inputs["UP/DOWN"],
+        #                                                    self.inputs["YAW"],
+        #                                                    self.inputs["PITCH"],
+        #                                                    0)
+        self.inputs, self.command, self.sensor_data, self.pwm_values = (self.man_class.manual_intercepts(controller_data=self.inputs, terminal_data=self.command, sensor_data=self.sensor_data))
 
+        print("Data modified by manual_intercepts:", self.inputs, self.command, self.sensor_data, self.pwm_values)
         # Send data to the Raspberry Pi
         self.socket.send_commands(self.pi_commands, self.pwm_values)
-
+        print("Sent data to Raspberry Pi:", self.pi_commands, self.pwm_values)
         # Display frames
 
         # example C++ code:

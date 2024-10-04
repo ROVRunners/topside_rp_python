@@ -102,8 +102,6 @@ class Controller:
         commands = {}
         controller_inputs = self.get_inputs()
 
-        print("Control map: " + str(self.control_map))
-
         # Sorts through all buttons attached to listed commands.
         for control in self.control_map:
             for button in self.control_map[control]:
@@ -209,12 +207,8 @@ class Controller:
 
         return value
 
-    def _get_control_map(self) -> dict:
-        """Get the controls and map them to the keys in the file.
-
-        Returns:
-            dict: The controls and their keys.
-        """
+    def _get_control_map(self) -> None:
+        """Get the controls and map them to the keys in the file."""
 
         # Get the control config file.
         path = os.path.join(self.rov_dir, "config-controls.fangr")  # Funny Absolute Notation for Gamepad Readings
@@ -228,10 +222,8 @@ class Controller:
 
         # Turn the data into a dictionary, stopping at the first #.
         for line in file_lines:
-            print(line.strip())
 
             if line.startswith("#"):
-                print("Returning: " + str(self.control_map))
                 return
             elif line == "\n":
                 continue

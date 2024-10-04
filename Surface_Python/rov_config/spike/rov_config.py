@@ -1,5 +1,5 @@
 import manual
-import auto
+# import auto
 import rov_info
 
 
@@ -14,10 +14,14 @@ class ROVConfig:
 
         # Classes to initialize.
         self.manual_class = manual.Manual  # REQUIRED
-        self.auto_class = auto.Auto
+        # self.auto_class = auto.Auto
         self.ROVInfo = rov_info.ROVInfo
 
         # Main functions.
         self.manual_intercepts = self.manual_class.manual_intercepts  # REQUIRED
-        self.auto_processing = self.auto_class.auto_processing
+        # self.auto_processing = self.auto_class.auto_processing
+
+        self.stationary_pwm_values = [
+            1500, 1500, 1500, 1500, 1500, 1500
+        ]
 

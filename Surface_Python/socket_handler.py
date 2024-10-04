@@ -76,7 +76,7 @@ class SocketHandler:
 
                 pong_maybe = json.loads(self.socket.recv(self.buffer_size).decode(self.encoding))
                 end_ping = time.time_ns()
-                print(pong_maybe["response"])
+                print("Pong_maybe:", pong_maybe)
                 print(f"Ping time: {(end_ping - start_ping) / 1_000_000}ms")
 
                 break
@@ -154,6 +154,7 @@ class SocketHandler:
             encoded_packet_data: bytes = json.dumps(packet_data).encode(self.encoding)
             self.socket.sendall(encoded_packet_data)
 
+            print("Sent commands to Raspberry Pi.")
             # Wait for the response.
             response: bytes = self.socket.recv(self.buffer_size)
             print(f"Received response: {json.loads(response.decode(self.encoding))}")

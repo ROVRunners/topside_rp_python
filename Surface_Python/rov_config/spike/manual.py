@@ -20,7 +20,7 @@ class Manual:
 
         # Add whatever you need initialized here.
 
-    def manual_intercepts(self, controller_data, terminal_data, sensor_data, cv_frame):
+    def manual_intercepts(self, controller_data, terminal_data, sensor_data, cv_frame=None):
         """Intercept the data from the controller, terminal, and sensor data.
 
         Args:
@@ -30,7 +30,7 @@ class Manual:
                 The data from the terminal.
             sensor_data (dict):
                 The data from the sensors.
-            cv_frame (numpy.ndarray):
+            cv_frame (numpy.ndarray, optional):
                 The OpenCV frame.
 
         Returns: terminal_data, display_cv_frame, pwm_values
@@ -66,7 +66,7 @@ class Manual:
 
         self.sensor_data = sensor_data | {}
         self.controller_data = controller_data | {}
-        self.terminal_data = terminal_data | {}
+        self.terminal_data = terminal_data + ""
 
         # Add your custom pwm conversion and any PID logic here.
         self.pwm_values = thruster_pwm.get_pwm_values(controller_data["FORWARD/BACKWARD"],
@@ -83,11 +83,11 @@ class Manual:
         if controller_data["HALT"] == 1.0:
             self.pwm_values = self.main_system.safe_pwm_values
             # Do whatever else you need to do here to halt the ROV.
-        elif controller_data["CUSTOM_BUTTON_1"] == 1.0:
-            commands.append("custom_button_1")
-            # Custom button 1 logic here
+        # elif controller_data["CUSTOM_BUTTON_1"] == 1.0:
+        #     commands.append("custom_button_1")
+        #     # Custom button 1 logic here
 
-        return controller_data, terminal_data, sensor_data, self.pwm_values
+        return controller_data, terminal_data, self.sensor_data, self.pwm_values
 
     def terminal_intercepts(self):
         """Intercept the terminal data."""
@@ -98,8 +98,8 @@ class Manual:
         # }
 
         # Add your custom terminal commands here.
-        if self.terminal_data["command"] == "custom_command":
+        if self.terminal_data == "custom_command":
             # Custom command logic here
             pass
-        elif self.terminal_data["command"] == "quit":
+        elif self.terminal_data == "quit":
             self.main_system.shutdown()
