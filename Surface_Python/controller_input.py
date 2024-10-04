@@ -153,10 +153,10 @@ class Controller:
         """
         coords = self.joystick.get_hat(0)
         values = {
-            "DPAD_UP": coords[1] == 1,
-            "DPAD_DOWN": coords[1] == -1,
-            "DPAD_LEFT": coords[0] == -1,
-            "DPAD_RIGHT": coords[0] == 1,
+            "DPAD_UP": 1. if coords[1] == 1 else 0.,
+            "DPAD_DOWN": 1. if coords[1] == -1 else 0.,
+            "DPAD_LEFT": 1. if coords[0] == -1 else 0.,
+            "DPAD_RIGHT": 1. if coords[0] == 1 else 0.,
         }
 
         return values
@@ -171,7 +171,7 @@ class Controller:
         Returns:
             float: 1 if the button is pressed, 0 otherwise.
         """
-        return 1 if self.joystick.get_button(number) else 0
+        return 1. if self.joystick.get_button(number) else 0.
 
     def _axis(self, number: int) -> float:
         """Returns the value of the specified axis on the joystick after applying a deadzone.
@@ -196,7 +196,7 @@ class Controller:
             float: The input value with the deadzone applied.
         """
         if abs(value) < self.deadzone:
-            return 0
+            return 0.
 
         return value
 
