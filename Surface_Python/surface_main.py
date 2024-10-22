@@ -10,16 +10,6 @@ import terminal_listener
 import socket_handler
 import controller_input
 
-
-utilities_directory = os.path.dirname(os.path.realpath(__file__))
-utilities_directory = os.path.join(utilities_directory, "utilities")
-sys.path.append(utilities_directory)
-
-
-rov_config_directory = os.path.dirname(os.path.realpath(__file__))
-rov_config_directory = os.path.join(rov_config_directory, "rov_config")
-sys.path.append(rov_config_directory)
-
 # from spike import rov_config
 
 from .utilities.personal_functions import *
@@ -32,12 +22,10 @@ DEFAULT_ROV = "spike"
 class MainSystem:
     """Main class for the surface station system."""
 
-    def __init__(self, pi_ip, pi_port, rov_dir: str) -> None:
+    def __init__(self, pi_ip: str, pi_port, rov_dir: str) -> None:
         """Initialize an instance of the class.
 
-        Args:
-            pi_ip (str):
-                The IP address of the Raspberry Pi.
+        :param pi_ip: The IP address of the Raspberry Pi.
             pi_port (int):
                 The port number to use for the socket connection.
             rov_dir (str):
@@ -154,8 +142,6 @@ if __name__ == '__main__':
         if rov == "":
             rov = DEFAULT_ROV
 
-    rov_directory: str = os.path.join(rov_config_directory, rov)
-    sys.path.append(rov_directory)
 
     import rov_config
 
