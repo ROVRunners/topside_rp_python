@@ -1,5 +1,5 @@
 from typing import NamedTuple
-from Surface_Python.utilities import color
+from topside.utilities import color
 
 
 class ColorConfig(NamedTuple):

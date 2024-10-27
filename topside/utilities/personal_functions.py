@@ -25,8 +25,8 @@ import time
 # pylint: disable=no-member
 # pylint: disable=import-error
 
-from Surface_Python.utilities import color
-from Surface_Python.utilities import keyboard_input as keybd
+from topside.utilities import color
+from topside.utilities import keyboard_input as keybd
 
 
 # Input / Output

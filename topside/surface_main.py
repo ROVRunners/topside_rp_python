@@ -12,7 +12,7 @@ import controller_input
 
 # from spike import rov_config
 
-from .utilities.personal_functions import *
+from utilities.personal_functions import *
 
 DEFAULT_IP = "169.254.5.24"
 DEFAULT_PORT = 5600

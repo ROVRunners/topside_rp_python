@@ -1,5 +1,5 @@
 from typing import NamedTuple
-from Surface_Python.config import RangeConfig
+from topside.config import RangeConfig
 
 
 class AxisConfig(NamedTuple):
