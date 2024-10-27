@@ -1,6 +1,7 @@
 """Module providing a basic wrapper for ROV thrusters and PWM calculations.
 Input is given through lateral_thruster_calc_circular and returned as a FrameThrusters object."""
 import math
+from config import ThrusterConfig
 
 INV_SQRT2 = 0.7071067811865476
 
@@ -8,28 +9,57 @@ INV_SQRT2 = 0.7071067811865476
 class Thruster:
     """Basic wrapper for a servo-based thruster."""
 
-    def __init__(self, power: float = 0.0):
+    _power: float
+    _config: ThrusterConfig
+    _pwm: int # Cached pwm output for current requested power
+
+    @property
+    def power(self) -> float:
+        return self._power
+
+    @property
+    def pwm_output(self) -> int:
+        """PWM output corresponding to current power setting"""
+        return self._pwm
+
+    @power.setter
+    def power(self, value: float):
+        if self._power != value:
+            self._power = value
+            self._pwm = self._calculate_pwm()
+
+    @property
+    def min_pwm_output(self) -> int:
+        return self._config.pwm_pulse_range.min
+
+    @property
+    def max_pwm_output(self) -> int:
+        return self._config.pwm_pulse_range.max
+
+    def __init__(self,
+                 thruster_config: ThrusterConfig,
+                 power: float = 0.0
+                 ):
         """Initialize a new thruster
 
-        Args:
-            power (int, optional):
+        :param power:
                 Motor power.
                 Defaults to 0.0.
+        :param reverse_polarity:
+                Whether to reverse the output sign
+                Defaults to False
         """
-        self.power = power
-        self.reverse_polarity = False
+        self._config = thruster_config
+        self._pwm = self.min_pwm_output
+        self._power = power
 
-    def toggle_polarity(self):
-        """Toggle the polarity of the thruster."""
-        self.reverse_polarity = not self.reverse_polarity
-
-    def get_pwm(self, min_pulse: int = 1100, max_pulse: int = 1900) -> int:
-        """Get a PWM value for the thruster at its current power."""
-        power = -self.power if self.reverse_polarity else self.power
-        return int(min_pulse + 0.5 * (max_pulse - min_pulse) * (power + 1))
+    def _calculate_pwm(self) -> int:
+        """Calculate a PWM value for the thruster at its current power."""
+        power = -self.power if self._config.reverse_polarity else self.power
+        return int(self.min_pwm_output + 0.5 * (self.max_pwm_output - self.min_pwm_output) * (power + 1))
 
     def __repr__(self) -> str:
-        return f"Thruster(power={self.power})"
+        return f"Thruster(power={self.power} pwm={self.pwm_output})"
 
 
 class FrameThrusters:
@@ -53,13 +83,13 @@ class FrameThrusters:
         self.rr = rr
         self.rl = rl
 
-    def get_pwm(self, min_pulse: int = 1100, max_pulse: int = 1900) -> tuple[int, int, int, int]:
+    def get_pwm(self) -> tuple[int, int, int, int]:
         """Get a PWM value for each thruster at its current power."""
         return (
-            self.fr.get_pwm(min_pulse, max_pulse),
-            self.fl.get_pwm(min_pulse, max_pulse),
-            self.rr.get_pwm(min_pulse, max_pulse),
-            self.rl.get_pwm(min_pulse, max_pulse)
+            self.fr.pwm_output,
+            self.fl.pwm_output,
+            self.rr.pwm_output,
+            self.rl.pwm_output
         )
 
     def __repr__(self) -> str:
