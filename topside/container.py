@@ -11,4 +11,3 @@ class Container(containers.DeclarativeContainer):
         level=logging.INFO,
         stream=sys.stdout,
     )
-

@@ -4,7 +4,7 @@ The `process_gamepad_input` function processes gamepad input data and controls t
 The `process_command_input` function processes command input and returns a response.
 The `get_status` function retrieves the current status of the ROV.
 """
-from topside.rov_config.spike import rov_config
+from topside.rovs.spike import rov_config
 
 
 # class ROVClass:

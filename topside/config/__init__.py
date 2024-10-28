@@ -8,4 +8,4 @@ from . import ui
 from .ui import UIConfig
 
 from . import thruster
-from .thruster import ThrusterConfig
+from .thruster import ThrusterPWMConfig

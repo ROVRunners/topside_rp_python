@@ -3,10 +3,11 @@
 # pylint: disable=wildcard-import, unused-import, unused-wildcard-import
 
 import pygame
+from typing import Callable, NamedTuple
 
 from utilities.personal_functions import *
 
-# from config import ControllerConfig
+from config import ControllerConfig, InputFunction
 #
 # from surface_main import MainSystem
 
@@ -62,8 +63,12 @@ class Controller:
         Get the controls and map them to the keys in the file.
         """
 
+    _config: ControllerConfig
+
     # , main_system: MainSystem, config: ControllerConfig
-    def __init__(self, rov_dir: str):
+    def __init__(self, config: ControllerConfig, rov_dir: str):
+        self._config = config
+
         pygame.init()
         pygame.joystick.init()
 
@@ -73,6 +78,7 @@ class Controller:
 
         self.control_map = {}
         self.deadzone = 0.1
+
 
         if pygame.joystick.get_count() != 0:
             self.joystick = pygame.joystick.Joystick(0)
@@ -89,6 +95,8 @@ class Controller:
             dict: The inputs from the controller as float amplitude values (buttons are 1/0).
         """
         pygame.event.pump()
+
+
         inputs: dict = self._get_buttons() | self._get_joysticks() | self._get_hat()
 
         return inputs
@@ -192,9 +200,11 @@ class Controller:
         Returns:
             float: The value of the axis.
         """
-        return self._apply_deadzone(self.joystick.get_axis(number))
+        axis_config = self._config.axes[number]
+        return self._apply_deadzone(self.joystick.get_axis(number), axis_config.deadband)
 
-    def _apply_deadzone(self, value: float) -> float:
+    @classmethod
+    def _apply_deadzone(value: float, deadzone: float) -> float:
         """Applies a deadzone to the input value.
 
         Args:
@@ -204,7 +214,7 @@ class Controller:
         Returns:
             float: The input value with the deadzone applied.
         """
-        if abs(value) < self.deadzone:
+        if abs(value) < deadzone:
             return 0
 
         return value
@@ -220,9 +230,9 @@ class Controller:
         path = os.path.join(self.rov_dir, "config-controls.fangr")  # Funny Absolute Notation for Gamepad Readings
 
         # Extract data from the file.
-        file = open(path, "r", encoding="UTF-8")
-        file_lines = file.readlines()[:]
-        file.close()
+        with open(path, "r", encoding="UTF-8") as file:
+            file_lines = file.readlines()[:]
+            file.close()
 
         self.control_map = {}
 
@@ -254,7 +264,7 @@ class Controller:
 
 if __name__ == "__main__":
     # Test the controller code
-    controller = Controller("rov_config/spike")
+    controller = Controller("rovs/spike")
 
     while True:
         inputs = controller.get_controller_commands()

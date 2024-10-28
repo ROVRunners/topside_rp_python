@@ -1,4 +1,4 @@
-from typing import NamedTuple
+from typing import NamedTuple, Callable
 from topside.config import RangeConfig
 
 class AxisConfig(NamedTuple):
@@ -13,9 +13,15 @@ class AxisConfig(NamedTuple):
     # It is expressed as a value from 0 to 1, and is scaled to the expected input range during computation
     deadband: float = 0
     # Output range of the axis, should be in units meaningful to the robot
-    output_range: RangeConfig = RangeConfig(0,1)
+    output_range: RangeConfig = RangeConfig(0, 1)
     # Input range we expect to recieve from the input device.
     input_range: RangeConfig = RangeConfig(0, 1)
+
+
+class InputFunction(NamedTuple):
+    func: Callable[[...], object]
+    args: list
+    kwargs: dict
 
 
 class ButtonConfig(NamedTuple):
@@ -23,27 +29,29 @@ class ButtonConfig(NamedTuple):
     negated: bool
     toggled: bool
 
-
-class BindingConfig(NamedTuple):
-    A: ButtonConfig
-    B: ButtonConfig
-    X: ButtonConfig
-    Y: ButtonConfig
-    LEFT_BUMPER: ButtonConfig
-    RIGHT_BUMPER: ButtonConfig
-    SELECT: ButtonConfig
-    START: ButtonConfig
-
-
-class AxesConfig(NamedTuple):
-    LEFT_X: AxisConfig
-    LEFT_Y: AxisConfig
-    RIGHT_X: AxisConfig
-    RIGHT_Y: AxisConfig
-    LEFT_TRIGGER: AxisConfig
-    RIGHT_TRIGGER: AxisConfig
+#
+# class BindingConfig(NamedTuple):
+#     A: ButtonConfig
+#     B: ButtonConfig
+#     X: ButtonConfig
+#     Y: ButtonConfig
+#     LEFT_BUMPER: ButtonConfig
+#     RIGHT_BUMPER: ButtonConfig
+#     SELECT: ButtonConfig
+#     START: ButtonConfig
+#
+#
+# class AxesConfig(NamedTuple):
+#     LEFT_X: AxisConfig
+#     LEFT_Y: AxisConfig
+#     RIGHT_X: AxisConfig
+#     RIGHT_Y: AxisConfig
+#     LEFT_TRIGGER: AxisConfig
+#     RIGHT_TRIGGER: AxisConfig
 
 
 class ControllerConfig(NamedTuple):
-    buttons: BindingConfig
-    axes: AxisConfig
+    """Mapping of axes and button numbers to specific configurations"""
+
+    buttons: dict[int, ButtonConfig]
+    axes: dict[int, AxisConfig]

@@ -1,4 +1,4 @@
-import thruster_pwm
+from hardware import thruster_pwm
 
 
 class Manual:

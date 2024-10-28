@@ -1,16 +1,16 @@
 """Module providing a basic wrapper for ROV thrusters and PWM calculations.
 Input is given through lateral_thruster_calc_circular and returned as a FrameThrusters object."""
 import math
-from config import ThrusterConfig
+from config import ThrusterPWMConfig
 
 INV_SQRT2 = 0.7071067811865476
 
 
-class Thruster:
-    """Basic wrapper for a servo-based thruster."""
+class ThrusterPWM:
+    """Basic wrapper for a servo-based PWM thruster."""
 
     _power: float
-    _config: ThrusterConfig
+    _config: ThrusterPWMConfig
     _pwm: int # Cached pwm output for current requested power
 
     @property
@@ -37,7 +37,7 @@ class Thruster:
         return self._config.pwm_pulse_range.max
 
     def __init__(self,
-                 thruster_config: ThrusterConfig,
+                 thruster_config: ThrusterPWMConfig,
                  power: float = 0.0
                  ):
         """Initialize a new thruster

@@ -10,7 +10,7 @@ import terminal_listener
 import socket_handler
 import controller_input
 
-# from spike import rov_config
+from rovs.spike import Spike
 
 from utilities.personal_functions import *
 
@@ -21,6 +21,8 @@ DEFAULT_ROV = "spike"
 
 class MainSystem:
     """Main class for the surface station system."""
+
+    _rov: Spike #This should be changable to any ROV type, currently there is only Spike
 
     def __init__(self, pi_ip: str, pi_port, rov_dir: str) -> None:
         """Initialize an instance of the class.
@@ -39,7 +41,10 @@ class MainSystem:
         self.terminal = terminal_listener.TerminalListener(self)
         self.socket = socket_handler.SocketHandler(self, self.pi_ip, self.pi_port)
         self.controller = controller_input.Controller(rov_dir)
-        self.ROV = rov_config.ROVConfig()
+
+        spike_config = rovs.spike.SpikeConfig()
+        self._rov = Spike(spike_config)
+
 
         self.safe_pwm_values = self.ROV.stationary_pwm_values
 
@@ -58,6 +63,8 @@ class MainSystem:
         # Get controller inputs
         self.inputs = self.controller.get_controller_commands()
         print(self.inputs)
+
+        self._rov.loop(self.inputs)
 
         # Get sensor data from previous loop returns.
         if self.socket.sensor_data_available:
@@ -143,7 +150,7 @@ if __name__ == '__main__':
             rov = DEFAULT_ROV
 
 
-    import rov_config
+    import rovs
 
     main_system = MainSystem(ip, port, rov_directory)
 
