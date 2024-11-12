@@ -11,7 +11,7 @@ class Spike():
     _inputs_map:dict[str, Callable] # Function to call to obtain input of a given name
 
     def __init__(self, spike_config: SpikeConfig,
-                       input_getter: dict[str, Callable[[], object]]):
+                       input_getter: dict[str, Callable[[], any]]):
         """Create and initialize the ROV hardware
         :param spike_config: Configuration of the ROV
         :param input_getter: Function to call to obtain inputs to ROV"""
@@ -31,7 +31,5 @@ class Spike():
 
     def run(self):
         inputs = self.get_inputs()
-
-
 
 

@@ -21,7 +21,6 @@ DEFAULT_IP = "169.254.5.24"
 DEFAULT_PORT = 5600
 DEFAULT_ROV = "spike"
 
-
 class MainSystem:
     """Main class for the surface station system."""
 
@@ -42,7 +41,7 @@ class MainSystem:
         self.controller = controller_input.Controller(self.spike_config.controller_config, self.rov_dir)
 
 
-        # self._rov = Spike(self.spike_config )
+        self._rov = Spike(self.spike_config)
 
 
         self.safe_pwm_values = self.ROV.stationary_pwm_values
