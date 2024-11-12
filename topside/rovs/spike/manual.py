@@ -1,24 +1,44 @@
 from hardware import thruster_pwm
+import paho.mqtt.client as mqtt
+import paho.mqtt.publish as publish
+
 
 
 class Manual:
     """The manual class for the spike."""
+    @property
+    def inputs(self):
+        return self.inputs
+    @inputs.setter
+    def inputs(self, value):
+        self.inputs = value
 
-    def __init__(self, main_system):
+    def __init__(self, frame: thruster_pwm.FrameThrusters):
         """Initialize the Manual object.
 
         Args:
             main_system (MainSystem):
                 The main system object.
         """
-        self.main_system = main_system
 
-        self.sensor_data = {}
-        self.controller_data = {}
-        self.terminal_data = {}
-        self.pwm_values = []
+        self._frame = frame
+
+        # self.sensor_data = {}
+        # self.controller_data = {}
+        # self.terminal_data = {}
+        # self.pwm_values = []
 
         # Add whatever you need initialized here.
+
+    def update(self, inputs: dict[str, any]):
+        self.pwm_values = self._frame.get_pwm_values(inputs["FORWARD/BACKWARD"],
+                                                     inputs["LEFT/RIGHT"],
+                                                     inputs["UP/DOWN"],
+                                                     inputs["YAW"],
+                                                     inputs["PITCH"],
+                                                     0)
+        # publish.single("thruster_pwm", self.pwm_values, hostname="localhost")
+
 
     def manual_intercepts(self, controller_data, terminal_data, sensor_data, cv_frame):
         """Intercept the data from the controller, terminal, and sensor data.
@@ -35,31 +55,7 @@ class Manual:
 
         Returns: terminal_data, display_cv_frame, pwm_values
         """
-        # Data formats:
-        # controller_data = {
-        #     "FORWARD/BACKWARD": 0.5,
-        #     "LEFT/RIGHT": 0.0,
-        #     "UP/DOWN": 1.0,
-        #     "YAW": 0.0,
-        #     "PITCH": 0.0,
-        #     "ROLL": 0.0,
-        #     "HALT": 0.0,
-        #     "CUSTOM_BUTTON_1": 0.0,
-        #     "CUSTOM_BUTTON_2": 1.0,
-        #     "CUSTOM_BUTTON_3": 0.0,
-        # }
-        # terminal_data = {
-        #     "command": "command",
-        #     "args": ["arg1", "arg2"], # Optional, space-separated arguments.
-        # }
-        # sensor_data = {
-        #     "original_command": "", # Optional, the original command, not yet implemented
-        #     "response": "",
-        #     "clock_ms": [time.time_ns() / 1_000_000],
-        #     "sensor1": [0],
-        #     "sensor2": [5],
-        #     "sensor3": [32],
-        # }
+
 
         # Commands
         commands = []

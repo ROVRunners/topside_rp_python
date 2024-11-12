@@ -1,7 +1,7 @@
 import topside.config as config
-from hardware import ThrusterPWM
+from hardware import ThrusterPWM, FrameThrusters
 from typing import Callable
-
+from rovs.spike.manual import Manual
 from rovs.spike.rov_config import SpikeConfig, ThrusterPosition
 
 class Spike():
@@ -18,8 +18,15 @@ class Spike():
         self._config = spike_config
         self._thrusters = {}
 
-        for position, tconfig in spike_config.thruster_configs:
+        for position, tconfig in self._config.thruster_configs.items():
             self._thrusters[position] = ThrusterPWM(tconfig)
+
+        self._frame = FrameThrusters(self._thrusters[ThrusterPosition.FRONT_LEFT],
+                                     self._thrusters[ThrusterPosition.FRONT_RIGHT],
+                                     self._thrusters[ThrusterPosition.BACK_LEFT],
+                                     self._thrusters[ThrusterPosition.BACK_RIGHT])
+
+        self._control_mode = Manual(self._frame)
 
     def get_inputs(self) -> dict[str, object]:
         output = {}
@@ -30,6 +37,6 @@ class Spike():
         return output
 
     def run(self):
-        inputs = self.get_inputs()
+        self._control_mode.inputs = self.get_inputs()
 
 

@@ -1,4 +1,4 @@
-from . import manual
+
 import enum
 from topside.config import AxisConfig, ButtonConfig, ThrusterPWMConfig, IntRange, ControllerConfig
 
@@ -76,9 +76,9 @@ class SpikeConfig:
         # All the following values except the manual class and intercepts
         # can be either filled or set to None, but they MUST be defined.
 
-        # Classes to initialize.
-        self.manual_class = manual.Manual  # REQUIRED
-
-        # Main functions.
-        self.manual_intercepts = self.manual_class.manual_intercepts  # REQUIRED
+        # # Classes to initialize.
+        # self.manual_class = manual.Manual  # REQUIRED
+        #
+        # # Main functions.
+        # self.manual_intercepts = self.manual_class.manual_intercepts  # REQUIRED
 

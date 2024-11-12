@@ -6,9 +6,9 @@ import sys
 import argparse
 from time import sleep
 import container
+from dependency_injector.wiring import Provide
+from dependency_injector.providers import Configuration
 
-
-import dependency_injector.wiring as wiring
 import terminal_listener
 import socket_handler
 import controller_input
@@ -25,26 +25,29 @@ class MainSystem:
     """Main class for the surface station system."""
 
     _rov: Spike #This should be changable to any ROV type, currently there is only Spike
-    _config: wiring.providers.Configuration = container.Container.networkconfig
+    _config: Configuration = Provide[container.Container.networkconfig]
     def __init__(self) -> None:
         """Initialize an instance of the class.
         """
         self.run = True
 
-        self.pi_ip = self._config.ip
-        self.pi_port = self._config.port
-        self.rov_dir = self._config.rov
+        self.pi_ip = "169.254.5.24"
+        self.pi_port = 5600
+        self.rov_dir = "spike"
 
         self.terminal = terminal_listener.TerminalListener(self)
         self.socket = socket_handler.SocketHandler(self, self.pi_ip, self.pi_port)
         self.spike_config = SpikeConfig()
         self.controller = controller_input.Controller(self.spike_config.controller_config, self.rov_dir)
 
+        self.input_map = {
+            "controller": self.controller.get_controller_commands,
+        }
 
-        self._rov = Spike(self.spike_config)
+        self._rov = Spike(self.spike_config, self.input_map)
 
 
-        self.safe_pwm_values = self.ROV.stationary_pwm_values
+        # self.safe_pwm_values = self.ROV.stationary_pwm_values
 
         self.socket.connect_outbound()
         # self.socket.start_listening()
@@ -53,16 +56,16 @@ class MainSystem:
         self.sensor_data = {}
         self.inputs = {}
         self.command = ""
-        self.pwm_values = self.safe_pwm_values
+        # self.pwm_values = self.safe_pwm_values
         self.pi_commands = []
 
     def main_loop(self) -> None:
         """Executes the main loop of the program."""
         # Get controller inputs
-        self.inputs = self.controller.get_controller_commands()
-        print(self.inputs)
+        # self.inputs = self.controller.get_controller_commands()
+        # print(self.inputs)
 
-        self._rov.loop(self.inputs)
+        self._rov.run()
 
         # Get sensor data from previous loop returns.
         if self.socket.sensor_data_available:
