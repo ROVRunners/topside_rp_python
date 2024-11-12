@@ -65,7 +65,7 @@ class ThrusterPWM:
 class FrameThrusters:
     """Wrapper for a ROV frame's thrusters."""
 
-    def __init__(self, fr: Thruster, fl: Thruster, rr: Thruster, rl: Thruster):
+    def __init__(self, fr: ThrusterPWM, fl: ThrusterPWM, rr: ThrusterPWM, rl: ThrusterPWM):
         """Initialize a new set of thruster values.
 
         Args:

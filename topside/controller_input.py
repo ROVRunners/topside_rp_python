@@ -77,7 +77,7 @@ class Controller:
         self.rov_dir = rov_dir
 
         self.control_map = {}
-        self.deadzone = 0.1
+        # self.deadzone = 0.1
 
 
         if pygame.joystick.get_count() != 0:

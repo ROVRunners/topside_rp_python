@@ -1,6 +1,6 @@
 from typing import NamedTuple
 
-class Range(NamedTuple):
+class RangeConfig(NamedTuple):
     """Describes a range of values"""
     min: float
     max: float

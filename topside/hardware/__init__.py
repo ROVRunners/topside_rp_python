@@ -1,1 +1,2 @@
-from thruster_pwm import ThrusterPWM
+from . import thruster_pwm
+from .thruster_pwm import ThrusterPWM

@@ -5,12 +5,15 @@ import os
 import sys
 import argparse
 from time import sleep
+import container
 
+
+import dependency_injector.wiring as wiring
 import terminal_listener
 import socket_handler
 import controller_input
 
-from rovs.spike import Spike
+from rovs.spike import Spike, SpikeConfig
 
 from utilities.personal_functions import *
 
@@ -23,27 +26,23 @@ class MainSystem:
     """Main class for the surface station system."""
 
     _rov: Spike #This should be changable to any ROV type, currently there is only Spike
-
-    def __init__(self, pi_ip: str, pi_port, rov_dir: str) -> None:
+    _config: wiring.providers.Configuration = container.Container.networkconfig
+    def __init__(self) -> None:
         """Initialize an instance of the class.
-
-        :param pi_ip: The IP address of the Raspberry Pi.
-            pi_port (int):
-                The port number to use for the socket connection.
-            rov_dir (str):
-                The directory containing the ROV configuration files.
         """
         self.run = True
 
-        self.pi_ip = pi_ip
-        self.pi_port = pi_port
+        self.pi_ip = self._config.ip
+        self.pi_port = self._config.port
+        self.rov_dir = self._config.rov
 
         self.terminal = terminal_listener.TerminalListener(self)
         self.socket = socket_handler.SocketHandler(self, self.pi_ip, self.pi_port)
-        self.controller = controller_input.Controller(rov_dir)
+        self.spike_config = SpikeConfig()
+        self.controller = controller_input.Controller(self.spike_config.controller_config, self.rov_dir)
 
-        spike_config = rovs.spike.SpikeConfig()
-        self._rov = Spike(spike_config)
+
+        # self._rov = Spike(self.spike_config )
 
 
         self.safe_pwm_values = self.ROV.stationary_pwm_values
@@ -118,41 +117,3 @@ class MainSystem:
         self.socket.shutdown()
         sys.exit()
 
-
-if __name__ == '__main__':
-    # Construct the argument parser and parse command line arguments
-    ap = argparse.ArgumentParser()
-    ap.add_argument("-i", "--ip", type=str, required=False,
-                    help="ip address of the device")
-    ap.add_argument("-o", "--port", type=int, required=False,
-                    help="ephemeral port number of the server (1024 to 65535)")
-    ap.add_argument("-r", "--rov", type=str, required=False,
-                    help="the name of the folder containing the rov configuration files")
-    args = vars(ap.parse_args())
-    ip = None
-    port = None
-    rov = None
-    if args["ip"] is None:
-        ip = intext("Please provide the IP address of the Raspberry Pi. " +
-                    f"Defaults to \"{DEFAULT_IP}\"").strip()
-        if ip == "":
-            ip = DEFAULT_IP
-    if args["ip"] is None:
-        port = intext("Please provide the port you want to use. " +
-                      f"Defaults to {DEFAULT_PORT}").strip()
-        if port == "":
-            port = DEFAULT_PORT
-        port = int(port)
-    if args["rov"] is None:
-        rov = intext("Please provide the rov you want to use. " +
-                     f"Defaults to {DEFAULT_ROV}").strip()
-        if rov == "":
-            rov = DEFAULT_ROV
-
-
-    import rovs
-
-    main_system = MainSystem(ip, port, rov_directory)
-
-    while main_system.run:
-        main_system.main_loop()

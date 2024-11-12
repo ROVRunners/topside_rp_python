@@ -1,5 +1,5 @@
 from typing import NamedTuple, Callable
-from topside.config import RangeConfig
+from topside.config.range import RangeConfig
 
 class AxisConfig(NamedTuple):
     """
@@ -26,8 +26,8 @@ class InputFunction(NamedTuple):
 
 class ButtonConfig(NamedTuple):
     index: int
-    negated: bool
-    toggled: bool
+    negated: bool = False
+    toggled: bool = False
 
 #
 # class BindingConfig(NamedTuple):

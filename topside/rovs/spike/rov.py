@@ -2,7 +2,7 @@ import topside.config as config
 from hardware import ThrusterPWM
 from typing import Callable
 
-from rov_config import SpikeConfig, ThrusterPosition
+from rovs.spike.rov_config import SpikeConfig, ThrusterPosition
 
 class Spike():
     _config: SpikeConfig
@@ -11,8 +11,10 @@ class Spike():
     _inputs_map:dict[str, Callable] # Function to call to obtain input of a given name
 
     def __init__(self, spike_config: SpikeConfig,
-                       inputs_map: dict[str, Callable]):
-        """Create and initialize the ROV hardware"""
+                       input_getter: dict[str, Callable[[], object]]):
+        """Create and initialize the ROV hardware
+        :param spike_config: Configuration of the ROV
+        :param input_getter: Function to call to obtain inputs to ROV"""
         self._config = spike_config
         self._thrusters = {}
 
@@ -29,5 +31,7 @@ class Spike():
 
     def run(self):
         inputs = self.get_inputs()
+
+
 
 
