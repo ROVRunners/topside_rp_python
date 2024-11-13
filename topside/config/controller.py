@@ -3,20 +3,23 @@ from topside.config.range import RangeConfig
 
 
 class AxisConfig(NamedTuple):
-    """
-    :deadband: The deadband for the axis.
-    Range we want to allow from controller input, absolute value is used and then negated if input was negative.
-    :index: The index of the axis.
-    :output_range: The scaler of the input. Output range of the axis, should be in units meaningful to the robot.
+    """Describes the configuration of an axis on a controller.
 
+    Parameters:
+        deadband (float):
+            The deadband for the axis.
+        input_range (RangeConfig):
+            Input range we expect to receive from the input device.
+        output_range (RangeConfig):
+            The scaler of the input. Output range of the axis, should be in units meaningful to the robot.
     """
     # Range we want to allow from controller input, absolute value is used and then negated if input was negative,
     # It is expressed as a value from 0 to 1, and is scaled to the expected input range during computation
     deadband: float = 0
-    # Output range of the axis, should be in units meaningful to the robot
-    output_range: RangeConfig = RangeConfig(0, 1)
     # Input range we expect to receive from the input device.
     input_range: RangeConfig = RangeConfig(0, 1)
+    # Output range of the axis, should be in units meaningful to the robot
+    output_range: RangeConfig = RangeConfig(0, 1)
 
 
 class InputFunction(NamedTuple):

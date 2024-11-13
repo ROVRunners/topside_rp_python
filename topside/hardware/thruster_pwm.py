@@ -1,7 +1,9 @@
 """Module providing a basic wrapper for ROV thrusters and PWM calculations.
 Input is given through lateral_thruster_calc_circular and returned as a FrameThrusters object."""
+
 import math
 from config import ThrusterPWMConfig
+from config.enums import ThrusterPositions, ThrusterOrientations
 
 INV_SQRT2 = 0.7071067811865476
 
@@ -11,7 +13,7 @@ class ThrusterPWM:
 
     _power: float
     _config: ThrusterPWMConfig
-    _pwm: int # Cached pwm output for current requested power
+    _pwm: int  # Cached pwm output for current requested power
 
     @property
     def power(self) -> float:
@@ -36,22 +38,24 @@ class ThrusterPWM:
     def max_pwm_output(self) -> int:
         return self._config.pwm_pulse_range.max
 
-    def __init__(self,
-                 thruster_config: ThrusterPWMConfig,
-                 power: float = 0.0
-                 ):
+    @property
+    def thruster_impulses(self) -> dict[str, float]:
+        return self._impulses
+
+    def __init__(self, thruster_config: ThrusterPWMConfig, power: float = 0.0):
         """Initialize a new thruster
 
-        :param power:
+        Args:
+            thruster_config (ThrusterPWMConfig):
+                Configuration for the thruster.
+            power (float):
                 Motor power.
                 Defaults to 0.0.
-        :param reverse_polarity:
-                Whether to reverse the output sign
-                Defaults to False
         """
         self._config = thruster_config
         self._pwm = self.min_pwm_output
         self._power = power
+        self._impulses = thruster_config.thruster_impulses
 
     def _calculate_pwm(self) -> int:
         """Calculate a PWM value for the thruster at its current power."""
@@ -65,46 +69,29 @@ class ThrusterPWM:
 class FrameThrusters:
     """Wrapper for a ROV frame's thrusters."""
 
-    def __init__(self, fr: ThrusterPWM, fl: ThrusterPWM, rr: ThrusterPWM, rl: ThrusterPWM):
+    def __init__(self, thrusters: dict[ThrusterPositions, ThrusterPWM]):
         """Initialize a new set of thruster values.
 
         Args:
-            fr (Thruster):
-                Front right thruster.
-            fl (Thruster):
-                Front left thruster.
-            rr (Thruster):
-                Rear right thruster.
-            rl (Thruster):
-                Rear left thruster.
+            thrusters (dict[ThrusterPositions, ThrusterPWM]):
+                A dictionary of thrusters.
         """
-        self.fr = fr
-        self.fl = fl
-        self.rr = rr
-        self.rl = rl
+        self.thrusters = thrusters
 
-    def get_pwm(self) -> tuple[int, int, int, int]:
+    def get_pwm(self) -> dict[ThrusterPositions, int]:
         """Get a PWM value for each thruster at its current power."""
-        return (
-            self.fr.pwm_output,
-            self.fl.pwm_output,
-            self.rr.pwm_output,
-            self.rl.pwm_output
-        )
+
+        return {position: thruster.pwm_output for position, thruster in self.thrusters.items()}
 
     def __repr__(self) -> str:
-        return f"FrameThrusters(ur={self.fr}, ul={self.fl}, lr={self.rr}, ll={self.rl})"
+        return f"FrameThrusters({', '.join([str(thruster) + '=' + str(thruster.pwm_output) for thruster in self.thrusters.values()])})"
 
-    def _lateral_thruster_calc(self, x: float, y: float, r: float):
-        """Calculate lateral thruster values for a given set of inputs.
+    def _thruster_calc(self, motions: dict[ThrusterOrientations, float]):
+        """Calculate thruster values for a given set of inputs.
 
         Args:
-            x (float):
-                Sideways movement speed (between -1.0 and 1.0).
-            y (float):
-                Forward movement speed (between -1.0 and 1.0).
-            r (float):
-                Rotation speed (between -1.0 and 1.0).
+            motions (dict[ThrusterOrientations, float]):
+                A dictionary of thruster orientations and their values.
 
         Returns:
             FrameThrusters: A collection of Thrusters at the correct power levels."""
@@ -120,115 +107,95 @@ class FrameThrusters:
         # We can calculate thruster values as a linear combination of the input values
         # by repeating this pattern with each output scaled by the actual value of each input.
 
-        x_contrib = [-x,  x,  x, -x]
-        y_contrib = [y,  y,  y,  y]
-        r_contrib = [r,  r, -r, -r]
+        # x_contrib = [-x,  x,  x, -x]
+        # y_contrib = [y,  y,  y,  y]
+        # r_contrib = [r,  r, -r, -r]
 
-        # However, we want thruster values to be in the range [-1.0, 1.0], so we need to
-        # normalize based on the maximum possible value this can have: 3
-        fr = (x_contrib[0] + y_contrib[0] + r_contrib[0]) / 3.0
-        fl = (x_contrib[1] + y_contrib[1] + r_contrib[1]) / 3.0
-        rr = (x_contrib[2] + y_contrib[2] + r_contrib[2]) / 3.0
-        rl = (x_contrib[3] + y_contrib[3] + r_contrib[3]) / 3.0
+        # The following is a more general version of the above code. It iterates over all thruster orientations and
+        # sums the contributions of each thruster to that orientation.
+        orientations = [
+            ThrusterOrientations.FORWARDS,
+            ThrusterOrientations.RIGHT,
+            ThrusterOrientations.UP,
+            ThrusterOrientations.PITCH,
+            ThrusterOrientations.ROLL,
+            ThrusterOrientations.YAW,
+        ]
 
-        self.fr.power = fr
-        self.fl.power = fl
-        self.rr.power = rr
-        self.rl.power = rl
-        # return FrameThrusters(ThrusterPWM(fr), ThrusterPWM(fl), Thruster(rr), Thruster(rl))
+        contributions = {
+            orient: [
+                self.thrusters[position].thruster_impulses[orient] * motions[orient] for position in self.thrusters.keys()
+            ] for orient in orientations
+        }
 
+        # Next, we sum the contributions of each thruster to each orientation to get the ratio of power that should be
+        # applied to each thruster.
+        vals = {
+            thruster: sum(contributions[orient][i] for orient in orientations) for i, thruster in enumerate(self.thrusters.keys())
+        }
+
+        # However, we want thruster values to be in the range [-1.0, 1.0], so we need to normalize based on the maximum
+        # value in the dictionary.
+        normalization_divisor = max(abs(val) for val in vals.values())
+
+        # We only need to normalize if the maximum value is greater than 1.
+        if normalization_divisor > 1:
+            for thruster in self.thrusters.keys():
+                vals[thruster] /= normalization_divisor
+
+        # Finally, we set the power of each thruster to the calculated value.
+        for position in self.thrusters.keys():
+            self.thrusters[position].power = vals[position]
+
+    # TODO: This function should probably be moved into the ROV-specific files
     def _map_to_circle(self, x: float, y: float) -> tuple[float, float]:
         """Map rectangular controller inputs to a circle.
 
-        """
-
-        return x*math.sqrt(1 - y**2/2.0), y*math.sqrt(1 - x**2/2.0)
-
-    def _lateral_thruster_calc_circular(self, x: float, y: float, r: float):
-        """Calculate lateral thruster values for a given set of inputs after mapping them to a circle.
-
         Args:
             x (float):
-                Sideways movement speed (between -1.0 and 1.0).
+                The x-axis of a controller joystick.
             y (float):
-                Forward movement speed (between -1.0 and 1.0).
-            r (float):
-                Rotation speed (between -1.0 and 1.0).
+                The y-axis of a controller joystick.
+
+        Returns:
+            tuple[float, float]: The mapped values.
+        """
+        return x*math.sqrt(1 - y**2/2.0), y*math.sqrt(1 - x**2/2.0)
+
+    def _thruster_calc_circular(self, motions: dict[ThrusterOrientations, float]):
+        """Calculate thruster values for a given set of desired motions after mapping the lateral controls to a circle.
+
+        Args:
+            motions (dict[ThrusterOrientations, float]):
+                A dictionary of thruster orientations and their values.
 
         Returns:
             FrameThrusters: A collection of Thrusters at the correct power levels."""
 
+        # TODO: Figure out what this does and why it's here. Commented it out for now.
         # some bullshit
-        x, y = self._map_to_circle(x, y)
-        r *= INV_SQRT2
-        self._lateral_thruster_calc(x, y, r)
-        self.fr.power /= INV_SQRT2
-        self.fl.power /= INV_SQRT2
-        self.rr.power /= INV_SQRT2
-        self.rl.power /= INV_SQRT2
+        # # Map the x and y values to a circle.
+        # motions[ThrusterOrientations.FORWARDS], motions[ThrusterOrientations.RIGHT] = (
+        #     self._map_to_circle(motions[ThrusterOrientations.FORWARDS], motions[ThrusterOrientations.RIGHT]))
+        # # Multiply the yaw value by the inverse square root of 2 for some reason (ask Jackson).
+        # motions[ThrusterOrientations.YAW] *= INV_SQRT2
+        self._thruster_calc(motions)
+        # self.fr.power /= INV_SQRT2
+        # self.fl.power /= INV_SQRT2
+        # self.rr.power /= INV_SQRT2
+        # self.rl.power /= INV_SQRT2
 
-
-
-
-    def _vertical_pwm_calc(self, z: float, pitch: float, roll: float) -> tuple[int, int]:
-        """Calculate vertical thruster values for a given set of inputs.
-
-        Args:
-            z (float):
-                Vertical movement speed (between -1.0 and 1.0).
-            pitch (float):
-                Pitch speed (between -1.0 and 1.0).
-            roll (float):
-                Does nothing here.
-
-        Returns:
-            tuple[int, int]: A tuple of PWM values for the vertical thrusters.
-        """
-        fv = z + pitch
-        rv = z - pitch
-
-        # However, we want thruster values to be in the range [-1.0, 1.0], so we need to normalize based on the maximum
-        # possible value this can have: 1
-        normalization_divisor = max(abs(fv), abs(rv), 1)
-
-        fv /= normalization_divisor
-        rv /= normalization_divisor
-
-        # Finally, we need to convert these values to PWM values.
-        fv = int(1500 + 400 * fv)
-        rv = int(1500 + 400 * rv)
-
-        return fv, rv
-
-
-    def get_pwm_values(self, x: float = 0, y: float = 0, z: float = 0, yaw: float = 0,
-                       pitch: float = 0, roll: float = 0) -> list[int]:
-        """Get PWM values for a given set of inputs. USE THIS FUNCTION.
+    def get_pwm_values(self, motions: dict[ThrusterOrientations, float]) -> dict[ThrusterPositions, int]:
+        """Get PWM values for a given set of inputs. USE THIS FUNCTION, NOT THE OTHERS, FROM OUTSIDE THE THRUSTER_PWM
+        FILE.
 
         Args:
-            x (float):
-                Sideways movement speed (between -1.0 and 1.0).
-                Defaults to 0.
-            y (float):
-                Forward movement speed (between -1.0 and 1.0).
-                Defaults to 0.
-            z (float):
-                Vertical movement speed (between -1.0 and 1.0).
-                Defaults to 0.
-            yaw (float):
-                Rotation speed (between -1.0 and 1.0).
-                Defaults to 0.
-            pitch (float):
-                Pitch speed (between -1.0 and 1.0).
-                Defaults to 0.
-            roll (float):
-                Does nothing here.
-                Defaults to 0.
+            motions (dict[ThrusterOrientations, float]):
+                A dictionary of thruster orientations and their values.
 
         Returns:
             list[int]: PWM values for each thruster.
         """
-        self._lateral_thruster_calc_circular(x, y, yaw)
-        vert_pwm = self._vertical_pwm_calc(z, pitch, roll)
+        self._thruster_calc_circular(motions)
 
-        return list(vert_pwm) + list(self.get_pwm())
+        return self.get_pwm()

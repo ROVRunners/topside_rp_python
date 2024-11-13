@@ -94,7 +94,6 @@ class Controller:
         """
         pygame.event.pump()
 
-
         inputs: dict = self._get_buttons() | self._get_joysticks() | self._get_hat()
 
         return inputs
