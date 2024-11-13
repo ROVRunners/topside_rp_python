@@ -21,32 +21,31 @@ DEFAULT_ROV = "spike"
 class MainSystem:
     """Main class for the surface station system."""
 
-    _rov: Spike #This should be changable to any ROV type, currently there is only Spike
+    _rov: Spike  # This should be changable to any ROV type, currently there is only Spike
 
     def __init__(self) -> None:
-        """Initialize an instance of the class.
-        """
+        """Initialize an instance of the class"""
         self.run = True
 
         self.pi_ip = "169.254.5.24"
         self.pi_port = 5600
-        self.rov_dir = "spike"
+        self.rov_dir = "topside\\rovs\\spike"
 
         self.terminal = terminal_listener.TerminalListener(self)
         self.socket = socket_handler.SocketHandler(self, self.pi_ip, self.pi_port)
-        self.spike_config = SpikeConfig()
-        self.controller = controller_input.Controller(self.spike_config.controller_config, self.rov_dir)
+        self.rov_config = SpikeConfig()
+        self.controller = controller_input.Controller(self.rov_config.controller_config, self.rov_dir)
 
         self.input_map = {
             "controller": self.controller.get_controller_commands,
         }
 
-        self._rov = Spike(self.spike_config, self.input_map)
+        self._rov = Spike(self.rov_config, self.input_map)
 
 
         # self.safe_pwm_values = self.ROV.stationary_pwm_values
 
-        self.socket.connect_outbound()
+        # self.socket.connect_outbound()
         # self.socket.start_listening()
         # self.terminal.start_listening()
 
@@ -69,24 +68,24 @@ class MainSystem:
             self.sensor_data = self.socket.get_sensor_data()
 
         # Check for terminal input
-        if self.terminal.check_for_input():
-            self.command = self.terminal.get_input_value()
-            print("Command: " + self.command)
+        # if self.terminal.check_for_input():
+        #     self.command = self.terminal.get_input_value()
+        #     print("Command: " + self.command)
 
         # Hand off for modification and custom commands
 
         # Handle commands
 
         # Convert controls to PWM signals
-        self.pwm_values = self.ROV.pwm_conversion_function(self.inputs["FORWARD/BACKWARD"],
-                                                           self.inputs["LEFT/RIGHT"],
-                                                           self.inputs["UP/DOWN"],
-                                                           self.inputs["YAW"],
-                                                           self.inputs["PITCH"],
-                                                           0)
-
-        # Send data to the Raspberry Pi
-        self.socket.send_commands(self.pi_commands, self.pwm_values)
+        # self.pwm_values = self.ROV.pwm_conversion_function(self.inputs["FORWARD/BACKWARD"],
+        #                                                    self.inputs["LEFT/RIGHT"],
+        #                                                    self.inputs["UP/DOWN"],
+        #                                                    self.inputs["YAW"],
+        #                                                    self.inputs["PITCH"],
+        #                                                    0)
+        #
+        # # Send data to the Raspberry Pi
+        # self.socket.send_commands(self.pi_commands, self.pwm_values)
 
         # Display frames
 
@@ -107,7 +106,7 @@ class MainSystem:
         # }
 
     def shutdown(self) -> None:
-        """Shuts down the system and it's subsystems."""
+        """Shuts down the system and its subsystems."""
 
         self.run = False
         # Delay to let things close properly

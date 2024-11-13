@@ -1,12 +1,13 @@
 from typing import NamedTuple, Callable
 from topside.config.range import RangeConfig
 
+
 class AxisConfig(NamedTuple):
     """
-    :deadband: the deadband for the axis.
-    Range we want to allow from controller input, absolute value is used and then negated if input was negative
-    :index: the index of the axis
-    :output_range: the scaler of the input. Output range of the axis, should be in units meaningful to the robot
+    :deadband: The deadband for the axis.
+    Range we want to allow from controller input, absolute value is used and then negated if input was negative.
+    :index: The index of the axis.
+    :output_range: The scaler of the input. Output range of the axis, should be in units meaningful to the robot.
 
     """
     # Range we want to allow from controller input, absolute value is used and then negated if input was negative,
@@ -14,7 +15,7 @@ class AxisConfig(NamedTuple):
     deadband: float = 0
     # Output range of the axis, should be in units meaningful to the robot
     output_range: RangeConfig = RangeConfig(0, 1)
-    # Input range we expect to recieve from the input device.
+    # Input range we expect to receive from the input device.
     input_range: RangeConfig = RangeConfig(0, 1)
 
 

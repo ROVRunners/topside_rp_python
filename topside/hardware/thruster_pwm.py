@@ -112,7 +112,7 @@ class FrameThrusters:
         # Assume that positive values are all going forward.
         # We can reason what should happen if we only have a single non-zero input:
 
-        # [x, y, r] -> [ur, ul, lr, ll]
+        # [x, y, r] -> [fr, fl, rr, rl]
         # [1, 0, 0] -> [-1, +1, +1, -1]
         # [0, 1, 0] -> [+1, +1, +1, +1]
         # [0, 0, 1] -> [+1, +1, -1, -1]
@@ -126,23 +126,23 @@ class FrameThrusters:
 
         # However, we want thruster values to be in the range [-1.0, 1.0], so we need to
         # normalize based on the maximum possible value this can have: 3
-        ur = (x_contrib[0] + y_contrib[0] + r_contrib[0]) / 3.0
-        ul = (x_contrib[1] + y_contrib[1] + r_contrib[1]) / 3.0
-        lr = (x_contrib[2] + y_contrib[2] + r_contrib[2]) / 3.0
-        ll = (x_contrib[3] + y_contrib[3] + r_contrib[3]) / 3.0
+        fr = (x_contrib[0] + y_contrib[0] + r_contrib[0]) / 3.0
+        fl = (x_contrib[1] + y_contrib[1] + r_contrib[1]) / 3.0
+        rr = (x_contrib[2] + y_contrib[2] + r_contrib[2]) / 3.0
+        rl = (x_contrib[3] + y_contrib[3] + r_contrib[3]) / 3.0
 
-        self.fr.power = ur
-        self.fl.power = ul
-        self.rr.power = lr
-        self.rl.power = ll
-        # return FrameThrusters(ThrusterPWM(ur), ThrusterPWM(ul), Thruster(lr), Thruster(ll))
-
+        self.fr.power = fr
+        self.fl.power = fl
+        self.rr.power = rr
+        self.rl.power = rl
+        # return FrameThrusters(ThrusterPWM(fr), ThrusterPWM(fl), Thruster(rr), Thruster(rl))
 
     def _map_to_circle(self, x: float, y: float) -> tuple[float, float]:
-        """Map rectangular controller inputs to a circle."""
+        """Map rectangular controller inputs to a circle.
+
+        """
 
         return x*math.sqrt(1 - y**2/2.0), y*math.sqrt(1 - x**2/2.0)
-
 
     def _lateral_thruster_calc_circular(self, x: float, y: float, r: float):
         """Calculate lateral thruster values for a given set of inputs after mapping them to a circle.

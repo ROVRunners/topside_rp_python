@@ -3,12 +3,12 @@ import paho.mqtt.client as mqtt
 import paho.mqtt.publish as publish
 
 
-
 class Manual:
-    """The manual class for the spike."""
+    """The manual control class for the spike."""
     @property
     def inputs(self):
         return self.inputs
+
     @inputs.setter
     def inputs(self, value):
         self.inputs = value
@@ -17,8 +17,8 @@ class Manual:
         """Initialize the Manual object.
 
         Args:
-            main_system (MainSystem):
-                The main system object.
+            frame (thruster_pwm.FrameThrusters):
+                The objects of the thrusters mounted to the frame.
         """
 
         self._frame = frame
@@ -65,7 +65,7 @@ class Manual:
         self.terminal_data = terminal_data | {}
 
         # Add your custom pwm conversion and any PID logic here.
-        self.pwm_values = thruster_pwm.get_pwm_values(controller_data["FORWARD/BACKWARD"],
+        self.pwm_values = self._frame.get_pwm_values(controller_data["FORWARD/BACKWARD"],
                                                       controller_data["LEFT/RIGHT"],
                                                       controller_data["UP/DOWN"],
                                                       controller_data["YAW"],
