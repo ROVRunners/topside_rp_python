@@ -5,9 +5,6 @@ import os
 import sys
 import argparse
 from time import sleep
-import container
-from dependency_injector.wiring import Provide
-from dependency_injector.providers import Configuration
 
 import terminal_listener
 import socket_handler
@@ -25,7 +22,7 @@ class MainSystem:
     """Main class for the surface station system."""
 
     _rov: Spike #This should be changable to any ROV type, currently there is only Spike
-    _config: Configuration = Provide[container.Container.networkconfig]
+
     def __init__(self) -> None:
         """Initialize an instance of the class.
         """
