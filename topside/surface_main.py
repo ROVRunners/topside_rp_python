@@ -11,11 +11,6 @@ from rovs.spike import Spike, SpikeConfig
 
 from utilities.personal_functions import *
 
-# TODO: Make these run on a config file instead of being hard-coded in a random place. Seriously, this is the 3rd
-#  separate place I've seen these values.
-DEFAULT_IP = "169.254.5.24"
-DEFAULT_PORT = 5600
-DEFAULT_ROV = "spike"
 
 class MainSystem:
     """Main class for the surface station system."""
@@ -26,14 +21,18 @@ class MainSystem:
         """Initialize an instance of the class"""
         self.run = True
 
-        # TODO: Make these run on a config file instead of being hard-coded in a random place.
-        self.pi_ip = "169.254.5.24"
-        self.pi_port = 5600
-        self.rov_dir = "topside\\rovs\\spike"
+################################################################
+        """change which ROV is used here"""
+        self.rov_config = SpikeConfig()
+################################################################
+
+        self.pi_ip = self.rov_config.ip
+        self.pi_port = self.rov_config.port
+        self.rov_dir = self.rov_config.rov
 
         self.terminal = terminal_listener.TerminalListener(self)
         self.socket = socket_handler.SocketHandler(self, self.pi_ip, self.pi_port)
-        self.rov_config = SpikeConfig()
+
         self.controller = controller_input.Controller(self.rov_config.controller_config, self.rov_dir)
 
         self.input_map: dict[str, Callable[[], any]] = {

@@ -3,12 +3,17 @@
 from config.enums import ControllerAxisNames, ControllerButtonNames, ThrusterPositions, ThrusterOrientations
 from topside.config import AxisConfig, ButtonConfig, ThrusterPWMConfig, IntRange, ControllerConfig
 
-
 class SpikeConfig:
     """Class for the ROV  configuration."""
 
     def __init__(self) -> None:
         """Initialize an instance of the class."""
+
+        self.ip = "169.254.5.24"
+        self.port = 5600
+        self.rov = "topside\\rovs\\spike"
+
+
 
         self.controller_axis_mapping: dict[ControllerAxisNames, int] = {
             ControllerAxisNames.LEFT_X: 0,
