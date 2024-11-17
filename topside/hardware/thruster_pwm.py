@@ -26,9 +26,8 @@ class ThrusterPWM:
 
     @power.setter
     def power(self, value: float):
-        if self._power != value:
-            self._power = value
-            self._pwm = self._calculate_pwm()
+        self._power = value
+        self._pwm = self._calculate_pwm()
 
     @property
     def min_pwm_output(self) -> int:
