@@ -25,7 +25,7 @@ class SpikeConfig:
         }
 
         # Put specific settings for each axis here
-        self.axis_configs: dict[ControllerAxisNames, AxisConfig] = {
+        self.axis_configs: dict[ControllerAxisNames.value, AxisConfig] = {
             self.controller_axis_mapping[ControllerAxisNames.LEFT_X]: AxisConfig(deadband=0.15),
             self.controller_axis_mapping[ControllerAxisNames.LEFT_Y]: AxisConfig(deadband=0.15),
             self.controller_axis_mapping[ControllerAxisNames.RIGHT_X]: AxisConfig(deadband=0.15),
@@ -33,7 +33,7 @@ class SpikeConfig:
             self.controller_axis_mapping[ControllerAxisNames.LEFT_TRIGGER]: AxisConfig(),
             self.controller_axis_mapping[ControllerAxisNames.RIGHT_TRIGGER]: AxisConfig()
         }
-        self.button_configs: dict[ControllerButtonNames, ButtonConfig] = {
+        self.button_configs: dict[ControllerButtonNames.value, ButtonConfig] = {
             ControllerButtonNames.A.value: ButtonConfig(index=0),
             ControllerButtonNames.B.value: ButtonConfig(index=1),
             ControllerButtonNames.X.value: ButtonConfig(index=2),
