@@ -42,22 +42,22 @@ class thruster_test(unittest.TestCase):
         ))
 
 
-        # self.assertEqual(self._frame.get_pwm_values(
-        #     {
-        #         ThrusterOrientations.FORWARDS: 1,
-        #         ThrusterOrientations.RIGHT: 0,
-        #         ThrusterOrientations.UP: 0,
-        #         ThrusterOrientations.YAW: 0,
-        #         ThrusterOrientations.PITCH: 0,
-        #         ThrusterOrientations.ROLL: 0,
-        #     },
-        # ),{
-        #  'FRONT_RIGHT': self.calc_pwm(1),
-        #  'FRONT_LEFT': self.calc_pwm(1),
-        #  'REAR_RIGHT': self.calc_pwm(-1),
-        #  'REAR_LEFT': self.calc_pwm(-1),
-        #  'FRONT_RIGHT_VERTICAL': self.calc_pwm(0),
-        #  'FRONT_LEFT_VERTICAL': self.calc_pwm(0),
-        #  'REAR_RIGHT_VERTICAL': self.calc_pwm(0),
-        #  'REAR_LEFT_VERTICAL': self.calc_pwm(0),
-        # })
+        self.assertEqual(self._frame.get_pwm_values(
+            {
+                ThrusterOrientations.FORWARDS: 0,
+                ThrusterOrientations.RIGHT: 1,
+                ThrusterOrientations.UP: 0,
+                ThrusterOrientations.YAW: 0,
+                ThrusterOrientations.PITCH: 0,
+                ThrusterOrientations.ROLL: 0,
+            },
+        ),{
+         'FRONT_RIGHT': self.calc_pwm(-1),
+         'FRONT_LEFT': self.calc_pwm(1),
+         'REAR_RIGHT': self.calc_pwm(-1),
+         'REAR_LEFT': self.calc_pwm(1),
+         'FRONT_RIGHT_VERTICAL': self.calc_pwm(0),
+         'FRONT_LEFT_VERTICAL': self.calc_pwm(0),
+         'REAR_RIGHT_VERTICAL': self.calc_pwm(0),
+         'REAR_LEFT_VERTICAL': self.calc_pwm(0),
+        })
