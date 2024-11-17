@@ -1,8 +1,5 @@
 from hardware import thruster_pwm
 from config.enums import ThrusterOrientations, ThrusterPositions
-
-
-import paho.mqtt.client as mqtt
 import paho.mqtt.publish as publish
 
 
