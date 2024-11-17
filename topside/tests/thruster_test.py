@@ -20,25 +20,44 @@ class thruster_test(unittest.TestCase):
             self._thrusters[position] = thruster_pwm.ThrusterPWM(thruster_config)
         self._frame = thruster_pwm.FrameThrusters(self._thrusters)
 
-        pwm_values: dict[ThrusterPositions, int] = self._frame.get_pwm_values(
-            {
-                ThrusterOrientations.FORWARDS: 1,
-                ThrusterOrientations.RIGHT: 0,
-                ThrusterOrientations.UP: 0,
-                ThrusterOrientations.YAW: 0,
-                ThrusterOrientations.PITCH: 0,
-                ThrusterOrientations.ROLL: 0,
-            },
-        )
-        pwm_values_two = {
+        self.assertEqual({
          'FRONT_RIGHT': self.calc_pwm(1),
          'FRONT_LEFT': self.calc_pwm(1),
          'REAR_RIGHT': self.calc_pwm(-1),
          'REAR_LEFT': self.calc_pwm(-1),
-         'FRONT_RIGHT_VERTICAL': self.calc_pwm(0),
-         'FRONT_LEFT_VERTICAL': self.calc_pwm(0),
-         'REAR_RIGHT_VERTICAL': self.calc_pwm(0),
-         'REAR_LEFT_VERTICAL': self.calc_pwm(0),
-        }
+         'FRONT_RIGHT_VERTICAL': self.calc_pwm(1),
+         'FRONT_LEFT_VERTICAL': self.calc_pwm(1),
+         'REAR_RIGHT_VERTICAL': self.calc_pwm(1),
+         'REAR_LEFT_VERTICAL': self.calc_pwm(1)
+        },
+            self._frame.get_pwm_values(
+            {
+                ThrusterOrientations.FORWARDS: 1,
+                ThrusterOrientations.RIGHT: 0,
+                ThrusterOrientations.UP: 1,
+                ThrusterOrientations.YAW: 0,
+                ThrusterOrientations.PITCH: 0,
+                ThrusterOrientations.ROLL: 0,
+            },
+        ))
 
-        self.assertEqual(pwm_values, pwm_values_two)
+
+        # self.assertEqual(self._frame.get_pwm_values(
+        #     {
+        #         ThrusterOrientations.FORWARDS: 1,
+        #         ThrusterOrientations.RIGHT: 0,
+        #         ThrusterOrientations.UP: 0,
+        #         ThrusterOrientations.YAW: 0,
+        #         ThrusterOrientations.PITCH: 0,
+        #         ThrusterOrientations.ROLL: 0,
+        #     },
+        # ),{
+        #  'FRONT_RIGHT': self.calc_pwm(1),
+        #  'FRONT_LEFT': self.calc_pwm(1),
+        #  'REAR_RIGHT': self.calc_pwm(-1),
+        #  'REAR_LEFT': self.calc_pwm(-1),
+        #  'FRONT_RIGHT_VERTICAL': self.calc_pwm(0),
+        #  'FRONT_LEFT_VERTICAL': self.calc_pwm(0),
+        #  'REAR_RIGHT_VERTICAL': self.calc_pwm(0),
+        #  'REAR_LEFT_VERTICAL': self.calc_pwm(0),
+        # })
