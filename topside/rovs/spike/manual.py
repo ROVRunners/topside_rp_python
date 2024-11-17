@@ -50,11 +50,17 @@ class Manual:
             },
         )
 
-        msg = {}
-        for position, value in pwm_values.items():
-            msg[repr(position)] = value
+        # msg = {}
+        # for position, value in pwm_values.items():
+        #     # publish.single(f"thruster_pwm/{position}", value, hostname="localhost")
+        #     msg[repr(position)] = value
+        #
+        msgs = []
+        for p, v in pwm_values.items():
+            msgs.append({'topic': f'thruster_pwm/{p}', "payload" : v})
 
-        publish.single("thruster_pwm", repr(msg), hostname="localhost")
+        publish.multiple(msgs, hostname='localhost')
+        # publish.single("thruster_pwm", repr(msg), hostname="localhost")
 
     # # DEPRECATED
     # def manual_intercepts(self, controller_data, terminal_data, sensor_data, cv_frame):
