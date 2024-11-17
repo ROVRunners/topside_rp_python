@@ -107,7 +107,7 @@ class Controller:
         commands = {}
         controller_inputs = self.get_inputs()
 
-        print("Control map: " + str(self.control_map))
+        # print("Control map: " + str(self.control_map))
 
         # Sorts through all buttons attached to listed commands.
         for control in self.control_map:

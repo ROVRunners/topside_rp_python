@@ -2,8 +2,8 @@ from hardware import thruster_pwm
 from config.enums import ThrusterOrientations, ThrusterPositions
 
 
-# import paho.mqtt.client as mqtt
-# import paho.mqtt.publish as publish
+import paho.mqtt.client as mqtt
+import paho.mqtt.publish as publish
 
 
 class Manual:
@@ -52,7 +52,7 @@ class Manual:
                 ThrusterOrientations.ROLL: 0,
             },
         )
-        # publish.single("thruster_pwm", self.pwm_values, hostname="localhost")
+        publish.single("thruster_pwm", repr(pwm_values), hostname="localhost")
 
     # # DEPRECATED
     # def manual_intercepts(self, controller_data, terminal_data, sensor_data, cv_frame):
