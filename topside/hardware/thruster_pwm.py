@@ -4,7 +4,6 @@ Input is given through lateral_thruster_calc_circular and returned as a FrameThr
 import math
 from config import ThrusterPWMConfig
 from config.enums import ThrusterPositions, ThrusterOrientations
-from utilities.range import Range
 
 INV_SQRT2 = 0.7071067811865476
 
@@ -57,13 +56,11 @@ class ThrusterPWM:
         self._pwm = self.min_pwm_output
         self._power = power
         self._impulses = thruster_config.thruster_impulses
-        self._pwm_range = Range(self._config.pwm_pulse_range.min, self._config.pwm_pulse_range.max)
 
     def _calculate_pwm(self) -> int:
         """Calculate a PWM value for the thruster at its current power."""
         power = -self.power if self._config.reverse_polarity else self.power
-        return int(self._pwm_range.interpolate(power))
-        # return int(self.min_pwm_output + 0.5 * (self.max_pwm_output - self.min_pwm_output) * (power + 1))
+        return int(self.min_pwm_output + 0.5 * (self.max_pwm_output - self.min_pwm_output) * (power + 1))
 
     def __repr__(self) -> str:
         return f"Thruster(power={self.power} pwm={self.pwm_output})"
