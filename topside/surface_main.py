@@ -24,7 +24,7 @@ class MainSystem:
 
 ################################################################
         """change which ROV is used here"""
-        self.rov_config = SpikeConfig()
+        self.rov_config = rov_config.SpikeConfig()
 ################################################################
 
         self.pi_ip = self.rov_config.ip

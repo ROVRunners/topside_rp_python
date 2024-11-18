@@ -38,7 +38,7 @@ class SpikeConfig:
             enums.ControllerButtonNames.RIGHT_BUMPER: controller.ButtonConfig(index=5),
         }
 
-        self.controller_config = ControllerConfig(self.button_configs, self.axis_configs)
+        self.controller_config = controller.ControllerConfig(self.button_configs, self.axis_configs)
 
         # Definitions of the forces applied by the thrusters.
         self.thruster_impulses: dict[enums.ThrusterPositions, dict[enums.Directions, float]] = {
