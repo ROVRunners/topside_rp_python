@@ -6,7 +6,7 @@ import socket
 import threading
 import time
 
-from utilities.personal_functions import *
+# from utilities.personal_functions import *
 
 
 class SocketHandler:
@@ -89,7 +89,7 @@ class SocketHandler:
 
                 # TODO Replace error()
                 print(f"Outbound connection refused ({attempts}). Retrying...")
-                sleep(self.timeout)
+                time.sleep(self.timeout)
 
     # def start_listening(self) -> None:
     #     """Start listening for input in a separate thread."""

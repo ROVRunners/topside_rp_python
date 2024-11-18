@@ -1,7 +1,5 @@
 class EMA:
-    """
-    Accumulates values over time, calculating an exponential moving average over time
-    """
+    """Accumulates values over time, calculating an exponential moving average over time."""
 
     _last_ema_value: float | None
     _current_value: float | None
@@ -10,7 +8,15 @@ class EMA:
     _num_samples: int
     _num_samples_collected: int
 
-    def __init__(self, num_samples: int, smooth: float = 2):
+    def __init__(self, num_samples: int, smooth: float = 2) -> None:
+        """Initializes the EMA with a number of samples and a smoothing factor.
+
+        Args:
+            num_samples (int):
+                The number of samples to consider when calculating the EMA.
+            smooth (float):
+                The smoothing factor to apply to the EMA.
+        """
         self._smooth_factor = smooth
         self._last_ema_value = None
         self._current_value = None
@@ -20,7 +26,14 @@ class EMA:
 
     @property
     def ema_value(self) -> float:
-        """Current exponential moving average"""
+        """Current exponential moving average.
+
+        Returns:
+            float: The current EMA value.
+
+        Raises:
+            ValueError: If no samples have been collected.
+        """
         if self._num_samples_collected == 0:
             raise ValueError('Cannot calculate EMA until at least one sample is collected')
 
@@ -31,7 +44,13 @@ class EMA:
 
         return self._current_ema_value
 
-    def add(self, value: float):
+    def add(self, value: float) -> None:
+        """Add a new value to the EMA.
+
+        Args:
+            value (float):
+                The value to add to the EMA.
+        """
         self._last_ema_value = self.ema_value if self._num_samples_collected > 0 else value
         self._num_samples_collected = (self._num_samples_collected + 1 if self._num_samples_collected <
                                        self._num_samples else self._num_samples)

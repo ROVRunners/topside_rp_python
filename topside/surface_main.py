@@ -1,15 +1,17 @@
 """Main file for the surface station."""
-
-# pylint: disable=wildcard-import, unused-import, unused-wildcard-import
+import os
+import sys
+import time
 from typing import Callable
 
 import terminal_listener
 import socket_handler
 import controller_input
 
-from rovs.spike import Spike, SpikeConfig
+# from rovs.spike import Spike, SpikeConfig
+import rovs.spike.rov as rov
+import rovs.spike.rov_config as rov_config
 
-from utilities.personal_functions import *
 
 # TODO: Make these run on a config file instead of being hard-coded in a random place. Seriously, this is the 3rd
 #  separate place I've seen these values.
@@ -17,10 +19,11 @@ DEFAULT_IP = "169.254.5.24"
 DEFAULT_PORT = 5600
 DEFAULT_ROV = "spike"
 
+
 class MainSystem:
     """Main class for the surface station system."""
 
-    _rov: Spike  # This should be changeable to any ROV type, currently there is only Spike
+    _rov: rov.Spike  # TODO: This should be changeable to any ROV type, currently there is only Spike
 
     def __init__(self) -> None:
         """Initialize an instance of the class"""
@@ -29,19 +32,18 @@ class MainSystem:
         # TODO: Make these run on a config file instead of being hard-coded in a random place.
         self.pi_ip = "169.254.5.24"
         self.pi_port = 5600
-        self.rov_dir = "topside\\rovs\\spike"
+        self.rov_dir = os.path.join(os.path.dirname(os.path.abspath(__file__)), "rovs\\spike")
 
         self.terminal = terminal_listener.TerminalListener(self)
         self.socket = socket_handler.SocketHandler(self, self.pi_ip, self.pi_port)
-        self.rov_config = SpikeConfig()
+        self.rov_config = rov_config.SpikeConfig()
         self.controller = controller_input.Controller(self.rov_config.controller_config, self.rov_dir)
 
         self.input_map: dict[str, Callable[[], any]] = {
-            "controller": self.controller.get_controller_commands,
+            "controller": self.controller.get_inputs,
         }
 
-        self._rov = Spike(self.rov_config, self.input_map)
-
+        self._rov = rov.Spike(self.rov_config, self.input_map)
 
         # self.safe_pwm_values = self.ROV.stationary_pwm_values
 
@@ -110,7 +112,7 @@ class MainSystem:
 
         self.run = False
         # Delay to let things close properly
-        sleep(1)
+        time.sleep(1)
 
         self.socket.shutdown()
         sys.exit()
