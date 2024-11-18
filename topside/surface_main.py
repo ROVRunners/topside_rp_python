@@ -21,6 +21,7 @@ class MainSystem:
         """Initialize an instance of the class"""
         self.run = True
 
+        # Set the number of loops per second and the number of nanoseconds per loop for rate limiting.
         self._loops_per_second = 60
         self._nanoseconds_per_loop = 1_000_000_000 // self._loops_per_second
 

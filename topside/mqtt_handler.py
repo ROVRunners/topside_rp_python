@@ -41,7 +41,7 @@ class ROVConnection:
         # Store the last PWM values to only send the ones that have changed.
         self._last_pwm_values = {}
         self._last_pwm_update: float = 0.0
-        self._idle_ping_frequency: float = 0.5
+        self._idle_ping_frequency: float = 2.0
 
     def connect(self):
         self._client.connect(host=self._ip, port=self._port)
