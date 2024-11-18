@@ -1,6 +1,8 @@
-from hardware import thruster_pwm
-from config.enums import ThrusterOrientations, ThrusterPositions
 import paho.mqtt.publish as publish
+
+import hardware.thruster_pwm as thruster_pwm
+import config.enums as enums
+import controller_input
 
 
 class Manual:
@@ -30,23 +32,29 @@ class Manual:
 
         # Add whatever you need initialized here.
 
-    def update(self, inputs: dict[str, dict[str, any]]):
+    def update(self, inputs: dict[str, dict[enums.ControllerButtonNames | enums.ControllerAxisNames, any]]):
         """Update thrust values based on the inputs.
 
         Args:
-            inputs (dict[str, dict[str, any]]):
+            inputs (dict[str, dict[enums.ControllerButtonNames | enums.ControllerAxisNames, any]]):
                 The inputs from the controller, sensors, and otherwise.
         """
         controller = inputs["controller"]
 
-        pwm_values: dict[ThrusterPositions, int] = self._frame.get_pwm_values(
+        # Convert the triggers to a single value.
+        right_trigger = controller[enums.ControllerAxisNames.RIGHT_TRIGGER]
+        left_trigger = controller[enums.ControllerAxisNames.LEFT_TRIGGER]
+        vertical = controller_input.combine_triggers(left_trigger, right_trigger)
+
+        # Get the PWM values for the thrusters.
+        pwm_values: dict[enums.ThrusterPositions, int] = self._frame.get_pwm_values(
             {
-                ThrusterOrientations.FORWARDS: controller["FORWARD/BACKWARD"],
-                ThrusterOrientations.RIGHT: controller["LEFT/RIGHT"],
-                ThrusterOrientations.UP: controller["UP/DOWN"],
-                ThrusterOrientations.YAW: controller["YAW"],
-                ThrusterOrientations.PITCH: controller["PITCH"],
-                ThrusterOrientations.ROLL: 0,
+                enums.Directions.FORWARDS: controller[enums.ControllerAxisNames.LEFT_Y],
+                enums.Directions.RIGHT: controller[enums.ControllerAxisNames.LEFT_X],
+                enums.Directions.UP: vertical,
+                enums.Directions.YAW: controller[enums.ControllerAxisNames.RIGHT_X],
+                enums.Directions.PITCH: controller[enums.ControllerAxisNames.RIGHT_Y],
+                enums.Directions.ROLL: 0,
             },
         )
 

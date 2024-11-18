@@ -1,36 +1,72 @@
 import math
 
-from topside.utilities import Range
+# from topside.utilities import Range
+import range
+
 
 tau = math.pi * 2
 
 
 def wrap_angle(angle: float, min_val: float = 0) -> float:
-    """Wrap the angle to the range of 0 to 2pi"""
-    clamped = angle % tau
+    """Wrap the angle to the range of 0 to 2pi.
 
+    Args:
+        angle (float):
+            The angle to wrap.
+        min_val (float):
+            The minimum value of the angle.
+
+    Returns:
+        float: The wrapped angle between 0 and 2pi offset by the minimum angle.
+    """
+    clamped = angle % tau
     max_val = min_val + tau
+
     while clamped >= max_val:  # TODO Do the math and multiply instead of adding
         clamped -= tau
     while clamped < min_val:
         clamped += tau
+
     return clamped
 
 
 def wrap_angle_degrees(angle: float, min_val: float = 0) -> float:
-    """Wrap the angle to the range of 0 to 2pi"""
+    """Wrap the angle to the range of 0 to 360.
+
+    Args:
+        angle (float):
+            The angle to wrap.
+        min_val (float):
+            The minimum value of the angle.
+
+    Returns:
+        float: The wrapped angle between 0 and 360 offset by the minimum angle.
+    """
     clamped = angle % 360.0
     max_val = min_val + 360.0
+
     while clamped >= max_val:  # TODO Do the math and multiply instead of adding
         clamped -= 360.0
     while clamped < min_val:
         clamped += 360.0
+
     return clamped
 
 
 def shortest_angle_difference(angle1: float, angle2: float) -> float:
-    """Returns the shortest angle difference between two angles"""
+    """Returns the shortest angle difference between two angles.
+
+    Args:
+        angle1 (float):
+            The first angle.
+        angle2 (float):
+            The second angle.
+
+    Returns:
+        float: The shortest angle difference between the two angles.
+    """
     diff = (angle2 - angle1 + math.pi) % (math.pi * 2) - math.pi
+
     return diff
 
 
@@ -61,15 +97,27 @@ def shortest_angle_difference(angle1: float, angle2: float) -> float:
 #     return desired_state
 
 
-def map_input_to_output_range(value: float, input_range: Range, output_range: Range):
+def map_input_to_output_range(value: float, input_range: range.Range, output_range: range.Range) -> float:
     """Takes an input that lies within a range, and maps it proportionally to the output range.
        For example, given an input range 0.1 to 1, and output range 0 to 10, and an input value of
        0.55, this function will return 5, as it is halfway through the input range, and halfway
        through the output range is 5.
-       Useful for mapping input from a controller axis to a desired robot travel speed with a deadband
-       """
+       Useful for mapping input from a controller axis to a desired robot travel speed with a deadband.
+
+    Args:
+        value (float):
+            The input value to map.
+        input_range (Range):
+            The range of the input value.
+        output_range (Range):
+            The range to map the input value to.
+
+    Returns:
+        float: The value mapped to the output range.
+   """
     input_norm = input_range.normalize(abs(value))
     # input_one_norm = self.inputControllerOneRange.normalize(abs(input))
+
     if input_norm > 0:
         input_adjusted = output_range.interpolate(input_norm)
         input_adjusted = input_adjusted if value >= 0 else -input_adjusted

@@ -1,7 +1,12 @@
 """This file contains the configuration for the Spike ROV."""
 
-from config.enums import ControllerAxisNames, ControllerButtonNames, ThrusterPositions, ThrusterOrientations
-from topside.config import AxisConfig, ButtonConfig, ThrusterPWMConfig, IntRange, ControllerConfig
+# from config.enums import ControllerAxisNames, ControllerButtonNames, ThrusterPositions, ThrusterOrientations
+# from topside.config import AxisConfig, ButtonConfig, ThrusterPWMConfig, IntRange, ControllerConfig
+import config.typed_range as typed_range
+import config.enums as enums
+import config.controller as controller
+import config.thruster as thruster
+
 
 class SpikeConfig:
     """Class for the ROV  configuration."""
@@ -13,122 +18,111 @@ class SpikeConfig:
         self.port = 5600
         self.rov = "topside\\rovs\\spike"
 
-
-
-        self.controller_axis_mapping: dict[ControllerAxisNames, int] = {
-            ControllerAxisNames.LEFT_X: 0,
-            ControllerAxisNames.LEFT_Y: 1,
-            ControllerAxisNames.RIGHT_X: 2,
-            ControllerAxisNames.RIGHT_Y: 3,
-            ControllerAxisNames.LEFT_TRIGGER: 4,
-            ControllerAxisNames.RIGHT_TRIGGER: 5,
+        # Put specific settings for each axis/button here
+        self.axis_configs: dict[enums.ControllerAxisNames, controller.AxisConfig] = {
+            enums.ControllerAxisNames.LEFT_X: controller.AxisConfig(index=0, deadband=0.15),
+            enums.ControllerAxisNames.LEFT_Y: controller.AxisConfig(index=1, deadband=0.15),
+            enums.ControllerAxisNames.RIGHT_X: controller.AxisConfig(index=2, deadband=0.15),
+            enums.ControllerAxisNames.RIGHT_Y: controller.AxisConfig(index=3, deadband=0.15),
+            enums.ControllerAxisNames.LEFT_TRIGGER: controller.AxisConfig(index=4),
+            enums.ControllerAxisNames.RIGHT_TRIGGER: controller.AxisConfig(index=5),
         }
-
-        # Put specific settings for each axis here
-        self.axis_configs: dict[ControllerAxisNames.value, AxisConfig] = {
-            self.controller_axis_mapping[ControllerAxisNames.LEFT_X]: AxisConfig(deadband=0.15),
-            self.controller_axis_mapping[ControllerAxisNames.LEFT_Y]: AxisConfig(deadband=0.15),
-            self.controller_axis_mapping[ControllerAxisNames.RIGHT_X]: AxisConfig(deadband=0.15),
-            self.controller_axis_mapping[ControllerAxisNames.RIGHT_Y]: AxisConfig(deadband=0.15),
-            self.controller_axis_mapping[ControllerAxisNames.LEFT_TRIGGER]: AxisConfig(),
-            self.controller_axis_mapping[ControllerAxisNames.RIGHT_TRIGGER]: AxisConfig()
-        }
-        self.button_configs: dict[ControllerButtonNames.value, ButtonConfig] = {
-            ControllerButtonNames.A.value: ButtonConfig(index=0),
-            ControllerButtonNames.B.value: ButtonConfig(index=1),
-            ControllerButtonNames.X.value: ButtonConfig(index=2),
-            ControllerButtonNames.Y.value: ButtonConfig(index=3),
-            ControllerButtonNames.START.value: ButtonConfig(index=6),
-            ControllerButtonNames.SELECT.value: ButtonConfig(index=7),
-            ControllerButtonNames.LEFT_BUMPER.value: ButtonConfig(index=4),
-            ControllerButtonNames.RIGHT_BUMPER.value: ButtonConfig(index=5),
+        self.button_configs: dict[enums.ControllerButtonNames, controller.ButtonConfig] = {
+            enums.ControllerButtonNames.A: controller.ButtonConfig(index=0),
+            enums.ControllerButtonNames.B: controller.ButtonConfig(index=1),
+            enums.ControllerButtonNames.X: controller.ButtonConfig(index=2),
+            enums.ControllerButtonNames.Y: controller.ButtonConfig(index=3),
+            enums.ControllerButtonNames.START: controller.ButtonConfig(index=6),
+            enums.ControllerButtonNames.SELECT: controller.ButtonConfig(index=7),
+            enums.ControllerButtonNames.LEFT_BUMPER: controller.ButtonConfig(index=4),
+            enums.ControllerButtonNames.RIGHT_BUMPER: controller.ButtonConfig(index=5),
         }
 
         self.controller_config = ControllerConfig(self.button_configs, self.axis_configs)
 
         # Definitions of the forces applied by the thrusters.
-        self.thruster_impulses: dict[ThrusterPositions, dict[ThrusterOrientations, float]] = {
-            ThrusterPositions.FRONT_RIGHT: {
-                ThrusterOrientations.FORWARDS: .7,
-                ThrusterOrientations.RIGHT: -.7,
-                ThrusterOrientations.UP: 0,
-                ThrusterOrientations.YAW: 0.7,
-                ThrusterOrientations.PITCH: 0,
-                ThrusterOrientations.ROLL: 0,
+        self.thruster_impulses: dict[enums.ThrusterPositions, dict[enums.Directions, float]] = {
+            enums.ThrusterPositions.FRONT_RIGHT: {
+                enums.Directions.FORWARDS: 1,
+                enums.Directions.RIGHT: -1,
+                enums.Directions.UP: 0,
+                enums.Directions.YAW: 1,
+                enums.Directions.PITCH: 0,
+                enums.Directions.ROLL: 0,
             },
-            ThrusterPositions.FRONT_LEFT: {
-                ThrusterOrientations.FORWARDS: .7,
-                ThrusterOrientations.RIGHT: .7,
-                ThrusterOrientations.UP: 0,
-                ThrusterOrientations.YAW: -0.7,
-                ThrusterOrientations.PITCH: 0,
-                ThrusterOrientations.ROLL: 0,
+            enums.ThrusterPositions.FRONT_LEFT: {
+                enums.Directions.FORWARDS: 1,
+                enums.Directions.RIGHT: 1,
+                enums.Directions.UP: 0,
+                enums.Directions.YAW: -1,
+                enums.Directions.PITCH: 0,
+                enums.Directions.ROLL: 0,
             },
-            ThrusterPositions.REAR_RIGHT: {
-                ThrusterOrientations.FORWARDS: -.7,
-                ThrusterOrientations.RIGHT: -.7,
-                ThrusterOrientations.UP: 0,
-                ThrusterOrientations.YAW: 0.7,
-                ThrusterOrientations.PITCH: 0,
-                ThrusterOrientations.ROLL: 0,
+            enums.ThrusterPositions.REAR_RIGHT: {
+                enums.Directions.FORWARDS: -1,
+                enums.Directions.RIGHT: -1,
+                enums.Directions.UP: 0,
+                enums.Directions.YAW: 1,
+                enums.Directions.PITCH: 0,
+                enums.Directions.ROLL: 0,
             },
-            ThrusterPositions.REAR_LEFT: {
-                ThrusterOrientations.FORWARDS: -.7,
-                ThrusterOrientations.RIGHT: .7,
-                ThrusterOrientations.UP: 0,
-                ThrusterOrientations.YAW: -0.7,
-                ThrusterOrientations.PITCH: 0,
-                ThrusterOrientations.ROLL: 0,
+            enums.ThrusterPositions.REAR_LEFT: {
+                enums.Directions.FORWARDS: -1,
+                enums.Directions.RIGHT: 1,
+                enums.Directions.UP: 0,
+                enums.Directions.YAW: -1,
+                enums.Directions.PITCH: 0,
+                enums.Directions.ROLL: 0,
             },
-            ThrusterPositions.FRONT_RIGHT_VERTICAL: {
-                ThrusterOrientations.FORWARDS: 0,
-                ThrusterOrientations.RIGHT: -0,
-                ThrusterOrientations.UP: 0.7,
-                ThrusterOrientations.YAW: 0,
-                ThrusterOrientations.PITCH: 0,
-                ThrusterOrientations.ROLL: 0,
+            enums.ThrusterPositions.FRONT_RIGHT_VERTICAL: {
+                enums.Directions.FORWARDS: 0,
+                enums.Directions.RIGHT: 0,
+                enums.Directions.UP: 1,
+                enums.Directions.YAW: 0,
+                enums.Directions.PITCH: 1,
+                enums.Directions.ROLL: -1,
             },
-            ThrusterPositions.FRONT_LEFT_VERTICAL: {
-                ThrusterOrientations.FORWARDS: 0,
-                ThrusterOrientations.RIGHT: 0,
-                ThrusterOrientations.UP: 0.7,
-                ThrusterOrientations.YAW: 0,
-                ThrusterOrientations.PITCH: 0,
-                ThrusterOrientations.ROLL: 0,
+            enums.ThrusterPositions.FRONT_LEFT_VERTICAL: {
+                enums.Directions.FORWARDS: 0,
+                enums.Directions.RIGHT: 0,
+                enums.Directions.UP: 1,
+                enums.Directions.YAW: 0,
+                enums.Directions.PITCH: 1,
+                enums.Directions.ROLL: 1,
             },
-            ThrusterPositions.REAR_RIGHT_VERTICAL: {
-                ThrusterOrientations.FORWARDS: -0,
-                ThrusterOrientations.RIGHT: -0,
-                ThrusterOrientations.UP: 0.7,
-                ThrusterOrientations.YAW: 0,
-                ThrusterOrientations.PITCH: 0,
-                ThrusterOrientations.ROLL: 0,
+            enums.ThrusterPositions.REAR_RIGHT_VERTICAL: {
+                enums.Directions.FORWARDS: 0,
+                enums.Directions.RIGHT: 0,
+                enums.Directions.UP: 1,
+                enums.Directions.YAW: 0,
+                enums.Directions.PITCH: -1,
+                enums.Directions.ROLL: -1,
             },
-            ThrusterPositions.REAR_LEFT_VERTICAL: {
-                ThrusterOrientations.FORWARDS: -0,
-                ThrusterOrientations.RIGHT: 0,
-                ThrusterOrientations.UP: 0.7,
-                ThrusterOrientations.YAW: 0,
-                ThrusterOrientations.PITCH: 0,
-                ThrusterOrientations.ROLL: 0,
+            enums.ThrusterPositions.REAR_LEFT_VERTICAL: {
+                enums.Directions.FORWARDS: 0,
+                enums.Directions.RIGHT: 0,
+                enums.Directions.UP: 1,
+                enums.Directions.YAW: 0,
+                enums.Directions.PITCH: -1,
+                enums.Directions.ROLL: 1,
             },
         }
 
         self.thruster_positions = [
-            ThrusterPositions.FRONT_RIGHT,
-            ThrusterPositions.FRONT_LEFT,
-            ThrusterPositions.REAR_RIGHT,
-            ThrusterPositions.REAR_LEFT,
-            ThrusterPositions.FRONT_RIGHT_VERTICAL,
-            ThrusterPositions.FRONT_LEFT_VERTICAL,
-            ThrusterPositions.REAR_RIGHT_VERTICAL,
-            ThrusterPositions.REAR_LEFT_VERTICAL,
+            enums.ThrusterPositions.FRONT_RIGHT,
+            enums.ThrusterPositions.FRONT_LEFT,
+            enums.ThrusterPositions.REAR_RIGHT,
+            enums.ThrusterPositions.REAR_LEFT,
+            enums.ThrusterPositions.FRONT_RIGHT_VERTICAL,
+            enums.ThrusterPositions.FRONT_LEFT_VERTICAL,
+            enums.ThrusterPositions.REAR_RIGHT_VERTICAL,
+            enums.ThrusterPositions.REAR_LEFT_VERTICAL,
         ]
 
-        self.thruster_configs: dict[ThrusterPositions, ThrusterPWMConfig] = {
+        self.thruster_configs: dict[enums.ThrusterPositions, thruster.ThrusterPWMConfig] = {
 
-            position: ThrusterPWMConfig(
-                pwm_pulse_range=IntRange(min=1100, max=1900),
+            position: thruster.ThrusterPWMConfig(
+                pwm_pulse_range=typed_range.IntRange(min=1100, max=1900),
                 thruster_impulses=self.thruster_impulses[position]
             ) for position in self.thruster_positions
         }

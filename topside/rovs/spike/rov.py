@@ -1,17 +1,22 @@
-# import topside.config as config
-from hardware import ThrusterPWM, FrameThrusters
 from typing import Callable
-from rovs.spike.manual import Manual
-from rovs.spike.rov_config import SpikeConfig, ThrusterPositions
+
+# import topside.config as config
+# from hardware import ThrusterPWM, FrameThrusters
+import hardware.thruster_pwm as thruster_pwm
+import rovs.spike.rov_config as rov_config
+import rovs.spike.manual as manual
+import config.enums as enums
+# from rovs.spike.manual import Manual
+# from rovs.spike.rov_config import SpikeConfig, ThrusterPositions
 
 
 class Spike:
-    _config: SpikeConfig
+    _config: rov_config.SpikeConfig
 
-    _thrusters: dict[ThrusterPositions, ThrusterPWM]
-    _inputs_map: dict[str, Callable]  # Function to call to obtain input of a given name.
+    _thrusters: dict[enums.ThrusterPositions, thruster_pwm.ThrusterPWM]
+    _inputs_getter_map: dict[str, Callable[[], any]]  # Function to call to obtain input of a given name.
 
-    def __init__(self, spike_config: SpikeConfig,
+    def __init__(self, spike_config: rov_config.SpikeConfig,
                  input_getter: dict[str, Callable[[], any]]):
         """Create and initialize the ROV hardware.
 
@@ -23,28 +28,32 @@ class Spike:
         """
         self._config = spike_config
         self._thrusters = {}
-        self._inputs_map = input_getter
+        self._inputs_getter_map = input_getter
 
         # Configure thrusters.
         for position, thruster_config in self._config.thruster_configs.items():
-            self._thrusters[position] = ThrusterPWM(thruster_config)
+            self._thrusters[position] = thruster_pwm.ThrusterPWM(thruster_config)
 
-        self._frame = FrameThrusters(self._thrusters)
+        self._frame = thruster_pwm.FrameThrusters(self._thrusters)
 
         # Set the class handling control to manual as default.
-        self._control_mode = Manual(self._frame)
+        self._control_mode = manual.Manual(self._frame)
 
-    def get_inputs(self) -> dict[str, dict[str, object]]:
+    def get_inputs(self) -> dict[str, dict[enums.ControllerButtonNames | enums.ControllerAxisNames, object]]:
         """Get the inputs from the controller and otherwise.
 
         Returns:
-            dict[str, object]: The inputs matched to the references to the functions which return the inputs.
-                (It's Eric's fault)
+            dict[str, dict[enums.ControllerButtonNames | enums.ControllerAxisNames, object]]: The inputs matched to the
+                references to the functions which return the inputs. (It's Eric's fault)
         """
         input_functions = {}
-        for key in self._inputs_map:
-            value = self._inputs_map[key]()
-            input_functions[key] = value
+
+        # Gets inputs from the controller, sensors, and otherwise by calling the functions in the input_getter_map and
+        # stores the results in a dictionary of dictionaries categorized by input type (e.g. "controller"), then by
+        # input name (e.g. "enums.ControllerAxisNames.LEFT_X").
+        for input_type in self._inputs_getter_map:
+            value = self._inputs_getter_map[input_type]()
+            input_functions[input_type] = value
 
         return input_functions
 
