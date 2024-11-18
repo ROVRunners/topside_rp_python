@@ -100,6 +100,9 @@ class ThrusterPositions(enum.StrEnum):
     REAR_RIGHT_VERTICAL = "REAR_RIGHT_VERTICAL",
     REAR_LEFT_VERTICAL = "REAR_LEFT_VERTICAL",
 
+    def __repr__(self):
+        return self.value
+
 
 class Directions(enum.StrEnum):
     """The directions that thrusters can apply force in.

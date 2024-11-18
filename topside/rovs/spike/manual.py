@@ -1,10 +1,8 @@
+import paho.mqtt.publish as publish
+
 import hardware.thruster_pwm as thruster_pwm
-# from config.enums import ThrusterOrientations, ThrusterPositions
 import config.enums as enums
 import controller_input
-
-# import paho.mqtt.client as mqtt
-# import paho.mqtt.publish as publish
 
 
 class Manual:
@@ -59,8 +57,18 @@ class Manual:
                 enums.Directions.ROLL: 0,
             },
         )
-        print(pwm_values)
-        # publish.single("thruster_pwm", pwm_values, hostname="localhost")
+
+        # msg = {}
+        # for position, value in pwm_values.items():
+        #     # publish.single(f"thruster_pwm/{position}", value, hostname="localhost")
+        #     msg[repr(position)] = value
+        #
+        msgs = []
+        for p, v in pwm_values.items():
+            msgs.append({'topic': f'thruster_pwm/{p}', "payload" : v})
+
+        publish.multiple(msgs, hostname='localhost')
+        # publish.single("thruster_pwm", repr(msg), hostname="localhost")
 
     # # DEPRECATED
     # def manual_intercepts(self, controller_data, terminal_data, sensor_data, cv_frame):

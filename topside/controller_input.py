@@ -7,6 +7,7 @@ import time
 import pygame
 # from typing import Callable, NamedTuple
 
+from utilities.range import Range
 # from utilities.personal_functions import *
 # import utilities.personal_functions as pf
 
@@ -208,10 +209,16 @@ class Controller:
         Returns:
             float: The input value with the deadzone applied.
         """
-        if abs(value) < deadzone:
-            return 0
+        input_range = Range(deadzone, 1)
+        output_range = Range(0, 1)
+        input_norm = input_range.normalize(abs(value))
+        if input_norm > 0:
+            input_adjusted = output_range.interpolate(input_norm)
+            input_adjusted = input_adjusted if value >= 0 else -input_adjusted
+        else:
+            input_adjusted = 0
 
-        return value
+        return input_adjusted
 
     # def _get_control_map(self) -> None:
     #     """Get the controls and map them to the keys in the file, updating the control_map attribute."""

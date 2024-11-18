@@ -14,6 +14,10 @@ class SpikeConfig:
     def __init__(self) -> None:
         """Initialize an instance of the class."""
 
+        self.ip = "169.254.5.24"
+        self.port = 5600
+        self.rov = "topside\\rovs\\spike"
+
         # Put specific settings for each axis/button here
         self.axis_configs: dict[enums.ControllerAxisNames, controller.AxisConfig] = {
             enums.ControllerAxisNames.LEFT_X: controller.AxisConfig(index=0, deadband=0.15),
@@ -34,37 +38,37 @@ class SpikeConfig:
             enums.ControllerButtonNames.RIGHT_BUMPER: controller.ButtonConfig(index=5),
         }
 
-        self.controller_config = controller.ControllerConfig(self.button_configs, self.axis_configs)
+        self.controller_config = ControllerConfig(self.button_configs, self.axis_configs)
 
         # Definitions of the forces applied by the thrusters.
         self.thruster_impulses: dict[enums.ThrusterPositions, dict[enums.Directions, float]] = {
             enums.ThrusterPositions.FRONT_RIGHT: {
-                enums.Directions.FORWARDS: .7,
-                enums.Directions.RIGHT: -.7,
+                enums.Directions.FORWARDS: 1,
+                enums.Directions.RIGHT: -1,
                 enums.Directions.UP: 0,
                 enums.Directions.YAW: 1,
                 enums.Directions.PITCH: 0,
                 enums.Directions.ROLL: 0,
             },
             enums.ThrusterPositions.FRONT_LEFT: {
-                enums.Directions.FORWARDS: .7,
-                enums.Directions.RIGHT: .7,
+                enums.Directions.FORWARDS: 1,
+                enums.Directions.RIGHT: 1,
                 enums.Directions.UP: 0,
                 enums.Directions.YAW: -1,
                 enums.Directions.PITCH: 0,
                 enums.Directions.ROLL: 0,
             },
             enums.ThrusterPositions.REAR_RIGHT: {
-                enums.Directions.FORWARDS: -.7,
-                enums.Directions.RIGHT: -.7,
+                enums.Directions.FORWARDS: -1,
+                enums.Directions.RIGHT: -1,
                 enums.Directions.UP: 0,
                 enums.Directions.YAW: 1,
                 enums.Directions.PITCH: 0,
                 enums.Directions.ROLL: 0,
             },
             enums.ThrusterPositions.REAR_LEFT: {
-                enums.Directions.FORWARDS: -.7,
-                enums.Directions.RIGHT: .7,
+                enums.Directions.FORWARDS: -1,
+                enums.Directions.RIGHT: 1,
                 enums.Directions.UP: 0,
                 enums.Directions.YAW: -1,
                 enums.Directions.PITCH: 0,
