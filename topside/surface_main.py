@@ -16,7 +16,7 @@ import rovs.spike.rov_config as rov_config
 class MainSystem:
     """Main class for the surface station system."""
 
-    _rov: rov.Spike  # TODO: This should be changeable to any ROV type, currently there is only Spike
+    _rov: rov.ROV  # TODO: This should be changeable to any ROV type, currently there is only Spike
 
     def __init__(self) -> None:
         """Initialize an instance of the class"""
@@ -24,23 +24,23 @@ class MainSystem:
 
 ################################################################
         """change which ROV is used here"""
-        self.rov_config = rov_config.SpikeConfig()
+        self.rov_config = rov_config.ROVConfig()
 ################################################################
 
         self.pi_ip = self.rov_config.ip
-        self.pi_port = self.rov_config.port
+        self.pi_port = self.rov_config.comms_port
         self.rov_dir = self.rov_config.rov
 
         self.terminal = terminal_listener.TerminalListener(self)
         self.socket = socket_handler.SocketHandler(self, self.pi_ip, self.pi_port)
 
-        self.controller = controller_input.Controller(self.rov_config.controller_config, self.rov_dir)
+        self.controller = controller_input.Controller(self.rov_config.controller_config)
 
         self.input_map: dict[str, Callable[[], any]] = {
             "controller": self.controller.get_inputs,
         }
 
-        self._rov = rov.Spike(self.rov_config, self.input_map)
+        self._rov = rov.ROV(self.rov_config, self.input_map)
 
         # self.safe_pwm_values = self.ROV.stationary_pwm_values
 
@@ -108,6 +108,7 @@ class MainSystem:
         """Shuts down the system and its subsystems."""
 
         self.run = False
+        self._rov.shutdown()
         # Delay to let things close properly
         time.sleep(1)
 

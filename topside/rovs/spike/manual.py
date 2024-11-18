@@ -7,13 +7,6 @@ import controller_input
 
 class Manual:
     """The manual control class for the ROV."""
-    @property
-    def inputs(self):
-        return self.inputs
-
-    @inputs.setter
-    def inputs(self, value):
-        self.inputs = value
 
     def __init__(self, frame: thruster_pwm.FrameThrusters):
         """Initialize the Manual object.
@@ -31,6 +24,14 @@ class Manual:
         # self.pwm_values = []
 
         # Add whatever you need initialized here.
+
+    @property
+    def inputs(self):
+        return self.inputs
+
+    @inputs.setter
+    def inputs(self, value):
+        self.inputs = value
 
     def update(self, inputs: dict[str, dict[enums.ControllerButtonNames | enums.ControllerAxisNames, any]]):
         """Update thrust values based on the inputs.
@@ -65,9 +66,9 @@ class Manual:
         #
         msgs = []
         for p, v in pwm_values.items():
-            msgs.append({'topic': f'thruster_pwm/{p}', "payload" : v})
+            msgs.append({'topic': f'thruster_pwm/{p}', "payload": v})
 
-        publish.multiple(msgs, hostname='localhost')
+        publish.multiple(msgs, hostname='localhost', port=1883)
         # publish.single("thruster_pwm", repr(msg), hostname="localhost")
 
     # # DEPRECATED

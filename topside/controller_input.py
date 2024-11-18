@@ -70,21 +70,20 @@ class Controller:
 
     _config: controller.ControllerConfig
 
-    def __init__(self, config: controller.ControllerConfig, rov_dir: str):
+    def __init__(self, config: controller.ControllerConfig):
 
         self._config = config
 
         pygame.init()
         pygame.joystick.init()
 
-        self.rov_dir = rov_dir
-
-        if pygame.joystick.get_count() != 0:
-            self.joystick = pygame.joystick.Joystick(0)
-            self.joystick.init()
-        else:
-            # TODO Replace error()
+        # Wait for a controller to be connected.
+        while pygame.joystick.get_count() == 0:
             print("Warning! No controller detected!")
+            input("Please connect a controller and press enter.")
+
+        self.joystick = pygame.joystick.Joystick(0)
+        self.joystick.init()
 
     def get_inputs(self) -> dict[enums.ControllerButtonNames | enums.ControllerAxisNames, float]:
         """Retrieves the inputs from the controller.
@@ -101,29 +100,6 @@ class Controller:
         #  | self._get_hat()
 
         return inputs
-
-    # def get_controller_commands(self) -> dict[str, float]:
-    #     """Get the commands from the controller.
-    #
-    #     Returns:
-    #         dict[str, float]: The commands from the controller and their emphasis.
-    #     """
-    #     commands = {}
-    #     controller_inputs = self.get_inputs()
-    #
-    #     # Sorts through all buttons attached to listed commands.
-    #     for control in self.control_map:
-    #         for button in self.control_map[control]:
-    #
-    #             # Set the default value in case something screws up.
-    #             commands[control] = 0
-    #
-    #             # If the button is pressed, and it's more than the current value, update the value.
-    #             if controller_inputs[button]:
-    #                 commands[control] = (controller_inputs[button] if abs(controller_inputs[button])
-    #                                      >= abs(commands[control]) else commands[control])
-    #
-    #     return commands
 
     def _get_buttons(self) -> dict[enums.ControllerButtonNames, float]:
         """Returns a dictionary containing the current state of the buttons on the controller.

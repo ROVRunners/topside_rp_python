@@ -10,13 +10,13 @@ import config.enums as enums
 # from rovs.spike.rov_config import SpikeConfig, ThrusterPositions
 
 
-class Spike:
-    _config: rov_config.SpikeConfig
+class ROV:
+    _config: rov_config.ROVConfig
 
     _thrusters: dict[enums.ThrusterPositions, thruster_pwm.ThrusterPWM]
     _inputs_getter_map: dict[str, Callable[[], any]]  # Function to call to obtain input of a given name.
 
-    def __init__(self, spike_config: rov_config.SpikeConfig,
+    def __init__(self, spike_config: rov_config.ROVConfig,
                  input_getter: dict[str, Callable[[], any]]):
         """Create and initialize the ROV hardware.
 

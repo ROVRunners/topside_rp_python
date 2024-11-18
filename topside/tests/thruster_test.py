@@ -12,7 +12,7 @@ class thruster_test(unittest.TestCase):
         power *= 0.7
         return int(1100 + 0.5 * (1900 - 1100) * (power + 1))
     def test_thruster_output(self):
-        self._config = rov_config.SpikeConfig()
+        self._config = rov_config.ROVConfig()
         self._thrusters = {}
         self._pwm_range = Range(1100, 1900)
         # Configure thrusters.

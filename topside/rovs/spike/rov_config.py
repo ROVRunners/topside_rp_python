@@ -8,14 +8,15 @@ import config.controller as controller
 import config.thruster as thruster
 
 
-class SpikeConfig:
-    """Class for the ROV  configuration."""
+class ROVConfig:
+    """Class for the ROV configuration."""
 
     def __init__(self) -> None:
         """Initialize an instance of the class."""
 
-        self.ip = "169.254.5.24"
-        self.port = 5600
+        self.ip = "192.168.2.2"
+        self.comms_port = 1883
+        self.video_port = 5600
         self.rov = "topside\\rovs\\spike"
 
         # Put specific settings for each axis/button here
