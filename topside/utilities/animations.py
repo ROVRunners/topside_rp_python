@@ -12,8 +12,8 @@
 # pylint: disable=undefined-variable
 
 
-from Surface_Python.utilities import cursor
-from Surface_Python.utilities.personal_functions import *
+from topside.utilities import cursor
+from topside.utilities.personal_functions import *
 
 
 # def loading1(time: int = 5, message: str = "Loading:", container: str = "[ ]", length: int = 50,

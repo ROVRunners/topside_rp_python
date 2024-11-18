@@ -25,8 +25,8 @@ import time
 # pylint: disable=no-member
 # pylint: disable=import-error
 
-from Surface_Python.utilities import color
-from Surface_Python.utilities import keyboard_input as keybd
+import color
+import keyboard_input as keybd
 
 
 # Input / Output
@@ -429,6 +429,7 @@ def rounder(num: float) -> int:
     # Example 3: 1.5 in -> 1 + 0.5 <= 1.5 -> 1 + 1 out
     if int(num) + 0.5 <= num:
         return int(num) + 1
+
     return int(num)
 
 
@@ -449,8 +450,10 @@ def rand(num1: int, num2: int = None) -> int:
     # Generates a 128-bit number, then depending on the number of inputs,
     # finds a number in the given range.
     random = int.from_bytes(os.urandom(128), sys.byteorder)
+
     if num2 is None:
         return random % num1
+
     return random % (num2 - num1) + num1
 
 
@@ -488,52 +491,58 @@ def die_parser(command: str, option_chooser: bool = False) -> int | None:
 
     Args:
         command (str):
-            The die to be parsed and rolled. Format: '1d4 + 2', '2d8-4', or '3d36'
+            The dice to be parsed and rolled. Format: '1d4 + 2', '2d8-4', or '3d36'
         option_chooser (bool, optional):
             This is for a specific function. Should not be used.
 
     Returns:
-        int: The result of the rolled die.
+        int: The result of the rolled dice.
     """
     try:
         # Split off the die number and remainder.
-        arg1, part2 = command.rsplit("d")
+        arg_1, part_2 = command.rsplit("d")
 
-        # Split part2 into a die and mod if the mod exists.
+        # Split part_2 into a die and mod if the mod exists.
         if "+" in command:
-            arg2 = part2.rsplit("+")[0].strip()
-            arg3 = part2.rsplit("+")[1].strip()
+            arg_2 = part_2.rsplit("+")[0].strip()
+            arg_3 = part_2.rsplit("+")[1].strip()
         elif "-" in command:
-            arg2 = part2.rsplit("-")[0].strip()
-            arg3 = "-" + part2.rsplit("-")[1].strip()
+            arg_2 = part_2.rsplit("-")[0].strip()
+            arg_3 = "-" + part_2.rsplit("-")[1].strip()
         else:
-            arg2 = part2.strip()
-            arg3 = "0"
+            arg_2 = part_2.strip()
+            arg_3 = "0"
 
-        number = intvert(arg1, "The number of dice is not a number!") if len(
-            arg1) >= 1 else 1
-        die = intvert(arg2, "That's no die type!")
-        mod = intvert(arg3, "That's no mod!")
+        # Check to see if the values received were valid numbers.
+        number = intvert(arg_1, "The number of dice is not a number!") if len(arg_1) >= 1 else 1
+        die = intvert(arg_2, "That's no die type!")
+        mod = intvert(arg_3, "That's no mod!")
 
+        # Used for a function used for deciding between several options.
         if option_chooser:
             mod = -abs(die)
 
+        # Roll and sum up the dice and add the mod.
         result = []
         num = 0
+
         for _ in range(number):
             result.append(roll(1, die, 0))
             num += result[-1]
+
         num += mod
 
         return num
 
+    # If the values aren't numbers, it will catch the error and print a message.
     except ValueError:
         print(f"Pretty sure something in {command} wasn't a number when it should have been... " +
               "Try again?")
+
         return None
 
 
-def roll(number=1, die=6, mod=0):
+def roll(number: int = 1, die: int = 6, mod: int = 0) -> int:
     """Roll a number of any type of dice with any modifier.
 
     Args:
@@ -551,8 +560,10 @@ def roll(number=1, die=6, mod=0):
         int: The sum of the rolls.
     """
     num = 0
+
     for _ in range(number):
         num += rand(0, die) + 1
+
     return num + mod
 
 
