@@ -1,7 +1,7 @@
 import unittest
 
-from config.enums import ThrusterPositions, ThrusterOrientations
-from hardware import thruster_pwm, ThrusterPWM, FrameThrusters
+from rovs.spike.enums import ThrusterOrientations
+from hardware import thruster_pwm
 from rovs.spike import rov_config
 from utilities.range import Range
 

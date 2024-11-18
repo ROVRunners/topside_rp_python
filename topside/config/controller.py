@@ -15,7 +15,7 @@ from typing import NamedTuple, Callable
 
 # from topside.config.typed_range import RangeConfig
 import config.typed_range as typed_range
-import config.enums as enums
+import rovs.spike.enums as enums
 
 
 class AxisConfig(NamedTuple):

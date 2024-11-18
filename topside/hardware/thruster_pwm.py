@@ -4,7 +4,7 @@ Input is given through lateral_thruster_calc_circular and returned as a FrameThr
 import math
 
 from config.thruster import ThrusterPWMConfig
-from config.enums import ThrusterPositions, Directions
+from rovs.spike.enums import ThrusterPositions, Directions
 
 
 # Imma be honest, this feels needlessly precise. Why do we need it down to the 10 Quadrillionth place?

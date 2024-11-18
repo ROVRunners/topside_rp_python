@@ -3,7 +3,7 @@ from typing import NamedTuple
 # from config.typed_range import IntRange
 # from config.enums import ThrusterOrientations
 import config.typed_range as typed_range
-import config.enums as enums
+import rovs.spike.enums as enums
 
 
 class ThrusterPWMConfig(NamedTuple):

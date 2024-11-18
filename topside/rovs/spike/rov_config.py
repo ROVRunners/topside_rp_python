@@ -3,7 +3,7 @@
 # from config.enums import ControllerAxisNames, ControllerButtonNames, ThrusterPositions, ThrusterOrientations
 # from topside.config import AxisConfig, ButtonConfig, ThrusterPWMConfig, IntRange, ControllerConfig
 import config.typed_range as typed_range
-import config.enums as enums
+import rovs.spike.enums as enums
 import config.controller as controller
 import config.thruster as thruster
 
@@ -14,10 +14,11 @@ class ROVConfig:
     def __init__(self) -> None:
         """Initialize an instance of the class."""
 
-        self.ip = "192.168.2.2"
+        # The ports used to communicate with the ROV. The comms port is for the MQTT broker, while the video port is
+        # for the video stream(s).
         self.comms_port = 1883
         self.video_port = 5600
-        self.rov = "topside\\rovs\\spike"
+        self.host_ip = "localhost"
 
         # Put specific settings for each axis/button here
         self.axis_configs: dict[enums.ControllerAxisNames, controller.AxisConfig] = {
@@ -109,21 +110,10 @@ class ROVConfig:
             },
         }
 
-        self.thruster_positions = [
-            enums.ThrusterPositions.FRONT_RIGHT,
-            enums.ThrusterPositions.FRONT_LEFT,
-            enums.ThrusterPositions.REAR_RIGHT,
-            enums.ThrusterPositions.REAR_LEFT,
-            enums.ThrusterPositions.FRONT_RIGHT_VERTICAL,
-            enums.ThrusterPositions.FRONT_LEFT_VERTICAL,
-            enums.ThrusterPositions.REAR_RIGHT_VERTICAL,
-            enums.ThrusterPositions.REAR_LEFT_VERTICAL,
-        ]
-
         self.thruster_configs: dict[enums.ThrusterPositions, thruster.ThrusterPWMConfig] = {
 
             position: thruster.ThrusterPWMConfig(
                 pwm_pulse_range=typed_range.IntRange(min=1100, max=1900),
                 thruster_impulses=self.thruster_impulses[position]
-            ) for position in self.thruster_positions
+            ) for position in self.thruster_impulses.keys()
         }

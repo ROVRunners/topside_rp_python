@@ -3,9 +3,10 @@ from typing import Callable
 # import topside.config as config
 # from hardware import ThrusterPWM, FrameThrusters
 import hardware.thruster_pwm as thruster_pwm
+import mqtt_handler
 import rovs.spike.rov_config as rov_config
 import rovs.spike.manual as manual
-import config.enums as enums
+import rovs.spike.enums as enums
 # from rovs.spike.manual import Manual
 # from rovs.spike.rov_config import SpikeConfig, ThrusterPositions
 
@@ -17,7 +18,7 @@ class ROV:
     _inputs_getter_map: dict[str, Callable[[], any]]  # Function to call to obtain input of a given name.
 
     def __init__(self, spike_config: rov_config.ROVConfig,
-                 input_getter: dict[str, Callable[[], any]]):
+                 input_getter: dict[str, Callable[[], any]], rov_connection: mqtt_handler.ROVConnection) -> None:
         """Create and initialize the ROV hardware.
 
         Args:
@@ -37,7 +38,10 @@ class ROV:
         self._frame = thruster_pwm.FrameThrusters(self._thrusters)
 
         # Set the class handling control to manual as default.
-        self._control_mode = manual.Manual(self._frame)
+        self._control_mode = manual.Manual(self._frame, rov_connection)
+
+        # Used to flag a desired shutdown of the ROV.
+        self.continue_running = True
 
     def get_inputs(self) -> dict[str, dict[enums.ControllerButtonNames | enums.ControllerAxisNames, object]]:
         """Get the inputs from the controller and otherwise.
@@ -59,3 +63,9 @@ class ROV:
 
     def run(self):
         self._control_mode.update(self.get_inputs())
+
+    def shutdown(self):
+        """Shutdown the ROV hardware."""
+        # TODO: Implement this method further.
+        self._control_mode.shutdown()
+        print("ROV shutdown complete.")

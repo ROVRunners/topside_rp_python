@@ -83,11 +83,9 @@ class SocketHandler:
             except (ConnectionRefusedError, TimeoutError):
                 # If it hasn't connected after {attempts} attempts, give up.
                 if attempts > self.max_attempts:
-                    # TODO Replace error()
                     print("Outbound connection refused too many times. Exiting...")
                     self.main_system.shutdown()
 
-                # TODO Replace error()
                 print(f"Outbound connection refused ({attempts}). Retrying...")
                 time.sleep(self.timeout)
 
@@ -131,7 +129,6 @@ class SocketHandler:
     #                         self.sensor_data_available = True
     #
     #             except ConnectionResetError:
-    #                 # TODO Replace error()
     #                 print("Inbound connection reset. Reconnecting...")
     #
     #         server_socket.close()
@@ -160,7 +157,6 @@ class SocketHandler:
 
         except ConnectionResetError:
             # If the connection is reset, attempt to reconnect.
-            # TODO Replace error()
             print("Connection reset. Reconnecting...")
             self._setup_socket()
 

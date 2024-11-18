@@ -12,7 +12,11 @@ def run():
     while main_system.run:
         # If debug is enabled, we want to hit exceptions so that we can see them.
         if debug:
-            main_system.main_loop()
+            try:
+                main_system.main_loop()
+            except KeyboardInterrupt as e:
+                print(f'KeyboardInterrupt in main_system.main_loop():\n{e}')
+                main_system.shutdown()
         # If debug is disabled, we want to catch exceptions so that the program doesn't crash.
         else:
             try:

@@ -22,7 +22,7 @@ def wrap_angle(angle: float, min_val: float = 0) -> float:
     clamped = angle % tau
     max_val = min_val + tau
 
-    while clamped >= max_val:  # TODO Do the math and multiply instead of adding
+    while clamped >= max_val:  # TODO: Do the math and multiply instead of adding
         clamped -= tau
     while clamped < min_val:
         clamped += tau

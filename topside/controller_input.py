@@ -1,6 +1,4 @@
 """Gets input from a controller and maps it to the controls in the config file."""
-import os
-import time
 
 # pylint: disable=wildcard-import, unused-import, unused-wildcard-import
 
@@ -13,7 +11,7 @@ from utilities.range import Range
 
 # from config import ControllerConfig
 import config.controller as controller
-import config.enums as enums
+import rovs.spike.enums as enums
 # from surface_main import MainSystem
 
 
