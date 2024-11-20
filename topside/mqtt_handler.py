@@ -58,10 +58,9 @@ class ROVConnection:
                 Each command key must be specifically subscribed to by the ROV. One such use could be to command the ROV
                 to subscribe to a new topic, however. Another note is that the value could be a json string, therefore
                 allowing for different types of data to be sent.
-                TODO: Implement these in the ROV.
         """
         for cmd, val in command_list.items():
-            self._client.publish(cmd, val)
+            self._client.publish(f"PC/commands/{cmd}", val)
 
     def publish_thruster_pwm(self, thruster_pwm: dict[enums.ThrusterPositions, int]) -> None:
         """Send a series of packets from the Raspberry Pi with the specified thruster PWM values. To improve
@@ -91,7 +90,7 @@ class ROVConnection:
 
         # Publish the PWM values to the MQTT broker.
         for pos, value in changed_pwm_values.items():
-            self._client.publish(f"thruster_pwm/{pos}", value)
+            self._client.publish(f"PC/thruster_pwm/{pos}", value)
 
     def get_subscriptions(self) -> dict[str, float | str | dict[str, float | str]]:
         """Get the sensor data from the Raspberry Pi.
