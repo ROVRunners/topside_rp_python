@@ -9,7 +9,7 @@ from rovs.spike import enums
 
 
 class ROVConnection:
-    def __init__(self, ip: str = "localhost", port: int = 1883, client_id: str = "ROV_Controller") -> None:
+    def __init__(self, ip: str = "localhost", port: int = 1883, client_id: str = "PC") -> None:
         """Initialize the SurfaceConnection object.
 
         Args:
@@ -21,7 +21,7 @@ class ROVConnection:
                 Defaults to 1883.
             client_id (str, optional):
                 The ID of the computer connecting to the MQTT broker.
-                Defaults to "ROV_Controller".
+                Defaults to "PC".
         """
         self._ip = ip
         self._port = port
@@ -43,7 +43,8 @@ class ROVConnection:
         self._last_pwm_update: float = 0.0
         self._idle_ping_frequency: float = 2.0
 
-    def connect(self):
+    def connect(self) -> None:
+        """Connect to the MQTT broker."""
         self._client.connect(host=self._ip, port=self._port)
         self._client.loop_start()
 
@@ -125,12 +126,34 @@ class ROVConnection:
         with self._subscription_lock:
             self._subscriptions[sub] = value
 
-    def _on_message(self, client, userdata, message):
+    def _on_message(self, client, userdata, message) -> None:
+        """Handle incoming messages from the MQTT broker.
+
+        Args:
+            client (mqtt.Client):
+                The client object.
+            userdata:
+                The user data.
+            message (mqtt.MQTTMessage):
+                The message object.
+        """
         print(f"Received message '{message.payload.decode()}' on topic '{message.topic}'")
 
         self._set_subscription_value(message.topic, message.payload.decode())
 
-    def _on_connect(self, client, userdata, flags, rc):
+    def _on_connect(self, client, userdata, flags, rc) -> None:
+        """Handle connection to the MQTT broker.
+
+        Args:
+            client (mqtt.Client):
+                The client object.
+            userdata:
+                The user data.
+            flags:
+                The flags.
+            rc (int):
+                The result code.
+        """
         print(f"Connected with result code {rc}")
 
         self._client.subscribe("ROV_sensor_data")

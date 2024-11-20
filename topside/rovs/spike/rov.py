@@ -17,8 +17,8 @@ class ROV:
     _thrusters: dict[enums.ThrusterPositions, thruster_pwm.ThrusterPWM]
     _inputs_getter_map: dict[str, Callable[[], any]]  # Function to call to obtain input of a given name.
 
-    def __init__(self, spike_config: rov_config.ROVConfig,
-                 input_getter: dict[str, Callable[[], any]], rov_connection: mqtt_handler.ROVConnection) -> None:
+    def __init__(self, spike_config: rov_config.ROVConfig, input_getter: dict[str, Callable[[], any]],
+                 output_map: dict[str, Callable]) -> None:
         """Create and initialize the ROV hardware.
 
         Args:
@@ -26,6 +26,8 @@ class ROV:
                 Configuration of the ROV.
             input_getter (dict[str, dict[str, Callable[[], any]]):
                 Dictionary of callables used to get the inputs.
+            output_map (dict[str, Callable]):
+                Dictionary of callables used to output data.
         """
         self._config = spike_config
         self._thrusters = {}
@@ -38,7 +40,7 @@ class ROV:
         self._frame = thruster_pwm.FrameThrusters(self._thrusters)
 
         # Set the class handling control to manual as default.
-        self._control_mode = manual.Manual(self._frame, rov_connection)
+        self._control_mode = manual.Manual(self._frame, output_map)
 
         # Used to flag a desired shutdown of the ROV.
         self.continue_running = True

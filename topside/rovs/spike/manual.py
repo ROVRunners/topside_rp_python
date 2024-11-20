@@ -1,3 +1,5 @@
+from typing import Callable
+
 import hardware.thruster_pwm as thruster_pwm
 import mqtt_handler
 import rovs.spike.enums as enums
@@ -7,20 +9,22 @@ import controller_input
 class Manual:
     """The manual control class for the ROV."""
 
-    def __init__(self, frame: thruster_pwm.FrameThrusters, rov_connection: mqtt_handler.ROVConnection) -> None:
+    def __init__(self, frame: thruster_pwm.FrameThrusters, output_map: dict[str, Callable]) -> None:
         """Initialize the Manual object.
 
         Args:
             frame (thruster_pwm.FrameThrusters):
                 The objects of the thrusters mounted to the frame.
-            rov_connection (mqtt_handler.ROVConnection):
-                The connection to the ROV.
+            output_map (dict[str, Callable]):
+                The output map for the Manual class to access MQTT and other functions.
         """
 
         self._frame = frame
-        self._rov_connection = rov_connection
+        self._output_map = output_map
 
-        self._last_pwm_values = {}
+        # Set up the callables for the MQTT handler.
+        self._send_commands: mqtt_handler.ROVConnection.publish_commands = output_map["rov_command"]
+        self._set_thrusters: mqtt_handler.ROVConnection.publish_thruster_pwm = output_map["rov_thrusters"]
 
         # self.sensor_data = {}
         # self.controller_data = {}
@@ -37,24 +41,34 @@ class Manual:
     def inputs(self, value):
         self.inputs = value
 
-    def update(self, inputs: dict[str, dict[enums.ControllerButtonNames | enums.ControllerAxisNames, any]]):
+    def update(self, inputs: dict[str, dict[enums.ControllerButtonNames | enums.ControllerAxisNames | str, any]]):
         """Update thrust values based on the inputs.
 
         Args:
-            inputs (dict[str, dict[enums.ControllerButtonNames | enums.ControllerAxisNames, any]]):
+            inputs (dict[str, dict[enums.ControllerButtonNames | enums.ControllerAxisNames | str, any]]):
                 The inputs from the controller, sensors, and otherwise.
         """
         controller = inputs["controller"]
+        subscriptions = inputs["subscriptions"]
+
+        if "ROV_sensor_data" in subscriptions:
+            sensor_data = subscriptions["ROV_sensor_data"]
 
         # Convert the triggers to a single value.
         right_trigger = controller[enums.ControllerAxisNames.RIGHT_TRIGGER]
         left_trigger = controller[enums.ControllerAxisNames.LEFT_TRIGGER]
         vertical = controller_input.combine_triggers(left_trigger, right_trigger)
 
-        # TODO: Add references any other input processing software like a PID here. Also, a PID should probably be
+        # Break down the sensor data into its components (more can be added as needed).
+        # gyro: dict[str, float] = sensor_data["gyroscope"]
+        # accel: dict[str, float] = sensor_data["accelerometer"]
+        # depth: float = sensor_data["depth"]
+        # leak: bool = sensor_data["leak"]
+
+        # TODO: Add any other input processing software like a PID here. Also, a PID should probably be
         #  implemented in a separate class due to it being generally applicable to all ROVs.
 
-        # Get the PWM values for the thrusters.
+        # Get the PWM values for the thrusters based on the controller inputs.
         pwm_values: dict[enums.ThrusterPositions, int] = self._frame.get_pwm_values(
             {
                 enums.Directions.FORWARDS: controller[enums.ControllerAxisNames.LEFT_Y],
@@ -67,14 +81,8 @@ class Manual:
         )
 
         # Publish the PWM values to the MQTT broker.
-        self._rov_connection.publish_thruster_pwm(pwm_values)
-
-        # msgs = []
-        # for p, v in pwm_values.items():
-        #     msgs.append({'topic': f'thruster_pwm/{p}', "payload": v})
-        #
-        # publish.multiple(msgs, hostname='localhost', port=1883)
-        # publish.single("thruster_pwm", repr(msg), hostname="localhost")
+        self._set_thrusters(pwm_values)
+        self._send_commands({})
 
     def shutdown(self):
         """Shutdown the ROV."""

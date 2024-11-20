@@ -29,7 +29,10 @@ class ControllerAxisNames(enum.StrEnum):
     RIGHT_X = "RIGHT_X",
     RIGHT_Y = "RIGHT_Y",
     LEFT_TRIGGER = "LEFT_TRIGGER",
-    RIGHT_TRIGGER = "RIGHT_TRIGGER"
+    RIGHT_TRIGGER = "RIGHT_TRIGGER",
+
+    def __repr__(self):
+        return self.value
 
 
 class ControllerButtonNames(enum.StrEnum):
@@ -64,6 +67,9 @@ class ControllerButtonNames(enum.StrEnum):
     SELECT = "SELECT",
     LEFT_BUMPER = "LEFT_BUMPER",
     RIGHT_BUMPER = "RIGHT_BUMPER",
+
+    def __repr__(self):
+        return self.value
 
 
 # Define the Thrusters and Orientations
@@ -130,3 +136,6 @@ class Directions(enum.StrEnum):
     YAW = "YAW",
     PITCH = "PITCH",
     ROLL = "ROLL",
+
+    def __repr__(self):
+        return self.value

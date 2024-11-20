@@ -47,10 +47,18 @@ class MainSystem:
         self.input_map: dict[str, Callable[[], any]] = {
             "controller": self.controller.get_inputs,
             "subscriptions": self.rov_connection.get_subscriptions,
+            # "socket": self.socket.get_video,
         }
         # TODO: Create an output map for the Manual class to access mqtt and other functions.
+        self.output_map: dict[str, Callable] = {
+            "rov_command": self.rov_connection.publish_commands,
+            "rov_thrusters": self.rov_connection.publish_thruster_pwm,
+            # "socket": self.socket,
+            # "video": None,
+            "shutdown": self.shutdown,
+        }
 
-        self._rov = rov.ROV(self.rov_config, self.input_map, self.rov_connection)
+        self._rov = rov.ROV(self.rov_config, self.input_map, self.output_map)
 
         self.rov_connection.connect()
 
