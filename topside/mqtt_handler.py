@@ -3,7 +3,8 @@ import json
 import time
 from threading import Lock
 
-import paho.mqtt.client as mqtt
+import paho.mqtt.client as mqtt_c
+import paho.mqtt.enums as mqtt
 
 from rovs.spike import enums
 
@@ -27,7 +28,8 @@ class ROVConnection:
         self._port = port
         self._client_id = client_id
 
-        self._client = mqtt.Client(client_id=self._client_id)
+        # TODO: Figure this out: callback_api_version=mqtt.CallbackAPIVersion.VERSION2,
+        self._client = mqtt_c.Client(client_id=self._client_id)
 
         self._client.on_message = self._on_message
         self._client.on_connect = self._on_connect

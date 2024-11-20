@@ -1,2 +1,16 @@
 
 /topside/__pycache__
+topside/config/__pycache__/__init__.cpython-311.pyc
+topside/config/__pycache__/controller.cpython-311.pyc
+topside/config/__pycache__/thruster.cpython-311.pyc
+topside/config/__pycache__/typed_range.cpython-311.pyc
+topside/hardware/__pycache__/__init__.cpython-311.pyc
+topside/hardware/__pycache__/thruster_pwm.cpython-311.pyc
+topside/rovs/__pycache__/__init__.cpython-311.pyc
+topside/rovs/spike/__pycache__/__init__.cpython-311.pyc
+topside/rovs/spike/__pycache__/enums.cpython-311.pyc
+topside/rovs/spike/__pycache__/manual.cpython-311.pyc
+topside/rovs/spike/__pycache__/rov_config.cpython-311.pyc
+topside/rovs/spike/__pycache__/rov.cpython-311.pyc
+topside/utilities/__pycache__/__init__.cpython-311.pyc
+topside/utilities/__pycache__/range.cpython-311.pyc
