@@ -25,8 +25,8 @@ import time
 # pylint: disable=no-member
 # pylint: disable=import-error
 
-import color
-import keyboard_input as keybd
+import utilities.color as color
+import utilities.keyboard_input as keybd
 
 
 # Input / Output
@@ -142,11 +142,12 @@ def error(*message: object, unlist_list: bool = True, letter_time: float = 0.0, 
             Defaults to True.
     """
     # See the equivalent in text().
+    str_message = str(message)
     if len(message) == 1:
-        if isinstance(message[0], (tuple, list)):
-            message = message[0]
+        if isinstance(message, (tuple, list)):
+            str_message = message[0]
 
-    msg = color.WARN + " " + message + " " + color.WARN.strip()
+    msg = color.WARN + " " + str_message + " " + color.WARN.strip()
 
     # Passes through the arguments to text() and adds the error modifiers.
     text(msg, unlist_list=unlist_list, letter_time=letter_time, line_delay=line_delay,
