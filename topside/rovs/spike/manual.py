@@ -80,6 +80,9 @@ class Manual:
             },
         )
 
+        if (controller[enums.ControllerButtonNames.B]):
+            self._rov_connection.publish_commands({"stop": "true"})
+
         # Publish the PWM values to the MQTT broker.
         self._set_thrusters(pwm_values)
         self._send_commands({})

@@ -1,9 +1,11 @@
 import copy
 import json
+import subprocess
 import time
 from threading import Lock
 
-import paho.mqtt.client as mqtt
+import paho.mqtt.client as mqtt_c
+import paho.mqtt.enums as mqtt
 
 from rovs.spike import enums
 
@@ -27,7 +29,8 @@ class ROVConnection:
         self._port = port
         self._client_id = client_id
 
-        self._client = mqtt.Client(client_id=self._client_id)
+        # TODO: Figure this out: callback_api_version=mqtt.CallbackAPIVersion.VERSION2,
+        self._client = mqtt_c.Client(client_id=self._client_id)
 
         self._client.on_message = self._on_message
         self._client.on_connect = self._on_connect
@@ -45,6 +48,11 @@ class ROVConnection:
 
     def connect(self) -> None:
         """Connect to the MQTT broker."""
+
+        subprocess.Popen('\"C:\\Program Files\\mosquitto\\mosquitto.exe\" -v ' +
+                         '-c \"C:\\Program Files\\mosquitto\\mosquitto.conf\"',
+                         creationflags=subprocess.CREATE_NEW_CONSOLE)
+
         self._client.connect(host=self._ip, port=self._port)
         self._client.loop_start()
 
@@ -57,10 +65,9 @@ class ROVConnection:
                 Each command key must be specifically subscribed to by the ROV. One such use could be to command the ROV
                 to subscribe to a new topic, however. Another note is that the value could be a json string, therefore
                 allowing for different types of data to be sent.
-                TODO: Implement these in the ROV.
         """
         for cmd, val in command_list.items():
-            self._client.publish(cmd, val)
+            self._client.publish(f"PC/commands/{cmd}", val)
 
     def publish_thruster_pwm(self, thruster_pwm: dict[enums.ThrusterPositions, int]) -> None:
         """Send a series of packets from the Raspberry Pi with the specified thruster PWM values. To improve
@@ -90,7 +97,7 @@ class ROVConnection:
 
         # Publish the PWM values to the MQTT broker.
         for pos, value in changed_pwm_values.items():
-            self._client.publish(f"thruster_pwm/{pos}", value)
+            self._client.publish(f"PC/thruster_pwm/{pos}", value)
 
     def get_subscriptions(self) -> dict[str, float | str | dict[str, float | str]]:
         """Get the sensor data from the Raspberry Pi.
