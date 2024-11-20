@@ -80,12 +80,16 @@ class Manual:
             },
         )
 
-        if (controller[enums.ControllerButtonNames.B]):
-            self._rov_connection.publish_commands({"stop": "true"})
+        if controller[enums.ControllerButtonNames.B]:
+            stop = True
+        else:
+            stop = False
 
         # Publish the PWM values to the MQTT broker.
         self._set_thrusters(pwm_values)
-        self._send_commands({})
+        self._send_commands({
+            "stop": stop,
+        })
 
     def shutdown(self):
         """Shutdown the ROV."""

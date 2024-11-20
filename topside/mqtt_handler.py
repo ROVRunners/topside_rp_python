@@ -5,7 +5,7 @@ import time
 from threading import Lock
 
 import paho.mqtt.client as mqtt_c
-import paho.mqtt.enums as mqtt
+# import paho.mqtt.enums as mqtt
 
 from rovs.spike import enums
 
@@ -46,6 +46,10 @@ class ROVConnection:
         self._last_pwm_update: float = 0.0
         self._idle_ping_frequency: float = 2.0
 
+        # Do the same for commands.
+        self._last_command_values = {}
+        self._last_command_update: float = 0.0
+
     def connect(self) -> None:
         """Connect to the MQTT broker."""
 
@@ -66,7 +70,25 @@ class ROVConnection:
                 to subscribe to a new topic, however. Another note is that the value could be a json string, therefore
                 allowing for different types of data to be sent.
         """
-        for cmd, val in command_list.items():
+        # Build a dictionary of the PWM values that have changed.
+        changed_command_values = {}
+
+        for cmd, value in command_list.items():
+            if value != self._last_command_values.get(cmd, 0):
+                self._last_command_values[cmd] = value
+                changed_command_values[cmd] = value
+
+        # If no values have changed for too long, send the last values every 0.5 seconds.
+        if not changed_command_values:
+            if time.time() - self._last_command_update > self._idle_ping_frequency:
+                changed_command_values = copy.deepcopy(self._last_command_values)
+            else:
+                return
+
+        # Update the last PWM update time regardless of whether the PWM values have changed.
+        self._last_command_update = time.time()
+
+        for cmd, val in changed_command_values.items():
             self._client.publish(f"PC/commands/{cmd}", val)
 
     def publish_thruster_pwm(self, thruster_pwm: dict[enums.ThrusterPositions, int]) -> None:
