@@ -185,9 +185,7 @@ class ROVConnection:
         """
         print(f"Connected with result code {rc}")
 
-        self._client.subscribe("ROV_sensor_data")
-        self._client.subscribe("ROV_status")
-        self._client.subscribe("ROV_other")
+        self._client.subscribe("ROV/#")
 
     # def _on_publish(self, client, userdata, mid):
     #     print(f"Published message with mid {mid}")
