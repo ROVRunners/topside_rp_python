@@ -1,5 +1,7 @@
 import copy
 import json
+import os
+import subprocess
 import time
 from threading import Lock
 
@@ -46,6 +48,11 @@ class ROVConnection:
         self._idle_ping_frequency: float = 2.0
 
     def connect(self):
+
+        subprocess.Popen('\"C:\Program Files\mosquitto\mosquitto.exe\" -v ' +
+                         '-c \"C:\Program Files\mosquitto\mosquitto.conf\"',
+                         creationflags=subprocess.CREATE_NEW_CONSOLE)
+
         self._client.connect(host=self._ip, port=self._port)
         self._client.loop_start()
 
