@@ -1,9 +1,7 @@
 from typing import NamedTuple
 
-# from config.typed_range import IntRange
-# from config.enums import ThrusterOrientations
 import config.typed_range as typed_range
-import rovs.spike.enums as enums
+import enums
 
 
 class ThrusterPWMConfig(NamedTuple):

@@ -4,10 +4,11 @@ import subprocess
 import time
 from threading import Lock
 
+import killport
 import paho.mqtt.client as mqtt_c
 # import paho.mqtt.enums as mqtt
 
-from rovs.spike import enums
+import enums
 
 
 class ROVConnection:
@@ -53,9 +54,12 @@ class ROVConnection:
     def connect(self) -> None:
         """Connect to the MQTT broker."""
 
-        subprocess.Popen('\"C:\\Program Files\\mosquitto\\mosquitto.exe\" -v ' +
-                         '-c \"C:\\Program Files\\mosquitto\\mosquitto.conf\"',
+        killport.kill_ports(ports=[1883])
+
+        subprocess.Popen('\"C:\\Program Files\\mosquitto\\mosquitto.exe\" -v -c \"C:\\Program Files\\mosquitto\\mosquitto.conf\"',
                          creationflags=subprocess.CREATE_NEW_CONSOLE)
+
+        time.sleep(.5)
 
         self._client.connect(host=self._ip, port=self._port)
         self._client.loop_start()

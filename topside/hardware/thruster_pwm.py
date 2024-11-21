@@ -4,7 +4,8 @@ Input is given through lateral_thruster_calc_circular and returned as a FrameThr
 import math
 
 from config.thruster import ThrusterPWMConfig
-from rovs.spike.enums import ThrusterPositions, Directions
+# noinspection PyUnresolvedReferences
+import enums
 
 
 # Imma be honest, this feels needlessly precise. Why do we need it down to the 10 Quadrillionth place?
@@ -71,27 +72,27 @@ class ThrusterPWM:
 class FrameThrusters:
     """Wrapper for a ROV frame's thrusters."""
 
-    def __init__(self, thrusters: dict[ThrusterPositions, ThrusterPWM]) -> None:
+    def __init__(self, thrusters: dict[enums.ThrusterPositions, ThrusterPWM]) -> None:
         """Initialize a new set of thruster values.
 
         Args:
-            thrusters (dict[ThrusterPositions, ThrusterPWM]):
+            thrusters (dict[enums.ThrusterPositions, ThrusterPWM]):
                 A dictionary of thrusters.
         """
         self.thrusters = thrusters
 
-    def get_pwm(self) -> dict[ThrusterPositions, int]:
+    def get_pwm(self) -> dict[enums.ThrusterPositions, int]:
         """Get a PWM value for each thruster at its current power."""
         return {position: thruster.pwm_output for position, thruster in self.thrusters.items()}
 
     def __repr__(self) -> str:
         return f"FrameThrusters({', '.join([str(thruster) + '=' + str(thruster.pwm_output) for thruster in self.thrusters.values()])})"
 
-    def _thruster_calc(self, motions: dict[Directions, float]) -> None:
+    def _thruster_calc(self, motions: dict[enums.Directions, float]) -> None:
         """Calculate thruster values for a given set of inputs.
 
         Args:
-            motions (dict[Directions, float]):
+            motions (dict[enums.Directions, float]):
                 A dictionary of thruster orientations and their values.
 
         Returns:
@@ -115,12 +116,12 @@ class FrameThrusters:
         # The following is a more general version of the above code. It iterates over all thruster orientations and
         # sums the contributions of each thruster to that orientation.
         orientations = [
-            Directions.FORWARDS,
-            Directions.RIGHT,
-            Directions.UP,
-            Directions.PITCH,
-            Directions.ROLL,
-            Directions.YAW,
+            enums.Directions.FORWARDS,
+            enums.Directions.RIGHT,
+            enums.Directions.UP,
+            enums.Directions.PITCH,
+            enums.Directions.ROLL,
+            enums.Directions.YAW,
         ]
 
         contributions = {
@@ -163,11 +164,11 @@ class FrameThrusters:
         """
         return x*math.sqrt(1 - y**2/2.0), y*math.sqrt(1 - x**2/2.0)
 
-    def _thruster_calc_circular(self, motions: dict[Directions, float]) -> None:
+    def _thruster_calc_circular(self, motions: dict[enums.Directions, float]) -> None:
         """Calculate thruster values for a given set of desired motions after mapping the lateral controls to a circle.
 
         Args:
-            motions (dict[Directions, float]):
+            motions (dict[enums.Directions, float]):
                 A dictionary of thruster orientations and their values.
 
         Returns:
@@ -186,12 +187,12 @@ class FrameThrusters:
         # self.rr.power /= INV_SQRT2
         # self.rl.power /= INV_SQRT2
 
-    def get_pwm_values(self, motions: dict[Directions, float]) -> dict[ThrusterPositions, int]:
+    def get_pwm_values(self, motions: dict[enums.Directions, float]) -> dict[enums.ThrusterPositions, int]:
         """Get PWM values for a given set of inputs. USE THIS FUNCTION, NOT THE OTHERS, FROM OUTSIDE THE THRUSTER_PWM
         FILE.
 
         Args:
-            motions (dict[Directions, float]):
+            motions (dict[enums.Directions, float]):
                 A dictionary of thruster orientations and their values.
 
         Returns:

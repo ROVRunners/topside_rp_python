@@ -1,35 +1,31 @@
-from typing import Callable
-
 import hardware.thruster_pwm as thruster_pwm
 import mqtt_handler
-import rovs.spike.enums as enums
+import enums
 import controller_input
+import surface_main
 
 
 class Manual:
     """The manual control class for the ROV."""
 
-    def __init__(self, frame: thruster_pwm.FrameThrusters, output_map: dict[str, Callable]) -> None:
+    def __init__(self, frame: thruster_pwm.FrameThrusters, main_system: 'surface_main.MainSystem') -> None:
         """Initialize the Manual object.
 
         Args:
             frame (thruster_pwm.FrameThrusters):
                 The objects of the thrusters mounted to the frame.
-            output_map (dict[str, Callable]):
-                The output map for the Manual class to access MQTT and other functions.
+            main_system ('surface_main.MainSystem'):
+                The MainSystem object.
         """
-
         self._frame = frame
-        self._output_map = output_map
+        self._main_system: 'surface_main.MainSystem' = main_system
 
-        # Set up the callables for the MQTT handler.
-        self._send_commands: mqtt_handler.ROVConnection.publish_commands = output_map["rov_command"]
-        self._set_thrusters: mqtt_handler.ROVConnection.publish_thruster_pwm = output_map["rov_thrusters"]
+        # Set up the objects
+        self._rov_connection: mqtt_handler.ROVConnection = self._main_system.rov_connection
+        self._input_handler: controller_input.InputHandler = self._main_system.input_handler
 
         # self.sensor_data = {}
-        # self.controller_data = {}
         # self.terminal_data = {}
-        # self.pwm_values = []
 
         # Add whatever you need initialized here.
 
@@ -41,18 +37,19 @@ class Manual:
     def inputs(self, value):
         self.inputs = value
 
-    def update(self, inputs: dict[str, dict[enums.ControllerButtonNames | enums.ControllerAxisNames | str, any]]):
-        """Update thrust values based on the inputs.
+    def loop(self):
+        """Update thrust values, send commands, and more based on the inputs."""
+        inputs = self._input_handler.get_inputs()
+        toggled_inputs = self._input_handler.get_toggled_inputs()
 
-        Args:
-            inputs (dict[str, dict[enums.ControllerButtonNames | enums.ControllerAxisNames | str, any]]):
-                The inputs from the controller, sensors, and otherwise.
-        """
-        controller = inputs["controller"]
-        subscriptions = inputs["subscriptions"]
+        controller = inputs[enums.ControllerNames.PRIMARY_DRIVER]
+        controller_toggles = toggled_inputs[enums.ControllerNames.PRIMARY_DRIVER]
 
-        if "ROV_sensor_data" in subscriptions:
-            sensor_data = subscriptions["ROV_sensor_data"]
+        subscriptions = self._rov_connection.get_subscriptions()
+
+        # Get the sensor data from the subscriptions if it exists.
+        if "ROV/sensor_data" in subscriptions:
+            sensor_data = subscriptions["ROV/sensor_data"]
 
         # Convert the triggers to a single value.
         right_trigger = controller[enums.ControllerAxisNames.RIGHT_TRIGGER]
@@ -80,14 +77,15 @@ class Manual:
             },
         )
 
-        if controller[enums.ControllerButtonNames.B]:
+        # Test to see if button press toggles are working.
+        if controller_toggles[enums.ControllerButtonNames.B]:
             stop = True
         else:
             stop = False
 
         # Publish the PWM values to the MQTT broker.
-        self._set_thrusters(pwm_values)
-        self._send_commands({
+        self._rov_connection.publish_thruster_pwm(pwm_values)
+        self._rov_connection.publish_commands({
             "stop": stop,
         })
 

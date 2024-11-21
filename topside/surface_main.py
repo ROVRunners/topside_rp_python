@@ -1,15 +1,12 @@
 """Main file for the surface station."""
-import os
-import sys
 import time
 from typing import Callable
 
-import socket_handler
+import hardware.rov as rov
+import rov_config
+
 import controller_input
 import mqtt_handler
-
-import rovs.spike.rov as rov
-import rovs.spike.rov_config as rov_config
 
 
 class MainSystem:
@@ -30,35 +27,27 @@ class MainSystem:
         self.rov_config = rov_config.ROVConfig()
 ################################################################
 
-        self.video_port = self.rov_config.video_port
-        self.comms_port = self.rov_config.comms_port
-        self.host_ip = self.rov_config.host_ip
+        self._video_port = self.rov_config.video_port
+        self._comms_port = self.rov_config.comms_port
+        self._host_ip = self.rov_config.host_ip
 
         # TODO: Set this up to receive the video stream(s)
         # self.socket = socket_handler.SocketHandler(self, self.pi_ip, self.video_port)
 
-        self.controller = controller_input.Controller(self.rov_config.controller_config)
+        self.input_handler = controller_input.InputHandler(self.rov_config.controllers)
 
         # The MQTT handler is used to communicate with the ROV sending and receiving thruster commands and sensor data.
-        self.rov_connection = mqtt_handler.ROVConnection(self.host_ip, self.comms_port)
+        self.rov_connection = mqtt_handler.ROVConnection(self._host_ip, self._comms_port)
 
         # TODO: Incorporate terminal input and openCV video stream(s). Maybe incorporate a video stream switching
         #  system.
         self.input_map: dict[str, Callable[[], any]] = {
-            "controller": self.controller.get_inputs,
+            "controller": self.input_handler.get_inputs,
             "subscriptions": self.rov_connection.get_subscriptions,
             # "socket": self.socket.get_video,
         }
-        # TODO: Create an output map for the Manual class to access mqtt and other functions.
-        self.output_map: dict[str, Callable] = {
-            "rov_command": self.rov_connection.publish_commands,
-            "rov_thrusters": self.rov_connection.publish_thruster_pwm,
-            # "socket": self.socket,
-            # "video": None,
-            "shutdown": self.shutdown,
-        }
 
-        self._rov = rov.ROV(self.rov_config, self.input_map, self.output_map)
+        self._rov = rov.ROV(self)
 
         self.rov_connection.connect()
 
@@ -80,7 +69,6 @@ class MainSystem:
         sleep_time: float = (self._nanoseconds_per_loop - loop_time) / 1_000_000_000
         if sleep_time > 0:
             time.sleep(sleep_time)
-            # print(sleep_time)
 
     def shutdown(self) -> None:
         """Shuts down the system and its subsystems."""
@@ -90,5 +78,3 @@ class MainSystem:
         # self.socket.shutdown()
         # Delay to let things close properly
         time.sleep(.25)
-
-

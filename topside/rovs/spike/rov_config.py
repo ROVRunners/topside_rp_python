@@ -1,9 +1,8 @@
 """This file contains the configuration for the Spike ROV."""
+import socket
 
-# from config.enums import ControllerAxisNames, ControllerButtonNames, ThrusterPositions, ThrusterOrientations
-# from topside.config import AxisConfig, ButtonConfig, ThrusterPWMConfig, IntRange, ControllerConfig
 import config.typed_range as typed_range
-import rovs.spike.enums as enums
+import enums
 import config.controller as controller
 import config.thruster as thruster
 
@@ -18,31 +17,44 @@ class ROVConfig:
         # for the video stream(s).
         self.comms_port = 1883
         self.video_port = 5600
+
         # TODO: This is where you change the IP. It needs to be the local IP for remote stuff to connect.
-        #  We need to make it so it 
-        self.host_ip = "172.17.128.243"
+        #  We need to make it so it sets itself automatically or can be set by the user.
+        # Test auto-IP getter:
+        hostname = socket.gethostname()
+        ip_addr = socket.gethostbyname(hostname)
 
-        # Put specific settings for each axis/button here
-        self.axis_configs: dict[enums.ControllerAxisNames, controller.AxisConfig] = {
-            enums.ControllerAxisNames.LEFT_X: controller.AxisConfig(index=0, deadband=0.15),
-            enums.ControllerAxisNames.LEFT_Y: controller.AxisConfig(index=1, deadband=0.15),
-            enums.ControllerAxisNames.RIGHT_X: controller.AxisConfig(index=2, deadband=0.15),
-            enums.ControllerAxisNames.RIGHT_Y: controller.AxisConfig(index=3, deadband=0.15),
-            enums.ControllerAxisNames.LEFT_TRIGGER: controller.AxisConfig(index=4),
-            enums.ControllerAxisNames.RIGHT_TRIGGER: controller.AxisConfig(index=5),
+        self.host_ip = ip_addr
+        # self.host_ip = "192.168.1.142"
+
+        # Put specific settings for each axis/button here. I recommend using a second set of dictionaries for a second
+        # controller, if you plan on using one.
+        self.axes: dict[enums.ControllerAxisNames, controller.Axis] = {
+            enums.ControllerAxisNames.LEFT_X: controller.Axis(index=0, deadzone=0.15),
+            enums.ControllerAxisNames.LEFT_Y: controller.Axis(index=1, deadzone=0.15),
+            enums.ControllerAxisNames.RIGHT_X: controller.Axis(index=2, deadzone=0.15),
+            enums.ControllerAxisNames.RIGHT_Y: controller.Axis(index=3, deadzone=0.15),
+            enums.ControllerAxisNames.LEFT_TRIGGER: controller.Axis(index=4),
+            enums.ControllerAxisNames.RIGHT_TRIGGER: controller.Axis(index=5),
         }
-        self.button_configs: dict[enums.ControllerButtonNames, controller.ButtonConfig] = {
-            enums.ControllerButtonNames.A: controller.ButtonConfig(index=0),
-            enums.ControllerButtonNames.B: controller.ButtonConfig(index=1),
-            enums.ControllerButtonNames.X: controller.ButtonConfig(index=2),
-            enums.ControllerButtonNames.Y: controller.ButtonConfig(index=3),
-            enums.ControllerButtonNames.START: controller.ButtonConfig(index=6),
-            enums.ControllerButtonNames.SELECT: controller.ButtonConfig(index=7),
-            enums.ControllerButtonNames.LEFT_BUMPER: controller.ButtonConfig(index=4),
-            enums.ControllerButtonNames.RIGHT_BUMPER: controller.ButtonConfig(index=5),
+        self.buttons: dict[enums.ControllerButtonNames, controller.Button] = {
+            enums.ControllerButtonNames.A: controller.Button(index=0),
+            enums.ControllerButtonNames.B: controller.Button(index=1),
+            enums.ControllerButtonNames.X: controller.Button(index=2),
+            enums.ControllerButtonNames.Y: controller.Button(index=3),
+            enums.ControllerButtonNames.START: controller.Button(index=6),
+            enums.ControllerButtonNames.SELECT: controller.Button(index=7),
+            enums.ControllerButtonNames.LEFT_BUMPER: controller.Button(index=4),
+            enums.ControllerButtonNames.RIGHT_BUMPER: controller.Button(index=5),
         }
 
-        self.controller_config = controller.ControllerConfig(self.button_configs, self.axis_configs)
+        self.hats: dict[enums.ControllerHatNames, controller.Hat] = {
+            enums.ControllerHatNames.DPAD: controller.Hat(index=0),
+        }
+
+        self.controllers: dict[enums.ControllerNames, controller.Controller] = {
+            enums.ControllerNames.PRIMARY_DRIVER: controller.Controller(0, self.buttons, self.axes, self.hats),
+        }
 
         # Definitions of the forces applied by the thrusters.
         self.thruster_impulses: dict[enums.ThrusterPositions, dict[enums.Directions, float]] = {

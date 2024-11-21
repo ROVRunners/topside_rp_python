@@ -3,7 +3,7 @@ import unittest
 from rovs.spike.enums import ThrusterOrientations
 from hardware import thruster_pwm
 from rovs.spike import rov_config
-from utilities.range import Range
+from utilities.range_util import Range
 
 class thruster_test(unittest.TestCase):
 

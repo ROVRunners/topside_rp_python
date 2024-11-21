@@ -72,6 +72,63 @@ class ControllerButtonNames(enum.StrEnum):
         return self.value
 
 
+class ControllerHatNames(enum.StrEnum):
+    """The D-Pad available on the controller.
+
+    Implements:
+        enum.StrEnum
+
+    Properties:
+        DPAD (str):
+            The only D-Pad on the controller in this configuration.
+    """
+    DPAD = "DPAD",
+
+    def __repr__(self):
+        return self.value
+
+
+class ControllerHatButtonNames(enum.StrEnum):
+    """The D-Pad directions available on the controller.
+
+    Implements:
+        enum.StrEnum
+
+    Properties:
+        DPAD_UP (str):
+            The up direction on the D-Pad.
+        DPAD_DOWN (str):
+            The down direction on the D-Pad.
+        DPAD_LEFT (str):
+            The left direction on the D-Pad.
+        DPAD_RIGHT (str):
+            The right direction on the D-Pad.
+    """
+    DPAD_UP = "DPAD_UP",
+    DPAD_DOWN = "DPAD_DOWN",
+    DPAD_LEFT = "DPAD_LEFT",
+    DPAD_RIGHT = "DPAD_RIGHT",
+
+    def __repr__(self):
+        return self.value
+
+
+class ControllerNames(enum.StrEnum):
+    """The names of the controllers available.
+
+    Implements:
+        enum.StrEnum
+
+    Properties:
+        PRIMARY_DRIVER (str):
+            The only driver controller in this configuration.
+    """
+    PRIMARY_DRIVER = "PRIMARY_DRIVER",
+
+    def __repr__(self):
+        return self.value
+
+
 # Define the Thrusters and Orientations
 class ThrusterPositions(enum.StrEnum):
     """The thrusters and associated names available to this ROV.
