@@ -56,10 +56,10 @@ class ROVConnection:
 
         killport.kill_ports(ports=[1883])
 
-        subprocess.Popen('\"C:\\Program Files\\mosquitto\\mosquitto.exe\" -v -c \"C:\\Program Files\\mosquitto\\mosquitto.conf\"',
-                         creationflags=subprocess.CREATE_NEW_CONSOLE)
-
-        time.sleep(.5)
+        subprocess.Popen(
+            '\"C:\\Program Files\\mosquitto\\mosquitto.exe\" -v -c \"C:\\Program Files\\mosquitto\\mosquitto.conf\"',
+            creationflags=subprocess.CREATE_NEW_CONSOLE
+        )
 
         self._client.connect(host=self._ip, port=self._port)
         self._client.loop_start()
