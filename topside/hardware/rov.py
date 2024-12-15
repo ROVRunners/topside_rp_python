@@ -1,17 +1,5 @@
-import os.path
-import sys
-
 import hardware.thruster_pwm as thruster_pwm
 import surface_main
-
-# Import the ROV
-
-# Get the current parent file
-current_path = os.path.dirname(os.path.abspath(__file__))
-# TODO: Make this dynamic based on a file
-rov_path = os.path.join(current_path, "..\\rovs\\spike")
-# Add the folder to the import path.
-sys.path.append(rov_path)
 
 import manual
 

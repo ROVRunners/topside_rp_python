@@ -5,15 +5,24 @@ class TerminalListener:
     def __init__(self, main_system):
         self.main_system = main_system
 
+        self.thread = threading.Thread(target=self._listen_for_input)
+
         self.input_value = None
         self.input_received = False
         self.lock = threading.Lock()
+        self.should_stop = False
 
     def start_listening(self) -> None:
         """Start listening for input in a separate thread."""
         print("Starting up the terminal listener...")
-        threading.Thread(target=self._listen_for_input).start()
+        self.thread.start()
         print("Terminal listener started!")
+
+    def stop_listening(self) -> None:
+        """Stop listening for input."""
+        with self.lock:
+            self.should_stop = True
+        self.thread.join()
 
     def _listen_for_input(self) -> None:
         """Listens for user input from the terminal and updates the input value.
@@ -21,6 +30,9 @@ class TerminalListener:
         This method runs in a loop until the `run` flag of the `main_system` is set to False.
         """
         while self.main_system.run:
+
+            if self.should_stop:
+                return
             user_input = input(">> ")
             with self.lock:
                 self.input_value = user_input

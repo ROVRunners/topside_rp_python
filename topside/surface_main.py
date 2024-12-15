@@ -7,6 +7,8 @@ import rov_config
 
 import controller_input
 import mqtt_handler
+import socket_handler
+import terminal_listener
 
 
 class MainSystem:
@@ -22,11 +24,10 @@ class MainSystem:
         self._loops_per_second = 60
         self._nanoseconds_per_loop = 1_000_000_000 // self._loops_per_second
 
-################################################################
-        """change which ROV is used here"""  # TODO: No.
+        # Set up the configuration for the ROV.
         self.rov_config = rov_config.ROVConfig()
-################################################################
 
+        # Get the communications interface information.
         self._video_port = self.rov_config.video_port
         self._comms_port = self.rov_config.comms_port
         self._host_ip = self.rov_config.host_ip
@@ -34,6 +35,7 @@ class MainSystem:
         # TODO: Set this up to receive the video stream(s)
         # self.socket = socket_handler.SocketHandler(self, self.pi_ip, self.video_port)
 
+        # Set up the
         self.input_handler = controller_input.InputHandler(self.rov_config.controllers)
 
         # The MQTT handler is used to communicate with the ROV sending and receiving thruster commands and sensor data.
@@ -78,3 +80,41 @@ class MainSystem:
         # self.socket.shutdown()
         # Delay to let things close properly
         time.sleep(.25)
+
+
+class IO:
+    """Handles the input and output of the custom control classes."""
+    def __init__(
+            self,
+            input_handler: controller_input.InputHandler | None,
+            rov_comms: mqtt_handler.ROVConnection | None,
+            terminal: terminal_listener.TerminalListener | None,
+            rov_video: socket_handler.SocketHandler | None,
+            ) -> None:
+        """Initialize an instance of the class."""
+        self._input_handler = input_handler
+        self.rov_comms = rov_comms
+        self.terminal = terminal
+        self._rov_video = rov_video
+
+    def get_inputs(self) -> dict[str, any]:
+        """Get the inputs from the input handler."""
+        return self._input_handler.get_inputs()
+
+    def get_subscriptions(self) -> dict[str, any]:
+        """Get the subscriptions from the ROV connection."""
+        return self.rov_comms.get_subscriptions()
+
+    def get_video(self) -> any:
+        """Get the video stream from the Raspberry Pi."""
+        return self._rov_video.get_video()
+
+    def start_listening(self) -> None:
+        """Start listening for terminal input."""
+        self.terminal.start_listening()
+
+    def shutdown(self) -> None:
+        """Shut down the IO system."""
+        self.terminal.stop_listening()
+        self._rov_video.shutdown()
+        self.rov_comms.shutdown()
