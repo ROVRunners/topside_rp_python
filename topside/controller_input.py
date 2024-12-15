@@ -1,7 +1,7 @@
 import pygame
 
 import enums
-import config.controller as ctrl
+import controller as ctrl
 
 
 class InputHandler:
@@ -31,6 +31,10 @@ class InputHandler:
 
         self._toggled_inputs: dict[enums.ControllerNames, dict[enums.ControllerHatButtonNames |
                                                                enums.ControllerButtonNames, bool]] = {}
+
+    def update(self) -> None:
+        for controller in self.controllers:
+            self.controllers[controller].update()
 
     def get_inputs(self) -> dict[enums.ControllerNames, dict[enums.ControllerButtonNames |
                                                              enums.ControllerAxisNames |

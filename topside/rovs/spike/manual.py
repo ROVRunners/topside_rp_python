@@ -5,27 +5,28 @@ import hardware.thruster_pwm as thruster_pwm
 import mqtt_handler
 import enums
 import controller_input
-import surface_main
+from surface_main import IO
 
 class Manual:
     """The manual control class for the ROV.
     takes an inputs and maps and sends outputs to the rov connection
     """
 
-    def __init__(self, frame: thruster_pwm.FrameThrusters) -> None:
+    def __init__(self, frame: thruster_pwm.FrameThrusters, io: IO) -> None:
         """Initialize the Manual object.
 
         Args:
             frame (thruster_pwm.FrameThrusters):
                 The objects of the thrusters mounted to the frame.
-            main_system ('surface_main.MainSystem'):
-                The MainSystem object.
+            io ('surface_main.IO'):
+                The IO (input output) object.
         """
         self._frame = frame
+        self._io = io
 
         # Set up the objects
-        self._rov_connection: mqtt_handler.ROVConnection = self._main_system.rov_connection
-        self._input_handler: controller_input.InputHandler = self._main_system.input_handler
+        # self._rov_connection: mqtt_handler.ROVConnection = self._main_system.rov_connection
+        # self._input_handler: controller_input.InputHandler = self._main_system.input_handler
 
         # self.sensor_data = {}
         # self.terminal_data = {}
@@ -42,8 +43,8 @@ class Manual:
 
     def loop(self):
         """Update thrust values, send commands, and more based on the inputs."""
-        inputs = self._input_handler.get_inputs()
-        toggled_inputs = self._input_handler.get_toggled_inputs()
+        inputs = self._io.
+        toggled_inputs = self._io.input_handler.get_toggled_inputs()
 
         controller = inputs[enums.ControllerNames.PRIMARY_DRIVER]
         controller_toggles = toggled_inputs[enums.ControllerNames.PRIMARY_DRIVER]

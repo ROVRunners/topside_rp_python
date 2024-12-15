@@ -16,6 +16,10 @@ class SocketHandler:
         """Get the video stream from the Raspberry Pi."""
         pass
 
+    def get_frame(self):
+        """Get the frame from the Raspberry Pi."""
+        pass
+
     def shutdown(self):
         """Close the socket connection."""
         pass

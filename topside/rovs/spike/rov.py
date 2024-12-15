@@ -2,14 +2,14 @@ from typing import Callable
 
 import hardware.thruster_pwm as thruster_pwm
 import rov_config
+from surface_main import IO
 
 import manual
 
 
 class ROV:
 
-    def __init__(self, rov_config: rov_config.ROVConfig, input_getter: dict[str, Callable[[], any]],
-                 output_map: dict[str, Callable]) -> None:
+    def __init__(self, rov_config: rov_config.ROVConfig, io: IO) -> None:
         """Create and initialize the ROV hardware.
 
         Args:
@@ -17,7 +17,7 @@ class ROV:
                 The MainSystem object.
         """
         self._config = rov_config
-        self._inputs_getter_map = input_getter
+        self._io = io
         self._thrusters = {}
 
         # Configure thrusters.
@@ -27,9 +27,10 @@ class ROV:
         self._frame = thruster_pwm.FrameThrusters(self._thrusters)
 
         # Set the class handling control to manual as default.
-        self._control_mode = manual.Manual(self._frame)
+        self._control_mode = manual.Manual(self._frame, self._io)
 
     def run(self):
+        self._io.update_inputs()
         self._control_mode.loop()
 
     def shutdown(self):

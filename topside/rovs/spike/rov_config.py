@@ -3,7 +3,7 @@ import socket
 
 import config.typed_range as typed_range
 import enums
-import config.controller as controller
+import controller as controller
 import config.thruster as thruster
 
 
@@ -131,3 +131,5 @@ class ROVConfig:
                 thruster_impulses=self.thruster_impulses[position]
             ) for position in self.thruster_impulses.keys()
         }
+
+

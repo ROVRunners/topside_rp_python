@@ -1,2 +1,3 @@
-# from . import thruster_pwm
-# from .thruster_pwm import ThrusterPWM, FrameThrusters
+"""
+holds the Classes for hardware on the rov such as thrusters, solenoids, manipulators etc.
+"""

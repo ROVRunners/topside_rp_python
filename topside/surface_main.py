@@ -2,6 +2,7 @@
 import time
 from typing import Callable
 
+import enums
 import rov
 import rov_config
 
@@ -9,6 +10,7 @@ import controller_input
 import mqtt_handler
 import socket_handler
 import terminal_listener
+from controller import Controller
 
 
 class MainSystem:
@@ -48,8 +50,8 @@ class MainSystem:
             "subscriptions": self.rov_connection.get_subscriptions,
             # "socket": self.socket.get_video,
         }
-
-        self._rov = rov.ROV(self.rov_config)
+        self._io = IO(self.input_handler, self.rov_connection)
+        self._rov = rov.ROV(self.rov_config, self._io)
 
         self.rov_connection.connect()
 
@@ -86,24 +88,58 @@ class IO:
     """Handles the input and output of the custom control classes."""
     def __init__(
             self,
-            input_handler: controller_input.InputHandler | None,
-            rov_comms: mqtt_handler.ROVConnection | None,
-            terminal: terminal_listener.TerminalListener | None,
-            rov_video: socket_handler.SocketHandler | None,
+            input_handler: controller_input.InputHandler | None = None,
+            rov_comms: mqtt_handler.ROVConnection | None = None,
+            terminal: terminal_listener.TerminalListener | None = None,
+            rov_video: socket_handler.SocketHandler | None = None,
             ) -> None:
         """Initialize an instance of the class."""
         self._input_handler = input_handler
-        self.rov_comms = rov_comms
-        self.terminal = terminal
+        self._rov_comms = rov_comms
+        self._terminal = terminal
         self._rov_video = rov_video
+
+        self._input_list = self._input_handler.get_inputs()
+        self._subscriptions = self._rov_comms.get_subscriptions()
+        self._video = self._rov_video.get_frame()
+
+    @property
+    def input_handler(self) -> controller_input.InputHandler:
+        return self._input_handler
+
+    @property
+    def rov_comms(self) -> mqtt_handler.ROVConnection:
+        return self._rov_comms
+
+    @property
+    def terminal(self) -> terminal_listener.TerminalListener:
+        return self._terminal
+
+    @property
+    def rov_video(self) -> socket_handler.SocketHandler:
+        return self._rov_video
+
+    @property
+    def input_list(self) -> dict[enums.ControllerNames, Controller]:
+        return self._input_list
+
+    @property
+    def controller_inputs(self) -> dict[str, any]:
+        """Get the controller inputs."""
+        return self._input_handler.get_inputs()
+
+    @property
+    def subscriptions(self) -> dict[str, any]:
+        """Get the subscriptions."""
+        return self._rov_comms.get_subscriptions()
 
     def get_inputs(self) -> dict[str, any]:
         """Get the inputs from the input handler."""
-        return self._input_handler.get_inputs()
+        return self._input_list
 
     def get_subscriptions(self) -> dict[str, any]:
         """Get the subscriptions from the ROV connection."""
-        return self.rov_comms.get_subscriptions()
+        return self._rov_comms.get_subscriptions()
 
     def get_video(self) -> any:
         """Get the video stream from the Raspberry Pi."""
@@ -111,10 +147,13 @@ class IO:
 
     def start_listening(self) -> None:
         """Start listening for terminal input."""
-        self.terminal.start_listening()
+        self._terminal.start_listening()
+
+    def update_inputs(self) -> None:
+        """This should be called only from rov.py. Do not call more than once per frame.
 
     def shutdown(self) -> None:
         """Shut down the IO system."""
-        self.terminal.stop_listening()
+        self._terminal.stop_listening()
         self._rov_video.shutdown()
-        self.rov_comms.shutdown()
+        self._rov_comms.shutdown()
