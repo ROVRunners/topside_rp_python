@@ -2,7 +2,7 @@
 import time
 from typing import Callable
 
-import hardware.rov as rov
+import rov
 import rov_config
 
 import controller_input
@@ -49,7 +49,7 @@ class MainSystem:
             # "socket": self.socket.get_video,
         }
 
-        self._rov = rov.ROV(self)
+        self._rov = rov.ROV(self.rov_config)
 
         self.rov_connection.connect()
 
