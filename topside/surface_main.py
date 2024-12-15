@@ -2,7 +2,7 @@
 import time
 from typing import Callable
 
-import hardware.rov as rov
+import rov as rov
 import rov_config
 
 import controller_input
@@ -23,7 +23,7 @@ class MainSystem:
         self._nanoseconds_per_loop = 1_000_000_000 // self._loops_per_second
 
 ################################################################
-        """change which ROV is used here"""  # TODO: No.
+        """change which ROV is used here"""
         self.rov_config = rov_config.ROVConfig()
 ################################################################
 
@@ -47,7 +47,7 @@ class MainSystem:
             # "socket": self.socket.get_video,
         }
 
-        self._rov = rov.ROV(self)
+        self._rov = rov.ROV(self.rov_config)
 
         self.rov_connection.connect()
 

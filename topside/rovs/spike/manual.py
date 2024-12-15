@@ -1,14 +1,18 @@
+"""
+"""
+
 import hardware.thruster_pwm as thruster_pwm
 import mqtt_handler
 import enums
 import controller_input
 import surface_main
 
-
 class Manual:
-    """The manual control class for the ROV."""
+    """The manual control class for the ROV.
+    takes an inputs and maps and sends outputs to the rov connection
+    """
 
-    def __init__(self, frame: thruster_pwm.FrameThrusters, main_system: 'surface_main.MainSystem') -> None:
+    def __init__(self, frame: thruster_pwm.FrameThrusters) -> None:
         """Initialize the Manual object.
 
         Args:
@@ -18,7 +22,6 @@ class Manual:
                 The MainSystem object.
         """
         self._frame = frame
-        self._main_system: 'surface_main.MainSystem' = main_system
 
         # Set up the objects
         self._rov_connection: mqtt_handler.ROVConnection = self._main_system.rov_connection
