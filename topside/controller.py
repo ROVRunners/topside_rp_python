@@ -56,11 +56,11 @@ class Axis:
             output_range (range.Range):
                 The output range to map the input to.
         """
-        self._index = index
-        self._deadzone = deadzone
-        self._inverted = inverted
+        self._index: int = index
+        self._deadzone: float = deadzone
+        self._inverted: bool = inverted
 
-        self._value = 0.0
+        self._value: float = 0.0
 
         self._input_range = input_range
         self._output_range = output_range
