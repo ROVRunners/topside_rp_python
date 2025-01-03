@@ -100,8 +100,8 @@ class Manual:
         # Get the PWM values for the thrusters based on the controller inputs.
         pwm_values: dict[enums.ThrusterPositions, int] = self._frame.get_pwm_values(
             {
-                enums.Directions.FORWARDS: controller.axes[enums.ControllerAxisNames.LEFT_Y],
-                enums.Directions.RIGHT: controller.axes[enums.ControllerAxisNames.LEFT_X],
+                enums.Directions.FORWARDS: controller.axes[enums.ControllerAxisNames.LEFT_Y].value,
+                enums.Directions.RIGHT: controller.axes[enums.ControllerAxisNames.LEFT_X].value,
                 enums.Directions.UP: self._kinematics.depth_pid(depth),
                 enums.Directions.YAW: self._kinematics.yaw_pid(gyro_yaw),
                 enums.Directions.PITCH: self._kinematics.pitch_pid(gyro_pitch),
