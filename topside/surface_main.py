@@ -1,16 +1,18 @@
 """Main file for the surface station."""
 import time
-from typing import Callable
 
-import enums
 import rov
 import rov_config
+import enums
 
+import controller
 import controller_input
 import mqtt_handler
 import socket_handler
 import terminal_listener
-from controller import Controller
+import udp_socket
+
+import utilities.class_tools as class_tools
 
 
 class MainSystem:
@@ -45,11 +47,11 @@ class MainSystem:
 
         # TODO: Incorporate terminal input and openCV video stream(s). Maybe incorporate a video stream switching
         #  system.
-        self.input_map: dict[str, Callable[[], any]] = {
-            "controller": self.input_handler.get_inputs,
-            "subscriptions": self.rov_connection.get_subscriptions,
-            # "socket": self.socket.get_video,
-        }
+        # self.input_map: dict[str, Callable[[], any]] = {
+        #     "controller": self.input_handler.controllers,
+        #     "subscriptions": self.rov_connection.get_subscriptions,
+        #     # "socket": self.socket.get_video,
+        # }
         self._io = IO(self.input_handler, self.rov_connection)
         self._rov = rov.ROV(self.rov_config, self._io)
 
@@ -91,7 +93,7 @@ class IO:
             input_handler: controller_input.InputHandler | None = None,
             rov_comms: mqtt_handler.ROVConnection | None = None,
             terminal: terminal_listener.TerminalListener | None = None,
-            rov_video: socket_handler.SocketHandler | None = None,
+            rov_video: udp_socket.UDPSocket | None = None,
             ) -> None:
         """Initialize an instance of the class."""
         self._input_handler = input_handler
@@ -99,9 +101,22 @@ class IO:
         self._terminal = terminal
         self._rov_video = rov_video
 
-        self._input_list = self._input_handler.get_inputs()
+        self._input_handler.update()
+        self._controller_inputs = self._input_handler.controllers
         self._subscriptions = self._rov_comms.get_subscriptions()
-        self._video = self._rov_video.get_frame()
+        # TODO: Hook up the UDP stuff
+        # self._video = self._rov_video.get_frame()
+        self._timer = class_tools.Stopwatch()
+
+    @property
+    def controllers(self) -> dict[enums.ControllerNames, controller.Controller]:
+        """Get the controller inputs."""
+        return self._input_handler.controllers
+
+    @property
+    def subscriptions(self) -> dict[str, any]:
+        """Get the subscriptions."""
+        return self._subscriptions
 
     @property
     def input_handler(self) -> controller_input.InputHandler:
@@ -116,44 +131,32 @@ class IO:
         return self._terminal
 
     @property
-    def rov_video(self) -> socket_handler.SocketHandler:
-        return self._rov_video
+    def rov_video(self) -> socket_handler.SocketHandler | None:
+        # return self._rov_video
+        return
 
     @property
-    def input_list(self) -> dict[enums.ControllerNames, Controller]:
-        return self._input_list
+    def timer(self) -> class_tools.Stopwatch:
+        return self._timer
 
-    @property
-    def controller_inputs(self) -> dict[str, any]:
-        """Get the controller inputs."""
-        return self._input_handler.get_inputs()
-
-    @property
-    def subscriptions(self) -> dict[str, any]:
-        """Get the subscriptions."""
-        return self._rov_comms.get_subscriptions()
-
-    def get_inputs(self) -> dict[str, any]:
-        """Get the inputs from the input handler."""
-        return self._input_list
-
-    def get_subscriptions(self) -> dict[str, any]:
-        """Get the subscriptions from the ROV connection."""
-        return self._rov_comms.get_subscriptions()
-
-    def get_video(self) -> any:
-        """Get the video stream from the Raspberry Pi."""
-        return self._rov_video.get_video()
+    # def get_video(self) -> any:
+    #     """Get the video stream from the Raspberry Pi."""
+    #     return self._rov_video.get_video()
 
     def start_listening(self) -> None:
         """Start listening for terminal input."""
+        self._rov_comms.connect()
         self._terminal.start_listening()
+        # self._rov_video.start_listening()
 
-    def update_inputs(self) -> None:
-        """This should be called only from rov.py. Do not call more than once per frame.
+    def update(self) -> None:
+        """This should be called only from rov.py. Do not call more than once per frame."""
+        self._input_handler.update()
+        self._subscriptions = self.rov_comms.get_subscriptions()
 
     def shutdown(self) -> None:
-        """Shut down the IO system."""
+        """Shut down the IO system gracefully."""
         self._terminal.stop_listening()
-        self._rov_video.shutdown()
+        # self._rov_video.shutdown()
         self._rov_comms.shutdown()
+        self._input_handler.shutdown()

@@ -5,3 +5,4 @@ class PIDConfig(NamedTuple):
     p: float = 0
     i: float = 0
     d: float = 0
+    output: tuple[float, float] = (-1, 1)

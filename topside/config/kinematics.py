@@ -7,7 +7,6 @@ class KinematicsConfig(NamedTuple):
     x_vel_pid: PIDConfig
     y_vel_pid: PIDConfig
 
-
     depth_pid: PIDConfig
 
     # orientation pids

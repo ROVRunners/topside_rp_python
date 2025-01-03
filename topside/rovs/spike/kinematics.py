@@ -1,7 +1,10 @@
 import rov_config
-from config.kinematics import KinematicsConfig
-import numpy as np
 import simple_pid
+
+from config.kinematics import KinematicsConfig
+
+from utilities.vector import Vector3
+import numpy as np
 
 class Kinematics:
     """
@@ -9,42 +12,54 @@ class Kinematics:
     Set Target position + velocity and get the thruster pwms.
      Determines the current position + velocity from sensor inputs
     """
-    def __init__(self, config: KinematicsConfig):
+
+    depth_pid: simple_pid.PID
+
+    pitch_pid: simple_pid.PID
+    roll_pid: simple_pid.PID
+    yaw_pid: simple_pid.PID
+
+
+    def __init__(self, config: KinematicsConfig) -> None:
+        """Set up the various PIDs involved in moving the ROV smoothly.
+
+        Args:
+            config (KinematicsConfig):
+                The PID configuration of the ROV.
+        """
         self._config = config
 
-        # planar velocity PIDs
-        #TODO add actual pid classes
-        self.x_vel_pid = simple_pid.PID(self._config.x_vel_pid.p, self._config.x_vel_pid.i, self._config.x_vel_pid.d)
-        self.y_vel_pid = simple_pid.PID(self._config.y_vel_pid.p, self._config.y_vel_pid.i, self._config.y_vel_pid.d)
+        # Depth position PID.
+        self.depth_pid = simple_pid.PID(self._config.depth_pid.p, self._config.depth_pid.i, self._config.depth_pid.d, output_limits= self._config.depth_pid.output)
 
-        self.depth_pid = simple_pid.PID(self._config.depth_pid.p, self._config.depth_pid.i, self._config.depth_pid.d)
+        # Orientation PIDs.
+        self.pitch_pid = simple_pid.PID(self._config.pitch_pid.p, self._config.pitch_pid.i, self._config.pitch_pid.d, output_limits= self._config.pitch_pid.output)
+        self.roll_pid = simple_pid.PID(self._config.roll_pid.p, self._config.roll_pid.i, self._config.roll_pid.d, output_limits= self._config.roll_pid.output)
+        self.yaw_pid = simple_pid.PID(self._config.yaw_pid.p, self._config.yaw_pid.i, self._config.yaw_pid.d, output_limits= self._config.yaw_pid.output)
 
-        # orientation PIDs
-        self.pitch_pid = simple_pid.PID(self._config.pitch_pid.p, self._config.pitch_pid.i, self._config.pitch_pid.d)
-        self.roll_pid = simple_pid.PID(self._config.roll_pid.p, self._config.roll_pid.i, self._config.roll_pid.d)
-        self.yaw_pid = simple_pid.PID(self._config.yaw_pid.p, self._config.yaw_pid.i, self._config.yaw_pid.d)
+        self.target_heading = Vector3(0, 0, 0)
+        self.target_depth = 0
+        # self.current_velocity = m/s (x, y, z)
+        # self.current_heading = radians (pitch, roll, yaw)
+        # self.current_depth = 0 # meters
+        #
+        # self.target_velocity = (0, 0, 0) # m/s (x, y, z)
+        # self.target_heading = (0, 0, 0) # radians (pitch, roll, yaw)
+        # self.target_depth = 0 # meters
 
+    # def update_position(self, heading: tuple[float, float, float], depth: float):
+    #     self.current_heading = heading
+    #     self.current_depth = depth
+    #
+    #     self.pitch_pid(self.current_heading[0])
+    #     self.roll_pid(self.current_heading[1])
+    #     self.yaw_pid(self.current_heading[2])
 
-        self.current_velocity = (0, 0, 0) # m/s (x, y, z)
-        self.current_heading = (0, 0, 0) # radians (pitch, roll, yaw)
-        self.current_depth = 0 # meters
+    #     self.depth_pid(depth)
 
-        self.target_velocity = (0, 0, 0) # m/s (x, y, z)
-        self.target_heading = (0, 0, 0) # radians (pitch, roll, yaw)
-        self.target_depth = 0 # meters
-
-    def update_position(self, velocity: tuple[float, float, float], heading: tuple[float, float, float], depth: float):
-        self.current_velocity = velocity
-        self.current_heading = heading
-        self.current_depth = depth
-
-    def update_target_position(self, velocity: tuple[float, float, float], heading: tuple[float, float, float], depth: float):
-        self.target_velocity = velocity
+    def update_target_position(self, heading: tuple[float, float, float], depth: float):
         self.target_heading = heading
         self.target_depth = depth
-
-        self.x_vel_pid.setpoint = self.target_velocity[0]
-        self.y_vel_pid.setpoint = self.target_velocity[1]
 
         self.pitch_pid.setpoint = self.target_heading[0]
         self.roll_pid.setpoint = self.target_heading[1]

@@ -383,6 +383,7 @@ class Controller:
         self.hats = hats
         self._index = index
 
+        # TODO: Move pygame initialization and dynamic controller reconnection into the controller_input.py file.
         pygame.init()
         pygame.joystick.init()
 
@@ -414,3 +415,8 @@ class Controller:
 
         for hat in self.hats:
             self.hats[hat].update(self._joystick)
+
+    def shutdown(self) -> None:
+        """Shutdown the controller."""
+        self.joystick.quit()
+        pygame.quit()

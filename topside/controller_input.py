@@ -29,50 +29,10 @@ class InputHandler:
         """
         self.controllers = controllers
 
-        self._toggled_inputs: dict[enums.ControllerNames, dict[enums.ControllerHatButtonNames |
-                                                               enums.ControllerButtonNames, bool]] = {}
-
     def update(self) -> None:
+        """Update the Controller input objects."""
         for controller in self.controllers:
             self.controllers[controller].update()
-
-    def get_inputs(self) -> dict[enums.ControllerNames, dict[enums.ControllerButtonNames |
-                                                             enums.ControllerAxisNames |
-                                                             enums.ControllerHatButtonNames, float]]:
-        """Get the inputs from the controllers.
-
-        Returns:
-            dict[enums.ControllerNames, dict[enums.ControllerButtonNames | enums.ControllerAxisNames, float]]:
-                The inputs from the controllers.
-        """
-        pygame.event.pump()
-
-        inputs: dict[enums.ControllerNames, dict[enums.ControllerButtonNames |
-                                                 enums.ControllerAxisNames |
-                                                 enums.ControllerHatButtonNames, float]] = {}
-
-        for controller in self.controllers:
-            inputs[controller] = self.controllers[controller].get_inputs()
-
-        self._update_toggled_inputs()
-
-        return inputs
-
-    def get_toggled_inputs(self) -> dict[enums.ControllerNames, dict[enums.ControllerHatButtonNames |
-                                                                     enums.ControllerButtonNames, bool]]:
-        """Get the toggled state of the buttons on the controllers.
-
-        Returns:
-            dict[enums.ControllerNames, dict[enums.ControllerHatButtonNames | enums.ControllerButtonNames, bool]]:
-                The toggled state of the buttons on the controllers.
-        """
-        return self._toggled_inputs
-
-    def _update_toggled_inputs(self) -> None:
-        """Update the toggled state of the buttons on the controller and store the values."""
-        for controller in self.controllers:
-            self.controllers[controller].update_toggles()
-            self._toggled_inputs[controller] = self.controllers[controller].get_toggled_inputs()
 
     def get_controller(self, controller: enums.ControllerNames) -> ctrl.Controller:
         """Get the controller object.
@@ -85,6 +45,10 @@ class InputHandler:
             ctrl.Controller: The controller object.
         """
         return self.controllers[controller]
+
+    def shutdown(self) -> None:
+        for controller in self.controllers:
+            controller.shutdown()
 
 
 def combine_triggers(positive_trigger: float, negative_trigger: float) -> float:

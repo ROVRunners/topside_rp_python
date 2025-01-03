@@ -5,7 +5,7 @@
       <sourceFolder url="file://$MODULE_DIR$/topside" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/topside/rovs/spike" isTestSource="false" />
     </content>
-    <orderEntry type="jdk" jdkName="Python 3.13 (bottomside_rp_python)" jdkType="Python SDK" />
+    <orderEntry type="jdk" jdkName="Python 3.13" jdkType="Python SDK" />
     <orderEntry type="sourceFolder" forTests="false" />
   </component>
   <component name="PackageRequirementsSettings">
