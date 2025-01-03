@@ -51,6 +51,7 @@ class Manual:
         inputs = self._io.controllers
 
         controller = inputs[enums.ControllerNames.PRIMARY_DRIVER]
+        print(controller.axes[enums.ControllerAxisNames.LEFT_X].value)
 
         print(controller.axes[enums.ControllerAxisNames.RIGHT_X].value)
 
