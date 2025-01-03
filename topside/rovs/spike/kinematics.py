@@ -11,7 +11,6 @@ class Kinematics:
     """
     The kinematics class for the ROV. holds the depth, and orientation PIDs.
     Determines the current orientation and depth from sensor inputs.
-
     """
 
     depth_pid: simple_pid.PID
