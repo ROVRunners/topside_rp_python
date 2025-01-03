@@ -53,13 +53,14 @@ class ROVConnection:
 
     def connect(self) -> None:
         """Connect to the MQTT broker."""
-
-        killport.kill_ports(ports=[1883])
-
-        subprocess.Popen(
-            '\"C:\\Program Files\\mosquitto\\mosquitto.exe\" -v -c \"C:\\Program Files\\mosquitto\\mosquitto.conf\"',
-            creationflags=subprocess.CREATE_NEW_CONSOLE
-        )
+        try:
+            killport.kill_ports(ports=[1883])
+        except:
+            pass
+        # subprocess.Popen(
+        #     # '\"C:\\Program Files\\mosquitto\\mosquitto.exe\" -v -c \"C:\\Program Files\\mosquitto\\mosquitto.conf\"',
+        #     creationflags=subprocess.CREATE_NEW_CONSOLE
+        # )
 
         self._client.connect(host=self._ip, port=self._port)
         self._client.loop_start()

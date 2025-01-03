@@ -1,19 +1,19 @@
 """A mapping between colors and escape codes for use in the text function"""
 
-import os
-import pkg_resources
-
-# pylint: disable=wrong-import-position
-
-# Initialization
-DEPENDENCY = "colorama"
-try:
-    pkg_resources.require(DEPENDENCY)
-except pkg_resources.DistributionNotFound:
-    os.system(f'pip install {DEPENDENCY} --quiet')
-    os.system(f'python -m pip install {DEPENDENCY} --quiet')
-    os.system(f'python3 -m pip install {DEPENDENCY} --quiet')
-    os.system(f'py -m pip install {DEPENDENCY} --quiet')
+# import os
+# import pkg_resources
+#
+# # pylint: disable=wrong-import-position
+#
+# # Initialization
+# DEPENDENCY = "colorama"
+# try:
+#     pkg_resources.require(DEPENDENCY)
+# except pkg_resources.DistributionNotFound:
+#     os.system(f'pip install {DEPENDENCY} --quiet')
+#     os.system(f'python -m pip install {DEPENDENCY} --quiet')
+#     os.system(f'python3 -m pip install {DEPENDENCY} --quiet')
+#     os.system(f'py -m pip install {DEPENDENCY} --quiet')
 
 import colorama
 colorama.init()

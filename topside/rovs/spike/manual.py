@@ -5,7 +5,7 @@ import hardware.thruster_pwm as thruster_pwm
 import enums
 import kinematics as kms
 import controller_input
-from surface_main import IO
+from topside.io import IO
 
 class Manual:
     """The manual control class for the ROV.

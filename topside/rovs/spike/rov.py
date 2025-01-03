@@ -2,7 +2,7 @@ from typing import Callable
 
 import hardware.thruster_pwm as thruster_pwm
 import rov_config
-from surface_main import IO
+from topside.io import IO
 from kinematics import Kinematics
 
 import manual

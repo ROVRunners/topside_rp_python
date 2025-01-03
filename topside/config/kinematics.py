@@ -1,4 +1,4 @@
-from pid import PIDConfig
+from config.pid import PIDConfig
 from typing import NamedTuple
 
 class KinematicsConfig(NamedTuple):

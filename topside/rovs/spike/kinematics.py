@@ -39,11 +39,11 @@ class Kinematics:
 
         self.target_heading = Vector3(0, 0, 0)
         self.target_depth = 0
-        # self.current_velocity = m/s (x, y, z)
+
         # self.current_heading = radians (pitch, roll, yaw)
         # self.current_depth = 0 # meters
         #
-        # self.target_velocity = (0, 0, 0) # m/s (x, y, z)
+
         # self.target_heading = (0, 0, 0) # radians (pitch, roll, yaw)
         # self.target_depth = 0 # meters
 
