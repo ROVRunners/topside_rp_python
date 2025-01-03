@@ -116,6 +116,8 @@ class Axis:
         # Get the raw value of the axis.
         value = joystick.get_axis(self._index)
 
+        print("Axis", self._index, "Value:", value)
+
         # Invert the value if necessary.
         if self._inverted:
             value = -value
@@ -194,7 +196,6 @@ class Button:
         # The value of the button. Used for output and to determine if the button was just toggled.
         self._value = False
 
-
     @property
     def value(self) -> bool:
         return self._value
@@ -212,7 +213,6 @@ class Button:
 
         # Update the value for reading and use next loop.
         self._value = value
-
 
     @property
     def index(self) -> int:
@@ -251,6 +251,7 @@ class Button:
         """
         # Get the raw value of the button.
         value = joystick.get_button(self._index)
+        print("Button", self._index, "Value:", value)
 
         self.value = value
 
@@ -383,17 +384,7 @@ class Controller:
         self.hats = hats
         self._index = index
 
-        # TODO: Move pygame initialization and dynamic controller reconnection into the controller_input.py file.
-        pygame.init()
-        pygame.joystick.init()
-
-        # Wait for a controller to be connected.
-        while pygame.joystick.get_count() < self._index:
-            print("Warning! Not enough controllers detected!")
-            input("Please connect a controller and press enter.")
-
-        self._joystick = pygame.joystick.Joystick(self._index)
-        self._joystick.init()
+        self._joystick = None
 
     @property
     def index(self) -> int:
@@ -404,6 +395,11 @@ class Controller:
     def joystick(self) -> pygame.joystick.Joystick:
         """The joystick object to use."""
         return self._joystick
+
+    def initialize(self) -> None:
+        """Initialize the controller."""
+        self._joystick = pygame.joystick.Joystick(self._index)
+        self._joystick.init()
 
     def update(self) -> None:
         """Update the values for the various inputs attached to the controller"""

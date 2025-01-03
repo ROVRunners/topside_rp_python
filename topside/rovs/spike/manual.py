@@ -50,6 +50,8 @@ class Manual:
 
         controller = inputs[enums.ControllerNames.PRIMARY_DRIVER]
 
+        print(controller.axes[enums.ControllerAxisNames.RIGHT_X].value)
+
         subscriptions = self._io.subscriptions
 
         # Get the gyro data from the subscriptions if it exists.
