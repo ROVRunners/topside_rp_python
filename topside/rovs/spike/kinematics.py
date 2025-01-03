@@ -8,9 +8,9 @@ import numpy as np
 
 class Kinematics:
     """
-    The kinematics class for the ROV. holds the depth, orientation, and velocity PIDs.
-    Set Target position + velocity and get the thruster pwms.
-     Determines the current position + velocity from sensor inputs
+    The kinematics class for the ROV. holds the depth, and orientation PIDs.
+    Determines the current orientation and depth from sensor inputs.
+
     """
 
     depth_pid: simple_pid.PID
@@ -30,12 +30,12 @@ class Kinematics:
         self._config = config
 
         # Depth position PID.
-        self.depth_pid = simple_pid.PID(self._config.depth_pid.p, self._config.depth_pid.i, self._config.depth_pid.d, output_limits= self._config.depth_pid.output)
+        self.depth_pid = simple_pid.PID(self._config.depth_pid.p, self._config.depth_pid.i, self._config.depth_pid.d)#, output_limits= self._config.depth_pid.output)
 
         # Orientation PIDs.
-        self.pitch_pid = simple_pid.PID(self._config.pitch_pid.p, self._config.pitch_pid.i, self._config.pitch_pid.d, output_limits= self._config.pitch_pid.output)
-        self.roll_pid = simple_pid.PID(self._config.roll_pid.p, self._config.roll_pid.i, self._config.roll_pid.d, output_limits= self._config.roll_pid.output)
-        self.yaw_pid = simple_pid.PID(self._config.yaw_pid.p, self._config.yaw_pid.i, self._config.yaw_pid.d, output_limits= self._config.yaw_pid.output)
+        self.pitch_pid = simple_pid.PID(self._config.pitch_pid.p, self._config.pitch_pid.i, self._config.pitch_pid.d)#, output_limits= self._config.pitch_pid.output)
+        self.roll_pid = simple_pid.PID(self._config.roll_pid.p, self._config.roll_pid.i, self._config.roll_pid.d)#, output_limits= self._config.roll_pid.output)
+        self.yaw_pid = simple_pid.PID(self._config.yaw_pid.p, self._config.yaw_pid.i, self._config.yaw_pid.d)#, output_limits= self._config.yaw_pid.output)
 
         self.target_heading = Vector3(0, 0, 0)
         self.target_depth = 0
