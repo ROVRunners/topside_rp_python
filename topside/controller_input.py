@@ -59,7 +59,7 @@ def combine_triggers(positive_trigger: float, negative_trigger: float) -> float:
         float: The combined value of the triggers.
     """
     # Normalize the triggers to a 0-1 range.
-    positive_trigger = (positive_trigger + 1) / 2
-    negative_trigger = (negative_trigger + 1) / 2
+    positive_trigger = (positive_trigger + 1.0) / 2.0
+    negative_trigger = (negative_trigger + 1.0) / 2.0
 
     return positive_trigger - negative_trigger

@@ -6,6 +6,8 @@ import enums
 import kinematics as kms
 import controller_input
 from topside.io import IO
+from utilities.vector import Vector3
+
 
 class Manual:
     """The manual control class for the ROV.
@@ -95,9 +97,13 @@ class Manual:
         # TODO: Add any other input processing software like a PID here. Also, a PID should probably be
         #  implemented in a separate class due to it being generally applicable to all ROVs.
         self._kinematics.update_target_position(
-             (controller.axes[enums.ControllerAxisNames.RIGHT_X].value,
-            controller.axes[enums.ControllerAxisNames.RIGHT_Y].value, 0),
-            vertical)
+            Vector3(
+                controller.axes[enums.ControllerAxisNames.RIGHT_X].value,
+                controller.axes[enums.ControllerAxisNames.RIGHT_Y].value,
+                0,
+            ),
+            vertical,
+        )
 
         # TODO: add sensor data to pids below
         # Get the PWM values for the thrusters based on the controller inputs.
