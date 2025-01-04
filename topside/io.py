@@ -3,6 +3,7 @@ import controller_input
 import mqtt_handler
 import socket_handler
 import terminal_listener
+import gpio_handler
 import udp_socket
 import enums
 import utilities.class_tools as class_tools
@@ -11,16 +12,18 @@ class IO:
     """Handles the input and output of the custom control classes."""
     def __init__(
             self,
+            gpio_handler: gpio_handler.GPIOHandler,
             input_handler: controller_input.InputHandler | None = None,
             rov_comms: mqtt_handler.ROVConnection | None = None,
             terminal: terminal_listener.TerminalListener | None = None,
-            rov_video: udp_socket.UDPSocket | None = None,
+            rov_video: udp_socket.UDPSocket | None = None
             ) -> None:
         """Initialize an instance of the class."""
         self._input_handler = input_handler
         self._rov_comms = rov_comms
         self._terminal = terminal
         self._rov_video = rov_video
+        self._gpio_handler = gpio_handler
 
         self._input_handler.update()
         self._controller_inputs = self._input_handler.controllers
@@ -38,6 +41,10 @@ class IO:
     def subscriptions(self) -> dict[str, any]:
         """Get the subscriptions."""
         return self._subscriptions
+
+    @property
+    def gpio_handler(self) -> gpio_handler.GPIOHandler:
+        return self._gpio_handler
 
     @property
     def input_handler(self) -> controller_input.InputHandler:
@@ -74,6 +81,7 @@ class IO:
         """This should be called only from rov.py. Do not call more than once per frame."""
         self._input_handler.update()
         self._subscriptions = self.rov_comms.get_subscriptions()
+        self._rov_comms.publish_pins(self._gpio_handler.pins)
 
     def shutdown(self) -> None:
         """Shut down the IO system gracefully."""

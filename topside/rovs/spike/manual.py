@@ -116,7 +116,9 @@ class Manual:
         stop = controller.buttons[enums.ControllerButtonNames.B].toggled
 
         # Publish the PWM values to the MQTT broker.
-        self._io.rov_comms.publish_thruster_pwm(pwm_values)
+        for thruster, pwm in pwm_values.items():
+            self._io.gpio_handler.pins[thruster].val = pwm
+
         self._io.rov_comms.publish_commands({
             "stop": stop,
         })

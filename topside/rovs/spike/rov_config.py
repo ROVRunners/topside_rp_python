@@ -5,6 +5,8 @@ import config.typed_range as typed_range
 import enums
 import controller as controller
 import config.thruster as thruster
+from config.pin import PinConfig
+from pin import Pin
 from config.kinematics import KinematicsConfig
 from config.pid import PIDConfig
 
@@ -141,6 +143,17 @@ class ROVConfig:
                 pwm_pulse_range=typed_range.IntRange(min=1100, max=1900),
                 thruster_impulses=self.thruster_impulses[position]
             ) for position in self.thruster_impulses.keys()
+        }
+        # TODO: add real numbers
+        self.pins: dict[str, Pin] = {
+            enums.ThrusterPositions.FRONT_RIGHT: Pin(PinConfig(index= 0, mode="pwm", val=1500, freq=50)),
+            enums.ThrusterPositions.FRONT_LEFT: Pin(PinConfig(index=0, mode="pwm", val=1500, freq=50)),
+            enums.ThrusterPositions.REAR_RIGHT: Pin(PinConfig(index=0, mode="pwm", val=1500, freq=50)),
+            enums.ThrusterPositions.REAR_LEFT: Pin(PinConfig(index=0, mode="pwm", val=1500, freq=50)),
+            enums.ThrusterPositions.FRONT_RIGHT_VERTICAL: Pin(PinConfig(index=0, mode="pwm", val=1500, freq=50)),
+            enums.ThrusterPositions.FRONT_LEFT_VERTICAL: Pin(PinConfig(index=0, mode="pwm", val=1500, freq=50)),
+            enums.ThrusterPositions.REAR_RIGHT_VERTICAL: Pin(PinConfig(index=0, mode="pwm", val=1500, freq=50)),
+            enums.ThrusterPositions.REAR_LEFT_VERTICAL: Pin(PinConfig(index=0, mode="pwm", val=1500, freq=50)),
         }
 
 

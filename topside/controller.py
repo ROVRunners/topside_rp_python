@@ -39,6 +39,12 @@ class Axis:
         update(joystick: pygame.joystick.Joystick) -> None:
             Update the value of the axis from the controller.
     """
+
+    _index: int
+    _deadzone: float
+    inverted: bool
+    input_range: range_util.Range
+
     def __init__(self, index: int, deadzone: float = 0.0, inverted: bool = False,
                  input_range: range_util.Range = range_util.Range(-1, 1),
                  output_range: range_util.Range = range_util.Range(-1, 1)) -> None:

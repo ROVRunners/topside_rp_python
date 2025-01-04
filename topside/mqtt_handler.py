@@ -3,6 +3,7 @@ import json
 import subprocess
 import time
 from threading import Lock
+from pin import Pin
 
 import killport
 import paho.mqtt.client as mqtt_c
@@ -12,6 +13,8 @@ import enums
 
 
 class ROVConnection:
+
+
     def __init__(self, ip: str = "localhost", port: int = 1883, client_id: str = "PC") -> None:
         """Initialize the SurfaceConnection object.
 
@@ -42,9 +45,9 @@ class ROVConnection:
         self._subscription_lock: Lock = Lock()
         self._subscriptions = {}
 
-        # Store the last PWM values to only send the ones that have changed.
-        self._last_pwm_values = {}
-        self._last_pwm_update: float = 0.0
+        # Store the last pin configs to only send the ones that have changed.
+        self._last_pin_configs: dict[str, Pin] = {}
+        self._last_pin_update: float = 0.0
         self._idle_ping_frequency: float = 2.0
 
         # Do the same for commands.
@@ -97,7 +100,7 @@ class ROVConnection:
         for cmd, val in changed_command_values.items():
             self._client.publish(f"PC/commands/{cmd}", val)
 
-    def publish_thruster_pwm(self, thruster_pwm: dict[enums.ThrusterPositions, int]) -> None:
+    def publish_pins(self, pins: dict[str, Pin]) -> None:
         """Send a series of packets from the Raspberry Pi with the specified thruster PWM values. To improve
         performance, only put the PWM values that have changed into the dictionary.
 
@@ -106,26 +109,29 @@ class ROVConnection:
                 The thruster PWM values to send to the surface.
         """
         # Build a dictionary of the PWM values that have changed.
-        changed_pwm_values = {}
+        changed_pin_configs = {}
 
-        for thruster, pwm in thruster_pwm.items():
-            if pwm != self._last_pwm_values.get(thruster, 0):
-                self._last_pwm_values[thruster] = pwm
-                changed_pwm_values[thruster] = pwm
+        for pin, config in pins.items():
+            if config != self._last_pin_configs.get(pin, 0):
+                self._last_pin_configs[pin] = config
+                changed_pin_configs[pin] = config
 
         # If no values have changed for too long, send the last values every 0.5 seconds.
-        if not changed_pwm_values:
-            if time.time() - self._last_pwm_update > self._idle_ping_frequency:
-                changed_pwm_values = copy.deepcopy(self._last_pwm_values)
+        if not changed_pin_configs:
+            if time.time() - self._last_pin_update > self._idle_ping_frequency:
+                changed_pin_configs = copy.deepcopy(self._last_pin_configs)
             else:
                 return
 
         # Update the last PWM update time regardless of whether the PWM values have changed.
-        self._last_pwm_update = time.time()
+        self._last_pin_update = time.time()
 
         # Publish the PWM values to the MQTT broker.
-        for pos, value in changed_pwm_values.items():
-            self._client.publish(f"PC/thruster_pwm/{pos}", value)
+        for pos, value in changed_pin_configs.items():
+            self._client.publish(f"PC/pins/{pos}/index", value.index)
+            self._client.publish(f"PC/pins/{pos}/mode", value.mode)
+            self._client.publish(f"PC/pins/{pos}/val", value.val)
+            self._client.publish(f"PC/pins/{pos}/freq", value.freq)
 
     def get_subscriptions(self) -> dict[str, float | str | dict[str, float | str]]:
         """Get the sensor data from the Raspberry Pi.
