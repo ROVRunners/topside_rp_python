@@ -1,10 +1,8 @@
-import rov_config
 import simple_pid
 
 from config.kinematics import KinematicsConfig
 
 from utilities.vector import Vector3
-import numpy as np
 
 
 class Kinematics:
