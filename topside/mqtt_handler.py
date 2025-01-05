@@ -105,23 +105,21 @@ class ROVConnection:
         performance, only put the PWM values that have changed into the dictionary.
 
         Args:
-            thruster_pwm (dict[enums.ThrusterPositions, int]):
-                The thruster PWM values to send to the surface.
+            pins (dict[str, Pin]):
+                List of pin values to be sent to the ROV.
         """
         # Build a dictionary of the PWM values that have changed.
         changed_pin_configs = {}
 
         for pin, config in pins.items():
-            if config != self._last_pin_configs.get(pin, 0):
-                self._last_pin_configs[pin] = config
+            if config != self._last_pin_configs.get(pin, None):
                 changed_pin_configs[pin] = config
+                self._last_pin_configs[pin] = config
 
         # If no values have changed for too long, send the last values every 0.5 seconds.
         if not changed_pin_configs:
             if time.time() - self._last_pin_update > self._idle_ping_frequency:
                 changed_pin_configs = copy.deepcopy(self._last_pin_configs)
-            else:
-                return
 
         # Update the last PWM update time regardless of whether the PWM values have changed.
         self._last_pin_update = time.time()
