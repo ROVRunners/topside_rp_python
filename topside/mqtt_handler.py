@@ -129,8 +129,8 @@ class ROVConnection:
 
         # Publish the PWM values to the MQTT broker.
         for pos, value in changed_pin_configs.items():
-            print("Pin:", value.index, "Value:", value.val)
-            self._client.publish(f"PC/pins/{pos}/index", value.index)
+            print("Pin:", value.id, "Value:", value.val)
+            self._client.publish(f"PC/pins/{pos}/id", value.id)
             self._client.publish(f"PC/pins/{pos}/mode", value.mode)
             self._client.publish(f"PC/pins/{pos}/val", value.val)
             self._client.publish(f"PC/pins/{pos}/freq", value.freq)

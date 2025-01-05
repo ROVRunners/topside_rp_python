@@ -14,11 +14,11 @@ class Pin:
         self._freq = self._config.freq
 
     @property
-    def index(self):
+    def id(self):
         return self._id
 
-    @index.setter
-    def index(self, value):
+    @id.setter
+    def id(self, value):
         self._id = value
 
     @property
