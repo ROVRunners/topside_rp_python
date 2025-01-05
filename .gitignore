@@ -14,3 +14,10 @@ topside/rovs/spike/__pycache__/rov_config.cpython-311.pyc
 topside/rovs/spike/__pycache__/rov.cpython-311.pyc
 topside/utilities/__pycache__/__init__.cpython-311.pyc
 topside/utilities/__pycache__/range.cpython-311.pyc
+topside/config/__pycache__/kinematics.cpython-311.pyc
+topside/config/__pycache__/pid.cpython-311.pyc
+topside/config/__pycache__/pin.cpython-311.pyc
+topside/config/__pycache__/video.cpython-311.pyc
+topside/rovs/spike/__pycache__/kinematics.cpython-311.pyc
+topside/utilities/__pycache__/class_tools.cpython-311.pyc
+topside/utilities/__pycache__/range_util.cpython-311.pyc

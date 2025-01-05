@@ -12,7 +12,7 @@ import gpio_handler
 import socket_handler
 import terminal_listener
 import udp_socket
-from topside.io import IO
+from io_handler import IO
 
 import utilities.class_tools as class_tools
 
