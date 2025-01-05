@@ -5,7 +5,7 @@ import hardware.thruster_pwm as thruster_pwm
 import enums
 import kinematics as kms
 import controller_input
-from topside.io_handler import IO
+from io_handler import IO
 from utilities.vector import Vector3
 
 

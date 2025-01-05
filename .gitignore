@@ -21,3 +21,7 @@ topside/config/__pycache__/video.cpython-311.pyc
 topside/rovs/spike/__pycache__/kinematics.cpython-311.pyc
 topside/utilities/__pycache__/class_tools.cpython-311.pyc
 topside/utilities/__pycache__/range_util.cpython-311.pyc
+topside/utilities/__pycache__/color.cpython-311.pyc
+topside/utilities/__pycache__/keyboard_input.cpython-311.pyc
+topside/utilities/__pycache__/personal_functions.cpython-311.pyc
+topside/utilities/__pycache__/vector.cpython-311.pyc
