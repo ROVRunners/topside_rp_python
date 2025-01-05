@@ -46,7 +46,7 @@ class Pin:
         self._freq = value
 
     def __eq__(self, other):
-        return self._id == self._id and self._mode == self._mode and self._val == self._val and self._freq == self._freq
+        return self._id == other._id and self._mode == other._mode and self._val == other._val and self._freq == other._freq
 
     def __ne__(self, other):
         return not self.__eq__(other)
