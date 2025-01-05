@@ -111,10 +111,15 @@ class ROVConnection:
         # Build a dictionary of the PWM values that have changed.
         changed_pin_configs = {}
 
+        print(self._last_pin_configs)
         for pin, config in pins.items():
-            if config != self._last_pin_configs.get(pin, None):
-                changed_pin_configs[pin] = config
-                self._last_pin_configs[pin] = config
+            if pin in self._last_pin_configs:
+                if config != self._last_pin_configs.get(pin, None):
+                    changed_pin_configs[pin] = copy.deepcopy(config)
+                    self._last_pin_configs[pin] = copy.deepcopy(config)
+            else:
+                changed_pin_configs[pin] = copy.deepcopy(config)
+                self._last_pin_configs[pin] = copy.deepcopy(config)
 
         # If no values have changed for too long, send the last values every 0.5 seconds.
         if not changed_pin_configs:
@@ -126,6 +131,7 @@ class ROVConnection:
 
         # Publish the PWM values to the MQTT broker.
         for pos, value in changed_pin_configs.items():
+            print("Pin:", value.index, "Value:", value.val)
             self._client.publish(f"PC/pins/{pos}/index", value.index)
             self._client.publish(f"PC/pins/{pos}/mode", value.mode)
             self._client.publish(f"PC/pins/{pos}/val", value.val)
