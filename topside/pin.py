@@ -50,3 +50,11 @@ class Pin:
 
     def __ne__(self, other):
         return not self.__eq__(other)
+    
+    def __deepcopy__(self, meta):
+        return Pin(PinConfig(
+            id=self._id,
+            mode=self._mode,
+            val=self._val,
+            freq=self._freq,
+            ))

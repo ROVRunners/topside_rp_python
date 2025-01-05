@@ -111,7 +111,7 @@ class ROVConnection:
 
         print(self._last_pin_configs)
         for pin, config in pins.items():
-            if pin in self._last_pin_configs:
+            if pin in self._last_pin_configs.keys():
                 if config != self._last_pin_configs.get(pin, None):
                     changed_pin_configs[pin] = copy.deepcopy(config)
                     self._last_pin_configs[pin] = copy.deepcopy(config)
