@@ -6,18 +6,18 @@ class Pin:
 
         self._config = config
 
-        self._index = self._config.index
+        self._id = self._config.id
         self._mode = self._config.mode
         self._val = self._config.val
         self._freq = self._config.freq
 
     @property
     def index(self):
-        return self._index
+        return self._id
 
     @index.setter
     def index(self, value):
-        self._index = value
+        self._id = value
 
     @property
     def mode(self):
