@@ -91,8 +91,6 @@ class ROVConnection:
         if not changed_command_values:
             if time.time() - self._last_command_update > self._idle_ping_frequency:
                 changed_command_values = copy.deepcopy(self._last_command_values)
-            else:
-                return
 
         # Update the last PWM update time regardless of whether the PWM values have changed.
         self._last_command_update = time.time()
