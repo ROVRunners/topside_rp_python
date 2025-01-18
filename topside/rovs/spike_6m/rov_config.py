@@ -64,9 +64,9 @@ class ROVConfig:
         self.thruster_impulses: dict[enums.ThrusterPositions, dict[enums.Directions, float]] = {
             enums.ThrusterPositions.FRONT_RIGHT: {
                 enums.Directions.FORWARDS: 1,
-                enums.Directions.RIGHT: -1,
+                enums.Directions.RIGHT: 1,
                 enums.Directions.UP: 0,
-                enums.Directions.YAW: 1,
+                enums.Directions.YAW: -1,
                 enums.Directions.PITCH: 0,
                 enums.Directions.ROLL: 0,
             },
@@ -79,7 +79,7 @@ class ROVConfig:
                 enums.Directions.ROLL: 0,
             },
             enums.ThrusterPositions.REAR_RIGHT: {
-                enums.Directions.FORWARDS: -1,
+                enums.Directions.FORWARDS: 1,
                 enums.Directions.RIGHT: -1,
                 enums.Directions.UP: 0,
                 enums.Directions.YAW: 1,
@@ -130,12 +130,12 @@ class ROVConfig:
         }
         # TODO: add real numbers
         self.pins: dict[str, Pin] = {
-            enums.ThrusterPositions.FRONT_RIGHT: Pin(PinConfig(id=27, mode="pwm", val=1500, freq=50)),
-            enums.ThrusterPositions.FRONT_LEFT: Pin(PinConfig(id=5, mode="pwm", val=1500, freq=50)),
-            enums.ThrusterPositions.REAR_RIGHT: Pin(PinConfig(id=6, mode="pwm", val=1500, freq=50)),
-            enums.ThrusterPositions.REAR_LEFT: Pin(PinConfig(id=13, mode="pwm", val=1500, freq=50)),
-            enums.ThrusterPositions.FRONT_VERTICAL: Pin(PinConfig(id=19, mode="pwm", val=1500, freq=50)),
-            enums.ThrusterPositions.REAR_VERTICAL: Pin(PinConfig(id=26, mode="pwm", val=1500, freq=50)),
+            enums.ThrusterPositions.FRONT_RIGHT: Pin(PinConfig(id=27, mode="PWMus", val=1500, freq=50)),
+            enums.ThrusterPositions.FRONT_LEFT: Pin(PinConfig(id=5, mode="PWMus", val=1500, freq=50)),
+            enums.ThrusterPositions.REAR_RIGHT: Pin(PinConfig(id=6, mode="PWMus", val=1500, freq=50)),
+            enums.ThrusterPositions.REAR_LEFT: Pin(PinConfig(id=13, mode="PWMus", val=1500, freq=50)),
+            enums.ThrusterPositions.FRONT_VERTICAL: Pin(PinConfig(id=19, mode="PWMus", val=1500, freq=50)),
+            enums.ThrusterPositions.REAR_VERTICAL: Pin(PinConfig(id=26, mode="PWMus", val=1500, freq=50)),
         }
 
 

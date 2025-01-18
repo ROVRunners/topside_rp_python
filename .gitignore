@@ -25,3 +25,8 @@ topside/utilities/__pycache__/color.cpython-311.pyc
 topside/utilities/__pycache__/keyboard_input.cpython-311.pyc
 topside/utilities/__pycache__/personal_functions.cpython-311.pyc
 topside/utilities/__pycache__/vector.cpython-311.pyc
+topside/rovs/spike_6m/__pycache__/enums.cpython-311.pyc
+topside/rovs/spike_6m/__pycache__/kinematics.cpython-311.pyc
+topside/rovs/spike_6m/__pycache__/manual.cpython-311.pyc
+topside/rovs/spike_6m/__pycache__/rov_config.cpython-311.pyc
+topside/rovs/spike_6m/__pycache__/rov.cpython-311.pyc
