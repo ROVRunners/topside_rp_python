@@ -122,8 +122,6 @@ class Axis:
         # Get the raw value of the axis.
         value = joystick.get_axis(self._index)
 
-        print("Axis", self._index, "Value:", value)
-
         # Invert the value if necessary.
         if self._inverted:
             value = -value
@@ -257,7 +255,6 @@ class Button:
         """
         # Get the raw value of the button.
         value = joystick.get_button(self._index)
-        print("Button", self._index, "Value:", value)
 
         self.value = value
 

@@ -146,14 +146,14 @@ class ROVConfig:
         }
         # TODO: add real numbers
         self.pins: dict[str, Pin] = {
-            enums.ThrusterPositions.FRONT_RIGHT: Pin(PinConfig(id= 27, mode="pwm", val=1500, freq=50)),
-            enums.ThrusterPositions.FRONT_LEFT: Pin(PinConfig(id=5, mode="pwm", val=1500, freq=50)),
-            enums.ThrusterPositions.REAR_RIGHT: Pin(PinConfig(id=6, mode="pwm", val=1500, freq=50)),
-            enums.ThrusterPositions.REAR_LEFT: Pin(PinConfig(id=13, mode="pwm", val=1500, freq=50)),
-            enums.ThrusterPositions.FRONT_RIGHT_VERTICAL: Pin(PinConfig(id=19, mode="pwm", val=1500, freq=50)),
-            enums.ThrusterPositions.FRONT_LEFT_VERTICAL: Pin(PinConfig(id=26, mode="pwm", val=1500, freq=50)),
-            enums.ThrusterPositions.REAR_RIGHT_VERTICAL: Pin(PinConfig(id=0, mode="pwm", val=1500, freq=50)),
-            enums.ThrusterPositions.REAR_LEFT_VERTICAL: Pin(PinConfig(id=0, mode="pwm", val=1500, freq=50)),
+            enums.ThrusterPositions.FRONT_RIGHT: Pin(PinConfig(id= 27, mode="PWMus", val=1500, freq=50)),
+            enums.ThrusterPositions.FRONT_LEFT: Pin(PinConfig(id=5, mode="PWMus", val=1500, freq=50)),
+            enums.ThrusterPositions.REAR_RIGHT: Pin(PinConfig(id=6, mode="PWMus", val=1500, freq=50)),
+            enums.ThrusterPositions.REAR_LEFT: Pin(PinConfig(id=13, mode="PWMus", val=1500, freq=50)),
+            enums.ThrusterPositions.FRONT_RIGHT_VERTICAL: Pin(PinConfig(id=19, mode="PWMus", val=1500, freq=50)),
+            enums.ThrusterPositions.FRONT_LEFT_VERTICAL: Pin(PinConfig(id=26, mode="PWMus", val=1500, freq=50)),
+            enums.ThrusterPositions.REAR_RIGHT_VERTICAL: Pin(PinConfig(id=23, mode="PWMus", val=1500, freq=50)), #pins for following motors are place holders
+            enums.ThrusterPositions.REAR_LEFT_VERTICAL: Pin(PinConfig(id=4, mode="PWMus", val=1500, freq=50)),
         }
 
 

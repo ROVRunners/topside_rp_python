@@ -91,8 +91,6 @@ class ROVConnection:
         if not changed_command_values:
             if time.time() - self._last_command_update > self._idle_ping_frequency:
                 changed_command_values = copy.deepcopy(self._last_command_values)
-            else:
-                return
 
         # Update the last PWM update time regardless of whether the PWM values have changed.
         self._last_command_update = time.time()
@@ -111,22 +109,32 @@ class ROVConnection:
         # Build a dictionary of the PWM values that have changed.
         changed_pin_configs = {}
 
+        # print(self._last_pin_configs)
         for pin, config in pins.items():
-            if config != self._last_pin_configs.get(pin, None):
-                changed_pin_configs[pin] = config
-                self._last_pin_configs[pin] = config
+            if pin in self._last_pin_configs.keys():
+                if config != self._last_pin_configs.get(pin, None):
+                    changed_pin_configs[pin] = copy.deepcopy(config)
+                    self._last_pin_configs[pin] = copy.deepcopy(config)
+            else:
+                changed_pin_configs[pin] = copy.deepcopy(config)
+                self._last_pin_configs[pin] = copy.deepcopy(config)
 
         # If no values have changed for too long, send the last values every 0.5 seconds.
         if not changed_pin_configs:
             if time.time() - self._last_pin_update > self._idle_ping_frequency:
+                print("test")
                 changed_pin_configs = copy.deepcopy(self._last_pin_configs)
+                self._last_pin_update = time.time()
+        # else:
+        #     # Update the last PWM update time
+        #     self._last_pin_update = time.time()
 
-        # Update the last PWM update time regardless of whether the PWM values have changed.
-        self._last_pin_update = time.time()
+
 
         # Publish the PWM values to the MQTT broker.
         for pos, value in changed_pin_configs.items():
-            self._client.publish(f"PC/pins/{pos}/index", value.index)
+            # print("Pin:", value.id, "Value:", value.val)
+            self._client.publish(f"PC/pins/{pos}/id", value.id)
             self._client.publish(f"PC/pins/{pos}/mode", value.mode)
             self._client.publish(f"PC/pins/{pos}/val", value.val)
             self._client.publish(f"PC/pins/{pos}/freq", value.freq)

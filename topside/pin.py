@@ -1,3 +1,5 @@
+from typing import overload
+
 from config.pin import PinConfig
 
 class Pin:
@@ -12,11 +14,11 @@ class Pin:
         self._freq = self._config.freq
 
     @property
-    def index(self):
+    def id(self):
         return self._id
 
-    @index.setter
-    def index(self, value):
+    @id.setter
+    def id(self, value):
         self._id = value
 
     @property
@@ -42,3 +44,17 @@ class Pin:
     @freq.setter
     def freq(self, value):
         self._freq = value
+
+    def __eq__(self, other):
+        return self._id == other._id and self._mode == other._mode and self._val == other._val and self._freq == other._freq
+
+    def __ne__(self, other):
+        return not self.__eq__(other)
+    
+    def __deepcopy__(self, meta):
+        return Pin(PinConfig(
+            id=self._id,
+            mode=self._mode,
+            val=self._val,
+            freq=self._freq,
+            ))

@@ -4,5 +4,5 @@ class PinConfig(NamedTuple):
     """Describe a pin configuration"""
     id: int
     mode: str
-    val: float
+    val: int
     freq: int | None = None
