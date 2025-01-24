@@ -63,8 +63,8 @@ class ROVConfig:
         # Definitions of the forces applied by the thrusters.
         self.thruster_impulses: dict[enums.ThrusterPositions, dict[enums.Directions, float]] = {
             enums.ThrusterPositions.FRONT_RIGHT: {
-                enums.Directions.FORWARDS: 1,
-                enums.Directions.RIGHT: 1,
+                enums.Directions.FORWARDS: -1,
+                enums.Directions.RIGHT: -1,
                 enums.Directions.UP: 0,
                 enums.Directions.YAW: -1,
                 enums.Directions.PITCH: 0,
@@ -72,7 +72,7 @@ class ROVConfig:
             },
             enums.ThrusterPositions.FRONT_LEFT: {
                 enums.Directions.FORWARDS: 1,
-                enums.Directions.RIGHT: 1,
+                enums.Directions.RIGHT: -1,
                 enums.Directions.UP: 0,
                 enums.Directions.YAW: -1,
                 enums.Directions.PITCH: 0,
@@ -87,7 +87,7 @@ class ROVConfig:
                 enums.Directions.ROLL: 0,
             },
             enums.ThrusterPositions.REAR_LEFT: {
-                enums.Directions.FORWARDS: -1,
+                enums.Directions.FORWARDS: 1,
                 enums.Directions.RIGHT: 1,
                 enums.Directions.UP: 0,
                 enums.Directions.YAW: -1,
@@ -97,7 +97,7 @@ class ROVConfig:
             enums.ThrusterPositions.FRONT_VERTICAL: {
                 enums.Directions.FORWARDS: 0,
                 enums.Directions.RIGHT: 0,
-                enums.Directions.UP: 1,
+                enums.Directions.UP: -1,
                 enums.Directions.YAW: 0,
                 enums.Directions.PITCH: 1,
                 enums.Directions.ROLL: 0,
@@ -105,7 +105,7 @@ class ROVConfig:
             enums.ThrusterPositions.REAR_VERTICAL: {
                 enums.Directions.FORWARDS: 0,
                 enums.Directions.RIGHT: 0,
-                enums.Directions.UP: 1,
+                enums.Directions.UP: -1,
                 enums.Directions.YAW: 0,
                 enums.Directions.PITCH: -1,
                 enums.Directions.ROLL: 0,
