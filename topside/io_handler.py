@@ -29,9 +29,10 @@ class IO:
         self._i2c_handler = i2c
         self._gpio_handler = gpio
 
-        self._input_handler.update()
+
         self._controller_inputs = self._input_handler.controllers
         self._subscriptions = self._rov_comms.get_subscriptions()
+        self._input_handler.update()
         # TODO: Hook up the UDP stuff
         # self._video = self._rov_video.get_frame()
         self._timer = class_tools.Stopwatch()

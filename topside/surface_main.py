@@ -9,6 +9,7 @@ import controller
 import controller_input
 import mqtt_handler
 import gpio_handler
+import i2c_handler
 import socket_handler
 import terminal_listener
 import udp_socket
@@ -49,6 +50,8 @@ class MainSystem:
 
         self.gpio_handler = gpio_handler.GPIOHandler(self.rov_config.pins)
 
+        self.i2c_handler = i2c_handler.I2CHandler(self.rov_config.i2cs)
+
         # TODO: Incorporate terminal input and openCV video stream(s). Maybe incorporate a video stream switching
         #  system.
         # self.input_map: dict[str, Callable[[], any]] = {
@@ -56,7 +59,7 @@ class MainSystem:
         #     "subscriptions": self.rov_connection.get_subscriptions,
         #     # "socket": self.socket.get_video,
         # }
-        self._io = IO(self.gpio_handler, self.input_handler, self.rov_connection)
+        self._io = IO(self.gpio_handler, self.i2c_handler, self.input_handler, self.rov_connection)
         self._rov = rov.ROV(self.rov_config, self._io)
 
         self.rov_connection.connect()
