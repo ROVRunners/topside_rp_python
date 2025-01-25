@@ -139,9 +139,9 @@ class ROVConnection:
         for pos, value in changed_i2c_configs.items():
             # print("Pin:", value.id, "Value:", value.val)
             self._client.publish(f"PC/i2c/{pos}/addr", value.addr)
-            self._client.publish(f"PC/i2c/{pos}/sending_vals", json.dumps(value.sending_vals))
-            self._client.publish(f"PC/i2c/{pos}/reading_registers", json.dumps(value.reading_registers))
-            self._client.publish(f"PC/i2c/{pos}/poll_val", json.dumps(value.poll_val))
+            self._client.publish(f"PC/i2c/{pos}/send_vals", json.dumps(value.sending_vals))
+            self._client.publish(f"PC/i2c/{pos}/read_regs", json.dumps(value.reading_registers))
+            self._client.publish(f"PC/i2c/{pos}/poll_vals", json.dumps(value.poll_val))
 
 
     def publish_pins(self, pins: dict[str, Pin]) -> None:

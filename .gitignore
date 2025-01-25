@@ -30,3 +30,6 @@ topside/rovs/spike_6m/__pycache__/kinematics.cpython-311.pyc
 topside/rovs/spike_6m/__pycache__/manual.cpython-311.pyc
 topside/rovs/spike_6m/__pycache__/rov_config.cpython-311.pyc
 topside/rovs/spike_6m/__pycache__/rov.cpython-311.pyc
+topside/config/__pycache__/i2c.cpython-311.pyc
+topside/config/__pycache__/imu.cpython-311.pyc
+topside/rovs/spike_6m/__pycache__/imu.cpython-311.pyc
