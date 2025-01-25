@@ -129,8 +129,6 @@ class ROVConfig:
         }
 
         self.kinematics_config = KinematicsConfig(
-            x_vel_pid=PIDConfig(p= 1, i=0, d=0),
-            y_vel_pid=PIDConfig(p= 1, i=0, d=0),
             yaw_pid=PIDConfig(p= 1, i=0, d=0),
             pitch_pid=PIDConfig(p= 1, i=0, d=0),
             roll_pid=PIDConfig(p= 1, i=0, d=0),
@@ -144,7 +142,7 @@ class ROVConfig:
                 thruster_impulses=self.thruster_impulses[position]
             ) for position in self.thruster_impulses.keys()
         }
-        # TODO: add real numbers
+
         self.pins: dict[str, Pin] = {
             enums.ThrusterPositions.FRONT_RIGHT: Pin(PinConfig(id= 27, mode="PWMus", val=1500, freq=50)),
             enums.ThrusterPositions.FRONT_LEFT: Pin(PinConfig(id=5, mode="PWMus", val=1500, freq=50)),

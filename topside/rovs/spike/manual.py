@@ -94,8 +94,6 @@ class Manual:
         left_trigger = controller.axes[enums.ControllerAxisNames.LEFT_TRIGGER]
         vertical = controller_input.combine_triggers(left_trigger.value, right_trigger.value)
 
-        # TODO: Add any other input processing software like a PID here. Also, a PID should probably be
-        #  implemented in a separate class due to it being generally applicable to all ROVs.
         self._kinematics.update_target_position(
             Vector3(
                 controller.axes[enums.ControllerAxisNames.RIGHT_X].value,
