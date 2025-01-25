@@ -55,15 +55,14 @@ class Manual:
         inputs = self._io.controllers
 
         controller = inputs[enums.ControllerNames.PRIMARY_DRIVER]
-        # print(controller.axes[enums.ControllerAxisNames.LEFT_X].value)
-        #
-        # print(controller.axes[enums.ControllerAxisNames.RIGHT_X].value)
 
         subscriptions = self._io.subscriptions
         i2c = self._io.i2c_handler.i2cs
 
+
         # Get the gyro data from the subscriptions if it exists.
         if "imu" in i2c:
+            self._imu.update(i2c["imu"])
             gyro_yaw = self._imu.yaw
             gyro_pitch = self._imu.pitch
             gyro_roll = self._imu.roll
@@ -126,8 +125,13 @@ class Manual:
 
         # Publish the PWM values to the MQTT broker.
         for thruster, pwm in pwm_values.items():
-            self._io.gpio_handler.pins[thruster].val = pwm
+            self._io.gpio_handler.pins[thruster].val = 1500
 
         self._io.rov_comms.publish_commands({
             "stop": stop,
         })
+
+    def shutdown(self):
+        """Shutdown the ROV."""
+        # TODO: Add any shutdown logic here.
+        pass

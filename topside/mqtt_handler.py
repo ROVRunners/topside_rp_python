@@ -230,7 +230,7 @@ class ROVConnection:
             message (mqtt.MQTTMessage):
                 The message object.
         """
-        print(f"Received message '{message.payload.decode()}' on topic '{message.topic}'")
+        # print(f"Received message '{message.payload.decode()}' on topic '{message.topic}'")
 
         self._set_subscription_value(message.topic, message.payload.decode())
 

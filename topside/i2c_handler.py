@@ -1,3 +1,4 @@
+import json
 from i2c import I2C
 import enums
 
@@ -16,7 +17,10 @@ class I2CHandler:
     def update(self, subs: dict[str, str]) -> None:
         for i in subs.keys():
             if i.startswith("ROV/i2c/"):
-                self._i2cs[i.split("/")[2]].received_vals[i.split("/")[3]] = int(subs[i])
+                name = i.split("/")[2]
+                register = i.split("/")[3]
+
+                self._i2cs[name].received_vals[register] = subs[i]
 
 
     @property

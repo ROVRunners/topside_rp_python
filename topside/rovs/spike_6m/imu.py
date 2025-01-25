@@ -15,14 +15,27 @@ class IMU:
         self._pitch = 0.0
 
     def update(self, imu: I2C):
-        gyro = imu.received_vals[self.imuconfig.gyro_name]
-        self._yaw = gyro[0]
-        self._roll = gyro[1]
-        self._pitch = gyro[2]
-        accel = imu.received_vals[self.imuconfig.gyro_name]
-        self._accel_x = accel[0]
-        self._accel_y = accel[1]
-        self._accel_z = accel[2]
+        if not imu.received_vals:
+            return
+        
+        if self.imuconfig.gyro_name in imu.received_vals:
+            gyro = imu.received_vals[self.imuconfig.gyro_name]
+
+            self._yaw = gyro['0'] | (gyro['1'] >> 8)
+            self._roll = gyro['2'] | (gyro['3'] >> 8)
+            self._pitch = gyro['4'] | (gyro['5'] >> 8)
+
+            print("Gyro:", self._yaw, self._pitch, self._roll, end=" | ")
+
+        if self.imuconfig.accel_name in imu.received_vals:
+            accel = imu.received_vals[self.imuconfig.accel_name]
+
+            self._accel_x = accel['0'] | (accel['1'] >> 8)
+            self._accel_y = accel['2'] | (accel['3'] >> 8)
+            self._accel_z = accel['4'] | (accel['5'] >> 8)
+
+            print("Accel:", self._accel_x, self._accel_y, self._accel_z)
+
 
     def initialize_imu(self, imu: I2C):
         imu.sending_vals[self.imuconfig.gyro_init_register] = self.imuconfig.gyro_init_value

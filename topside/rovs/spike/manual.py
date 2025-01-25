@@ -54,10 +54,9 @@ class Manual:
         """Update thrust values, send commands, and more based on the inputs."""
         inputs = self._io.controllers
 
+        self._imu.update(self._io.i2c_handler.i2cs["imu"])
+
         controller = inputs[enums.ControllerNames.PRIMARY_DRIVER]
-        # print(controller.axes[enums.ControllerAxisNames.LEFT_X].value)
-        #
-        # print(controller.axes[enums.ControllerAxisNames.RIGHT_X].value)
 
         subscriptions = self._io.subscriptions
         i2c = self._io.i2c_handler.i2cs

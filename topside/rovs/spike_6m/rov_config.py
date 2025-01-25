@@ -139,12 +139,12 @@ class ROVConfig:
         }
 
         self.i2cs: dict[str, I2C] = {
-            "imu": I2C(I2CConfig(addr=0x6A, reading_registers={"gyro": (0x22, 6), "accel": (0x28, 6)}),)
+            "imu": I2C(I2CConfig(addr=0x6A, reading_registers={"gyro": (0x28, 6), "accel": (0x22, 6)}),)
         }
 
         self.imu_config = IMUConfig(
-            gyro_init_register = 0x10,
-            accel_init_register = 0x11,
+            gyro_init_register = 0x11,
+            accel_init_register = 0x10,
             gyro_init_value = 0x50,
             accel_init_value = 0x50,
             gyro_name = "gyro",
