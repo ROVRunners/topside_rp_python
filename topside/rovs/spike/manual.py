@@ -4,6 +4,7 @@
 import hardware.thruster_pwm as thruster_pwm
 import enums
 import kinematics as kms
+from imu import IMU
 import controller_input
 from io_handler import IO
 from utilities.vector import Vector3
@@ -14,7 +15,7 @@ class Manual:
     takes an inputs and maps and sends outputs to the rov connection
     """
 
-    def __init__(self, frame: thruster_pwm.FrameThrusters, io: IO, kinematics: kms.Kinematics) -> None:
+    def __init__(self, frame: thruster_pwm.FrameThrusters, io: IO, kinematics: kms.Kinematics, imu: IMU) -> None:
         """Initialize the Manual object.
 
         Args:
@@ -28,6 +29,9 @@ class Manual:
         self._frame = frame
         self._io = io
         self._kinematics = kinematics
+        self._imu = imu
+
+        self._imu.initialize_imu(self._io.i2c_handler.i2cs["imu"])
 
         # Set up the objects
         # self._rov_connection: mqtt_handler.ROVConnection = self._main_system.rov_connection
@@ -56,22 +60,23 @@ class Manual:
         # print(controller.axes[enums.ControllerAxisNames.RIGHT_X].value)
 
         subscriptions = self._io.subscriptions
+        i2c = self._io.i2c_handler.i2cs
 
         # Get the gyro data from the subscriptions if it exists.
-        if "ROV/sensor_data/gyro" in subscriptions:
-            gyro_yaw = subscriptions["ROV/sensor_data/gyro/yaw"]
-            gyro_pitch = subscriptions["ROV/sensor_data/gyro/pitch"]
-            gyro_roll = subscriptions["ROV/sensor_data/gyro/roll"]
+        if "imu" in i2c:
+            gyro_yaw = self._imu.yaw
+            gyro_pitch = self._imu.pitch
+            gyro_roll = self._imu.roll
         else:
             gyro_yaw = 0
             gyro_pitch = 0
             gyro_roll = 0
 
         # Get the accelerometer data from the subscriptions if it exists.
-        if "ROV/sensor_data/accel" in subscriptions:
-            accel_x = subscriptions["ROV/sensor_data/accel/x"]
-            accel_y = subscriptions["ROV/sensor_data/accel/y"]
-            accel_z = subscriptions["ROV/sensor_data/accel/z"]
+        if "imu" in i2c:
+            accel_x = self._imu.accel_x
+            accel_y = self._imu.accel_y
+            accel_z = self._imu.accel_z
         else:
             accel_x = 0
             accel_y = 0

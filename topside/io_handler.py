@@ -52,6 +52,10 @@ class IO:
         return self._gpio_handler
 
     @property
+    def i2c_handler(self) -> i2c_handler.I2CHandler:
+        return self._i2c_handler
+
+    @property
     def input_handler(self) -> controller_input.InputHandler:
         return self._input_handler
 
@@ -88,6 +92,7 @@ class IO:
         self._subscriptions = self.rov_comms.get_subscriptions()
         self._gpio_handler.update(self._subscriptions)
         self._i2c_handler.update(self._subscriptions)
+        self._rov_comms.publish_i2c(self.i2c_handler.i2cs)
         self._rov_comms.publish_pins(self._gpio_handler.pins)
 
     def shutdown(self) -> None:

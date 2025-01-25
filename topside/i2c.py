@@ -11,7 +11,9 @@ class I2C:
         self._addr = self._config.addr
         self._poll_val = self._config.poll_val
         self._sending_vals = self._config.sending_vals
+
         self._received_vals = self._config.received_vals
+        self._reading_registers = self._config.reading_registers
 
     @property
     def addr(self):
@@ -45,8 +47,16 @@ class I2C:
     def sending_vals(self, sending_value):
         self._sending_vals = sending_value
 
+    @property
+    def reading_registers(self):
+        return self._reading_registers
+
+    @reading_registers.setter
+    def reading_registers(self, reading_registers):
+        self._reading_registers = reading_registers
+
     def __eq__(self, other):
-        return self._addr == other._addr and self._poll_val == other._poll_val and self._sending_vals == other._sending_vals, self._received_vals == other._received_vals
+        return self._addr == other._addr and self._poll_val == other._poll_val and self._sending_vals == other._sending_vals, self._received_vals == other._received_vals, self._reading_registers == other._reading_registers
 
     def __ne__(self, other):
         return not self.__eq__(other)
@@ -57,4 +67,5 @@ class I2C:
             poll_val=self._poll_val,
             sending_vals=self.sending_vals,
             received_vals=self.received_vals,
+            reading_registers=self.reading_registers,
         ))

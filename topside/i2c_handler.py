@@ -18,6 +18,7 @@ class I2CHandler:
             if i.startswith("ROV/i2c/"):
                 self._i2cs[i.split("/")[2]].received_vals[i.split("/")[3]] = int(subs[i])
 
+
     @property
     def i2cs(self) -> dict[str, I2C]:
         return self._i2cs
