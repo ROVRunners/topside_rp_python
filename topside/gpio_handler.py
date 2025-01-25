@@ -17,6 +17,12 @@ class GPIOHandler:
         for thruster, val in thruster_pwm.items():
             self.pins[thruster].val = val
 
+    #TODO add the pin if it does not exist
+    def update(self, subs: dict[str, str]) -> None:
+        for i in subs.keys():
+            if i.startswith("ROV/pins/"):
+                self.pins[i.split("/")[2]].val = int(subs[i])
+
     @property
     def pins(self) -> dict[str, Pin]:
         return self._pins

@@ -1,5 +1,6 @@
 import controller
 import controller_input
+import i2c_handler
 import mqtt_handler
 import socket_handler
 import terminal_listener
@@ -12,7 +13,8 @@ class IO:
     """Handles the input and output of the custom control classes."""
     def __init__(
             self,
-            gpio_handler: gpio_handler.GPIOHandler,
+            gpio: gpio_handler.GPIOHandler,
+            i2c: i2c_handler.I2CHandler,
             input_handler: controller_input.InputHandler | None = None,
             rov_comms: mqtt_handler.ROVConnection | None = None,
             terminal: terminal_listener.TerminalListener | None = None,
@@ -23,7 +25,9 @@ class IO:
         self._rov_comms = rov_comms
         self._terminal = terminal
         self._rov_video = rov_video
-        self._gpio_handler = gpio_handler
+        # TODO: Implement
+        self._i2c_handler = i2c
+        self._gpio_handler = gpio
 
         self._input_handler.update()
         self._controller_inputs = self._input_handler.controllers
@@ -81,6 +85,8 @@ class IO:
         """This should be called only from rov.py. Do not call more than once per frame."""
         self._input_handler.update()
         self._subscriptions = self.rov_comms.get_subscriptions()
+        self._gpio_handler.update(self._subscriptions)
+        self._i2c_handler.update(self._subscriptions)
         self._rov_comms.publish_pins(self._gpio_handler.pins)
 
     def shutdown(self) -> None:
