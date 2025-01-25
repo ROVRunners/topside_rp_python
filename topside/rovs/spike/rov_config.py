@@ -154,5 +154,6 @@ class ROVConfig:
             enums.ThrusterPositions.REAR_LEFT_VERTICAL: Pin(PinConfig(id=4, mode="PWMus", val=1500, freq=50)),
 
         }
+        self.i2cs: dict
 
 

@@ -113,8 +113,6 @@ class ROVConfig:
         }
 
         self.kinematics_config = KinematicsConfig(
-            x_vel_pid=PIDConfig(p=1, i=0, d=0),
-            y_vel_pid=PIDConfig(p=1, i=0, d=0),
             yaw_pid=PIDConfig(p=1, i=0, d=0),
             pitch_pid=PIDConfig(p=1, i=0, d=0),
             roll_pid=PIDConfig(p=1, i=0, d=0),
