@@ -115,10 +115,10 @@ class ROVConfig:
         }
 
         self.kinematics_config = KinematicsConfig(
-            yaw_pid=PIDConfig(p=1, i=0, d=0),
-            pitch_pid=PIDConfig(p=1, i=0, d=0),
-            roll_pid=PIDConfig(p=1, i=0, d=0),
-            depth_pid=PIDConfig(p=1, i=0, d=0),
+            yaw_pid=PIDConfig(p= 0, i=0, d=0),
+            pitch_pid=PIDConfig(p= 0, i=0, d=0),
+            roll_pid=PIDConfig(p= 0, i=0, d=0),
+            depth_pid=PIDConfig(p= 0, i=0, d=0),
         )
 
         self.thruster_configs: dict[enums.ThrusterPositions, thruster.ThrusterPWMConfig] = {
