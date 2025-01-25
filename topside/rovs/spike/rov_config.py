@@ -7,6 +7,8 @@ import controller as controller
 import config.thruster as thruster
 from config.pin import PinConfig
 from pin import Pin
+from i2c import I2C
+from config.i2c import I2CConfig
 from config.kinematics import KinematicsConfig
 from config.pid import PIDConfig
 
@@ -154,6 +156,8 @@ class ROVConfig:
             enums.ThrusterPositions.REAR_LEFT_VERTICAL: Pin(PinConfig(id=4, mode="PWMus", val=1500, freq=50)),
 
         }
-        self.i2cs: dict
+        self.i2cs: dict[str, I2C] = {
+            "imu": I2C(I2CConfig(addr=""))
+        }
 
 

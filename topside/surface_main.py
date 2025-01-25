@@ -9,6 +9,7 @@ import controller
 import controller_input
 import mqtt_handler
 import gpio_handler
+import i2c_handler
 import socket_handler
 import terminal_listener
 import udp_socket
@@ -48,6 +49,8 @@ class MainSystem:
         self.rov_connection = mqtt_handler.ROVConnection(self._host_ip, self._comms_port)
 
         self.gpio_handler = gpio_handler.GPIOHandler(self.rov_config.pins)
+
+        self.i2c_handler = i2c_handler.I2CHandler(self.rov_config.i2cs)
 
         # TODO: Incorporate terminal input and openCV video stream(s). Maybe incorporate a video stream switching
         #  system.
