@@ -52,6 +52,10 @@ class IO:
         return self._gpio_handler
 
     @property
+    def i2c_handler(self) -> i2c_handler.I2CHandler:
+        return self._i2c_handler
+
+    @property
     def input_handler(self) -> controller_input.InputHandler:
         return self._input_handler
 

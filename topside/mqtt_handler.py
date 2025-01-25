@@ -4,6 +4,8 @@ import subprocess
 import time
 from threading import Lock
 from pin import Pin
+from i2c import I2C
+import json
 
 import killport
 import paho.mqtt.client as mqtt_c
@@ -49,6 +51,9 @@ class ROVConnection:
         self._last_pin_configs: dict[str, Pin] = {}
         self._last_pin_update: float = 0.0
         self._idle_ping_frequency: float = 2.0
+
+        self._last_i2c_configs: dict[str, I2C] = {}
+        self._last_i2c_update: float = 0.0
 
         # Do the same for commands.
         self._last_command_values = {}
@@ -98,6 +103,47 @@ class ROVConnection:
         for cmd, val in changed_command_values.items():
             self._client.publish(f"PC/commands/{cmd}", val)
 
+    def publish_i2c(self, i2cs: dict[str, I2C]) -> None:
+        """Send a series of packets from the Raspberry Pi with the specified I2C values. To improve
+        performance, only put the sending_vals that have changed into the dictionary.
+
+        Args:
+            i2cs (dict[str, I2C]):
+                List of I2C values to be sent to the ROV.
+        """
+        # Build a dictionary of the PWM values that have changed.
+        changed_i2c_configs = {}
+
+        # print(self._last_pin_configs)
+        for i2c, config in i2cs.items():
+            if i2c in self._last_i2c_configs.keys():
+                if config != self._last_i2c_configs.get(i2c, None):
+                    changed_i2c_configs[i2c] = copy.deepcopy(config)
+                    self._last_i2c_configs[i2c] = copy.deepcopy(config)
+            else:
+                changed_i2c_configs[i2c] = copy.deepcopy(config)
+                self._last_i2c_configs[i2c] = copy.deepcopy(config)
+
+        # If no values have changed for too long, send the last values every 0.5 seconds.
+        if not changed_i2c_configs:
+            if time.time() - self._last_i2c_update > self._idle_ping_frequency:
+                changed_i2c_configs = copy.deepcopy(self._last_i2c_configs)
+                self._last_i2c_update = time.time()
+        # else:
+        #     # Update the last PWM update time
+        #     self._last_i2c_update = time.time()
+
+
+
+        # Publish the PWM values to the MQTT broker.
+        for pos, value in changed_i2c_configs.items():
+            # print("Pin:", value.id, "Value:", value.val)
+            self._client.publish(f"PC/i2c/{pos}/addr", value.addr)
+            self._client.publish(f"PC/i2c/{pos}/sending_vals", json.dumps(value.sending_vals))
+            self._client.publish(f"PC/i2c/{pos}/reading_registers", json.dumps(value.reading_registers))
+            self._client.publish(f"PC/i2c/{pos}/poll_val", json.dumps(value.poll_val))
+
+
     def publish_pins(self, pins: dict[str, Pin]) -> None:
         """Send a series of packets from the Raspberry Pi with the specified thruster PWM values. To improve
         performance, only put the PWM values that have changed into the dictionary.
@@ -106,6 +152,7 @@ class ROVConnection:
             pins (dict[str, Pin]):
                 List of pin values to be sent to the ROV.
         """
+
         # Build a dictionary of the PWM values that have changed.
         changed_pin_configs = {}
 
@@ -122,7 +169,6 @@ class ROVConnection:
         # If no values have changed for too long, send the last values every 0.5 seconds.
         if not changed_pin_configs:
             if time.time() - self._last_pin_update > self._idle_ping_frequency:
-                print("test")
                 changed_pin_configs = copy.deepcopy(self._last_pin_configs)
                 self._last_pin_update = time.time()
         # else:
