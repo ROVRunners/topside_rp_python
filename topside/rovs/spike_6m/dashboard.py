@@ -122,7 +122,7 @@ class Dashboard(tk.Frame):
 
     def update_images(self, images: dict[str, float]):
         for name, value in images.items():
-            if name not in self.images:
+            if name in self.images:
                 self.rotate_image(name, value)
 
 

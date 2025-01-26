@@ -75,7 +75,7 @@ class IMU:
             self._roll_ema.add(self._roll)
 
             # print("Gyro:", int(self._yaw_ema.ema_value), int(self._pitch_ema.ema_value), int(self._roll_ema.ema_value), end=" | ")
-            print("Gyro:", round(self._yaw_ema.ema_value, 2), round(self._pitch_ema.ema_value, 2), round(self._roll_ema.ema_value, 2), end=" | ")
+            # print("Gyro:", round(self._yaw_ema.ema_value, 2), round(self._pitch_ema.ema_value, 2), round(self._roll_ema.ema_value, 2), end=" | ")
 
         if self.imuconfig.accel_name in imu.received_vals:
             accel = imu.received_vals[self.imuconfig.accel_name]
@@ -105,7 +105,7 @@ class IMU:
             self._accel_y_ema.add(self._accel_y)
             self._accel_z_ema.add(self._accel_z)
 
-            print("Accel:", self._accel_x, self._accel_y, self._accel_z)
+            # print("Accel:", self._accel_x, self._accel_y, self._accel_z)
 
     def initialize_imu(self, imu: I2C) -> None:
         imu.sending_vals[self.imuconfig.gyro_init_register] = self.imuconfig.gyro_init_value
@@ -114,41 +114,41 @@ class IMU:
     def calibrate_gyro(self) -> None:
         """Re-centers the gyroscope values. WARNING: Can cause unintended effects
         if not stationary when used."""
-        self._yaw_offset += self._yaw_ema
-        self._pitch_offset += self._pitch_ema
-        self._roll_offset += self._roll_ema
+        self._yaw_offset += self._yaw_ema.ema_value
+        self._pitch_offset += self._pitch_ema.ema_value
+        self._roll_offset += self._roll_ema.ema_value
     
     def calibrate_accel(self) -> None:
         """Re-centers the gyroscope values. WARNING: Can cause unintended effects
         if not stationary when used."""
-        self._x_offset += self._accel_x_ema
-        self._y_offset += self._accel_y_ema
-        self._z_offset += self._accel_z_ema
+        self._x_offset += self._accel_x_ema.ema_value
+        self._y_offset += self._accel_y_ema.ema_value
+        self._z_offset += self._accel_z_ema.ema_value
 
 
     @property
     def accel_x(self):
-        return self._accel_x_ema
+        return self._accel_x
 
     @property
     def accel_y(self):
-        return self._accel_y_ema
+        return self._accel_y
 
     @property
     def accel_z(self):
-        return self._accel_z_ema
+        return self._accel_z
 
     @property
     def yaw(self):
-        return self._yaw_ema
+        return self._yaw
 
     @property
     def roll(self):
-        return self._roll_ema
+        return self._roll
 
     @property
     def pitch(self):
-        return self._pitch_ema
+        return self._pitch
 
     # @pitch.setter
     # def pitch(self, value):
