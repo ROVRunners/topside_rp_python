@@ -1,4 +1,5 @@
 """This file contains the configuration for the Spike ROV."""
+import os.path
 import socket
 
 import config.typed_range as typed_range
@@ -12,6 +13,7 @@ from config.i2c import I2CConfig
 from config.kinematics import KinematicsConfig
 from config.pid import PIDConfig
 from config.imu import IMUConfig
+from config.dashboard import *
 
 class ROVConfig:
     """Class for the ROV configuration."""
@@ -115,10 +117,10 @@ class ROVConfig:
         }
 
         self.kinematics_config = KinematicsConfig(
-            yaw_pid=PIDConfig(p=1, i=0, d=0),
-            pitch_pid=PIDConfig(p=1, i=0, d=0),
-            roll_pid=PIDConfig(p=1, i=0, d=0),
-            depth_pid=PIDConfig(p=1, i=0, d=0),
+            yaw_pid=PIDConfig(p= 0.5, i=0, d=0),
+            pitch_pid=PIDConfig(p= 0.5, i=0, d=0),
+            roll_pid=PIDConfig(p= 0.5, i=0, d=0),
+            depth_pid=PIDConfig(p= 0.5, i=0, d=0),
         )
 
         self.thruster_configs: dict[enums.ThrusterPositions, thruster.ThrusterPWMConfig] = {
@@ -151,3 +153,23 @@ class ROVConfig:
             accel_name = "accel"
         )
 
+        # Labels
+        self.dash_config = DashboardConfig(
+            labels=(
+                LabelConfig("Height", 2, 2, "Height"),
+                LabelConfig("FPS", 3, 2, "FPS"),
+                LabelConfig("Quality", 4, 2, "Quality")
+            ),
+            scales=(
+                ScaleConfig("Height", 2, 3, 50, 300, 150, cspan=2),
+                ScaleConfig("FPS", 3, 3, 1, 30, 15, cspan=2),
+                ScaleConfig("Quality", 4, 3, 1, 100, 75, cspan=2)
+            ),
+            images=(
+                ImageConfig("topview", 1, 2, 125, 125, f"{os.path.dirname(os.path.realpath(__file__))}/assets/topview.png", cspan=2),
+                ImageConfig("sideview", 1, 4, 125, 125, f"{os.path.dirname(os.path.realpath(__file__))}/assets/sideview.png", cspan=2),
+                ImageConfig("frontview", 1, 6, 125, 125, f"{os.path.dirname(os.path.realpath(__file__))}/assets/frontview.png", cspan=2)
+            )
+        )
+
+os.path.dirname(os.path.realpath(__file__))

@@ -125,10 +125,10 @@ class ROVConnection:
                 self._last_i2c_configs[i2c] = copy.deepcopy(config)
 
         # If no values have changed for too long, send the last values every 0.5 seconds.
-        if not changed_i2c_configs:
-            if time.time() - self._last_i2c_update > self._idle_ping_frequency:
-                changed_i2c_configs = copy.deepcopy(self._last_i2c_configs)
-                self._last_i2c_update = time.time()
+        # if not changed_i2c_configs:
+        #     if time.time() - self._last_i2c_update > self._idle_ping_frequency:
+        #         changed_i2c_configs = copy.deepcopy(self._last_i2c_configs)
+        #         self._last_i2c_update = time.time()
         # else:
         #     # Update the last PWM update time
         #     self._last_i2c_update = time.time()
