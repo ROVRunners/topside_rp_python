@@ -128,30 +128,30 @@ class IMU:
 
     @property
     def accel_x(self):
-        return self._accel_x
+        return self._accel_x_ema
 
     @property
     def accel_y(self):
-        return self._accel_y
+        return self._accel_y_ema
 
     @property
     def accel_z(self):
-        return self._accel_z
+        return self._accel_z_ema
 
     @property
     def yaw(self):
-        return self._yaw
+        return self._yaw_ema
 
     @property
     def roll(self):
-        return self._roll
+        return self._roll_ema
 
     @property
     def pitch(self):
-        return self._pitch
+        return self._pitch_ema
 
-    @pitch.setter
-    def pitch(self, value):
-        self._pitch = value
+    # @pitch.setter
+    # def pitch(self, value):
+    #     self._pitch = value
 
 

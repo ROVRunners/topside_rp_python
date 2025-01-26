@@ -34,3 +34,5 @@ topside/config/__pycache__/i2c.cpython-311.pyc
 topside/config/__pycache__/imu.cpython-311.pyc
 topside/rovs/spike_6m/__pycache__/imu.cpython-311.pyc
 topside/utilities/__pycache__/ema.cpython-311.pyc
+topside/config/__pycache__/dashboard.cpython-311.pyc
+topside/rovs/spike_6m/__pycache__/dashboard.cpython-311.pyc
