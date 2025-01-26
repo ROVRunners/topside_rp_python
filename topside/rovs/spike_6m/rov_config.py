@@ -145,8 +145,8 @@ class ROVConfig:
         self.imu_config = IMUConfig(
             gyro_init_register = 0x11,
             accel_init_register = 0x10,
-            gyro_init_value = 0x50,
-            accel_init_value = 0x50,
+            gyro_init_value = 0x40,
+            accel_init_value = 0x40,
             gyro_name = "gyro",
             accel_name = "accel"
         )
