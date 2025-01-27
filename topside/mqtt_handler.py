@@ -1,17 +1,14 @@
 import copy
-import json
 import subprocess
 import time
 from threading import Lock
-from pin import Pin
-from i2c import I2C
+from hardware.pin import Pin
+from hardware.i2c import I2C
 import json
 
 import killport
 import paho.mqtt.client as mqtt_c
 # import paho.mqtt.enums as mqtt
-
-import enums
 
 
 class ROVConnection:

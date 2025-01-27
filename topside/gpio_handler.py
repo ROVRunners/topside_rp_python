@@ -1,4 +1,4 @@
-from pin import Pin
+from hardware.pin import Pin
 import enums
 
 

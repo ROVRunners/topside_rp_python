@@ -7,8 +7,8 @@ import enums
 import controller as controller
 import config.thruster as thruster
 from config.pin import PinConfig
-from pin import Pin
-from i2c import I2C
+from hardware.pin import Pin
+from hardware.i2c import I2C
 from config.i2c import I2CConfig
 from config.kinematics import KinematicsConfig
 from config.pid import PIDConfig

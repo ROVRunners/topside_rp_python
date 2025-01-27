@@ -1,6 +1,4 @@
-import json
-from i2c import I2C
-import enums
+from hardware.i2c import I2C
 
 
 class I2CHandler:

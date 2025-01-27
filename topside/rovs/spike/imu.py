@@ -1,5 +1,5 @@
 from config.imu import IMUConfig
-from i2c import I2C
+from hardware.i2c import I2C
 
 class IMU:
 
