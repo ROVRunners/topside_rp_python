@@ -1,7 +1,25 @@
 import os
 import sys
 
-sys.path.append(os.path.join(os.path.join(os.path.dirname(os.path.realpath(__file__)), "rovs"), "spike_6m"))
+rov_name = ""
+with open("launch_config.fngr", "r") as file:
+    file_lines = file.readlines()[:]
+    for line in file_lines:
+        # Skip empty lines and comments.
+        if not line.strip() or line.strip().startswith("#"):
+            continue
+
+        # Check for the rov_name.
+        if "rov_name" == line.lower().split("=")[0].strip():
+            rov_name = line.split("=")[1].strip()
+            break
+
+if not rov_name:
+    raise Exception("rov_name not found in launch_config.fngr")
+
+# Add the rov_name to the path so that we can import the correct rov files.
+current_directory = os.path.dirname(os.path.realpath(__file__))
+sys.path.append(os.path.join(os.path.join(current_directory, "rovs"), rov_name))
 
 import surface_main
 
