@@ -171,5 +171,3 @@ class ROVConfig:
                 ImageConfig("frontview", 1, 6, 125, 125, f"{os.path.dirname(os.path.realpath(__file__))}/assets/frontview.png", cspan=2)
             )
         )
-
-os.path.dirname(os.path.realpath(__file__))

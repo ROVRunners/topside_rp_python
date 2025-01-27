@@ -8,6 +8,7 @@ from imu import IMU
 import controller_input
 from io_handler import IO
 from utilities.vector import Vector3
+from dashboard import Dashboard
 
 
 class Manual:
@@ -15,7 +16,7 @@ class Manual:
     takes an inputs and maps and sends outputs to the rov connection
     """
 
-    def __init__(self, frame: thruster_pwm.FrameThrusters, io: IO, kinematics: kms.Kinematics, imu: IMU) -> None:
+    def __init__(self, frame: thruster_pwm.FrameThrusters, io: IO, kinematics: kms.Kinematics, imu: IMU, dash: Dashboard) -> None:
         """Initialize the Manual object.
 
         Args:
@@ -30,6 +31,7 @@ class Manual:
         self._io = io
         self._kinematics = kinematics
         self._imu = imu
+        self._dash = dash
 
         self._imu.initialize_imu(self._io.i2c_handler.i2cs["imu"])
 
@@ -54,15 +56,15 @@ class Manual:
         """Update thrust values, send commands, and more based on the inputs."""
         inputs = self._io.controllers
 
-        self._imu.update(self._io.i2c_handler.i2cs["imu"])
-
         controller = inputs[enums.ControllerNames.PRIMARY_DRIVER]
 
         subscriptions = self._io.subscriptions
         i2c = self._io.i2c_handler.i2cs
 
+
         # Get the gyro data from the subscriptions if it exists.
         if "imu" in i2c:
+            self._imu.update(i2c["imu"])
             gyro_yaw = self._imu.yaw
             gyro_pitch = self._imu.pitch
             gyro_roll = self._imu.roll
@@ -92,6 +94,12 @@ class Manual:
             leak = subscriptions["ROV/sensor_data/leak"]
         else:
             leak = 0
+
+        self._dash.update_images({
+            "topview": gyro_yaw,
+            "frontview": gyro_roll,
+            "sideview": gyro_pitch
+        })
 
         # Convert the triggers to a single value.
         right_trigger = controller.axes[enums.ControllerAxisNames.RIGHT_TRIGGER]
@@ -125,7 +133,7 @@ class Manual:
 
         # Publish the PWM values to the MQTT broker.
         for thruster, pwm in pwm_values.items():
-            self._io.gpio_handler.pins[thruster].val = pwm
+            self._io.gpio_handler.pins[thruster].val = 1500
 
         self._io.rov_comms.publish_commands({
             "stop": stop,

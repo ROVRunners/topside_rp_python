@@ -12,6 +12,8 @@ from config.i2c import I2CConfig
 from config.kinematics import KinematicsConfig
 from config.pid import PIDConfig
 from config.imu import IMUConfig
+from config.dashboard import *
+import os
 
 
 class ROVConfig:
@@ -170,4 +172,20 @@ class ROVConfig:
             accel_name = "accel"
         )
 
-
+        self.dash_config = DashboardConfig(
+            labels=(
+                LabelConfig("Height", 2, 2, "Height"),
+                LabelConfig("FPS", 3, 2, "FPS"),
+                LabelConfig("Quality", 4, 2, "Quality")
+            ),
+            scales=(
+                ScaleConfig("Height", 2, 3, 50, 300, 150, cspan=2),
+                ScaleConfig("FPS", 3, 3, 1, 30, 15, cspan=2),
+                ScaleConfig("Quality", 4, 3, 1, 100, 75, cspan=2)
+            ),
+            images=(
+                ImageConfig("topview", 1, 2, 125, 125, f"{os.path.dirname(os.path.realpath(__file__))}/assets/topview.png", cspan=2),
+                ImageConfig("sideview", 1, 4, 125, 125, f"{os.path.dirname(os.path.realpath(__file__))}/assets/sideview.png", cspan=2),
+                ImageConfig("frontview", 1, 6, 125, 125, f"{os.path.dirname(os.path.realpath(__file__))}/assets/frontview.png", cspan=2)
+            )
+        )
