@@ -2,6 +2,7 @@ import os
 import sys
 
 rov_name = ""
+
 with open("launch_config.fngr", "r") as file:
     file_lines = file.readlines()[:]
     for line in file_lines:

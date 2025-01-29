@@ -1,5 +1,3 @@
-from typing import overload
-
 from config.i2c import I2CConfig
 
 

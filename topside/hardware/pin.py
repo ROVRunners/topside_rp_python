@@ -1,6 +1,5 @@
-from typing import overload
-
 from config.pin import PinConfig
+
 
 class Pin:
 
