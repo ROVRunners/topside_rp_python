@@ -1,11 +1,6 @@
 import controller
 import controller_input
-import i2c_handler
-import mqtt_handler
-import socket_handler
-import terminal_listener
-import gpio_handler
-import udp_socket
+from io_systems import gpio_handler, i2c_handler, mqtt_handler, terminal_listener, socket_handler, udp_socket
 import enums
 import utilities.class_tools as class_tools
 

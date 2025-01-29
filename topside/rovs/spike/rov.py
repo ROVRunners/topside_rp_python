@@ -1,9 +1,7 @@
-from typing import Callable
-
 import hardware.thruster_pwm as thruster_pwm
 import rov_config
 from dashboard import Dashboard
-from io_handler import IO
+from io_systems.io_handler import IO
 from kinematics import Kinematics
 from imu import IMU
 import tkinter as tk

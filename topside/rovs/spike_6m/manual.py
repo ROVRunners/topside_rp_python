@@ -6,7 +6,7 @@ import enums
 import kinematics as kms
 from imu import IMU
 import controller_input
-from io_handler import IO
+from io_systems.io_handler import IO
 from utilities.vector import Vector3
 from dashboard import Dashboard
 
