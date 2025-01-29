@@ -3,19 +3,10 @@ import time
 
 import rov
 import rov_config
-import enums
 
-import controller
 import controller_input
-import mqtt_handler
-import gpio_handler
-import i2c_handler
-import socket_handler
-import terminal_listener
-import udp_socket
-from io_handler import IO
-
-import utilities.class_tools as class_tools
+from io_systems import gpio_handler, i2c_handler, mqtt_handler
+from io_systems.io_handler import IO
 
 
 class MainSystem:
