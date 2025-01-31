@@ -3,6 +3,7 @@ import sys
 
 rov_name = ""
 current_directory = os.path.dirname(os.path.realpath(__file__))
+
 with open(f"{current_directory}/launch_config.fngr", "r") as file:
     file_lines = file.readlines()[:]
     for line in file_lines:

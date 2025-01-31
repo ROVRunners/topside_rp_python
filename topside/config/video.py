@@ -1,5 +1,6 @@
 from typing import NamedTuple
 
+
 class VideoConfig(NamedTuple):
     """Describe a UDP socket configuration for video"""
     ip_address: str

@@ -26,6 +26,8 @@ class ROVConfig:
         self.comms_port = 1883
         self.video_port = 5600
 
+        self.current_dir = os.path.dirname(os.path.realpath(__file__))
+
         # TODO: This is where you change the IP. It needs to be the local IP for remote stuff to connect.
         #  We need to make it so it sets itself automatically or can be set by the user.
         # Test auto-IP getter:
@@ -145,12 +147,12 @@ class ROVConfig:
         }
 
         self.imu_config = IMUConfig(
-            gyro_init_register = 0x11,
-            accel_init_register = 0x10,
-            gyro_init_value = 0x40,
-            accel_init_value = 0x40,
-            gyro_name = "gyro",
-            accel_name = "accel"
+            gyro_init_register=0x11,
+            accel_init_register=0x10,
+            gyro_init_value=0x40,
+            accel_init_value=0x40,
+            gyro_name="gyro",
+            accel_name="accel"
         )
 
         # Labels
@@ -166,8 +168,8 @@ class ROVConfig:
                 ScaleConfig("Quality", 4, 3, 1, 100, 75, cspan=2)
             ),
             images=(
-                ImageConfig("topview", 1, 2, 125, 125, f"{os.path.dirname(os.path.realpath(__file__))}/assets/topview.png", cspan=2),
-                ImageConfig("sideview", 1, 4, 125, 125, f"{os.path.dirname(os.path.realpath(__file__))}/assets/sideview.png", cspan=2),
-                ImageConfig("frontview", 1, 6, 125, 125, f"{os.path.dirname(os.path.realpath(__file__))}/assets/frontview.png", cspan=2)
+                ImageConfig("topview", 1, 2, 125, 125, f"{self.current_dir}/assets/topview.png", cspan=2),
+                ImageConfig("sideview", 1, 4, 125, 125, f"{self.current_dir}/assets/sideview.png", cspan=2),
+                ImageConfig("frontview", 1, 6, 125, 125, f"{self.current_dir}/assets/frontview.png", cspan=2)
             )
         )
