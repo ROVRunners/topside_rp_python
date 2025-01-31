@@ -11,16 +11,16 @@ import manual
 
 class ROV:
 
-    def __init__(self, rov_config: rov_config.ROVConfig, io: IO) -> None:
+    def __init__(self, config: rov_config.ROVConfig, io: IO) -> None:
         """Create and initialize the ROV hardware.
 
         Args:
-            rov_config (rov_config.ROVConfig):
+            config (rov_config.ROVConfig):
                 ROV hardware configuration.
             io (IO):
                 The IO object.
         """
-        self._config = rov_config
+        self._config = config
         self._io = io
         self._thrusters = {}
         self._kinematics = Kinematics(self._config.kinematics_config)
@@ -29,6 +29,11 @@ class ROV:
         self.root = tk.Tk()
         self.root.wm_title("ROV monitor")
         self._dash = Dashboard(self.root, self._config.dash_config)
+
+        # Mavlink connection (fully optional)
+        self._mavlink_interval_ns = 10_000_000  # 100 Hz
+        for msg_id in self._config.mavlink_subscriptions.values():
+            self._io.add_mavlink_subscription(msg_id, self._mavlink_interval_ns)
 
         # Configure thrusters.
         for position, thruster_config in self._config.thruster_configs.items():

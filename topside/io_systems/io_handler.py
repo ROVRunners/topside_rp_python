@@ -20,10 +20,8 @@ class IO:
         self._rov_comms = rov_comms
         self._terminal = terminal
         self._rov_video = rov_video
-        # TODO: Implement
         self._i2c_handler = i2c
         self._gpio_handler = gpio
-
 
         self._controller_inputs = self._input_handler.controllers
         self._subscriptions = self._rov_comms.get_subscriptions()
@@ -31,6 +29,8 @@ class IO:
         # TODO: Hook up the UDP stuff
         # self._video = self._rov_video.get_frame()
         self._timer = class_tools.Stopwatch()
+
+        self._mavlink_msg_requests: dict[int, int] = {}  # msg_id: interval
 
     @property
     def controllers(self) -> dict[enums.ControllerNames, controller.Controller]:
@@ -89,6 +89,7 @@ class IO:
         self._i2c_handler.update(self._subscriptions)
         self._rov_comms.publish_i2c(self.i2c_handler.i2cs)
         self._rov_comms.publish_pins(self._gpio_handler.pins)
+        self._rov_comms.publish_mavlink_data_request(self._mavlink_msg_requests)
 
     def shutdown(self) -> None:
         """Shut down the IO system gracefully."""
@@ -96,3 +97,7 @@ class IO:
         # self._rov_video.shutdown()
         self._rov_comms.shutdown()
         self._input_handler.shutdown()
+
+    def add_mavlink_subscription(self, msg_id: int, interval: int = 1_000_000) -> None:
+        """Add a mavlink subscription."""
+        self._mavlink_msg_requests[msg_id] = interval

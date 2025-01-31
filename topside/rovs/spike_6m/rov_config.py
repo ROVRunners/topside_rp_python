@@ -15,6 +15,7 @@ from config.pid import PIDConfig
 from config.imu import IMUConfig
 from config.dashboard import *
 
+
 class ROVConfig:
     """Class for the ROV configuration."""
 
@@ -175,3 +176,11 @@ class ROVConfig:
                 ImageConfig("frontview", 1, 6, 125, 125, f"{self.current_dir}/assets/frontview.png", cspan=2)
             )
         )
+
+        self.mavlink_subscriptions: dict[str, int] = {
+            "heartbeat": 0,
+            "sys_status": 1,
+            "scaled_imu": 26,
+            "attitude": 30,
+            "local_position_ned": 32,
+        }
