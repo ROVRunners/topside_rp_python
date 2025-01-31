@@ -7,4 +7,6 @@ class IMUConfig(NamedTuple):
     accel_init_value: int
     gyro_name: str
     accel_name: str
+    gyro_conversion_factor: float
+    accel_conversion_factor: float
 

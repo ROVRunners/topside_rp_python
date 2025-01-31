@@ -1,11 +1,21 @@
 from config.imu import IMUConfig
 from hardware.i2c import I2C
 from utilities.ema import EMA
+from utilities.riemann_sum import Riemann
+import time
 
 class IMU:
 
     def __init__(self, imuconfig: IMUConfig) -> None:
         self.imuconfig = imuconfig
+
+        self._yaw_vel_riemann = Riemann(self.imuconfig.gyro_conversion_factor)
+        self._pitch_vel_riemann = Riemann(self.imuconfig.gyro_conversion_factor)
+        self._roll_vel_riemann = Riemann(self.imuconfig.gyro_conversion_factor)
+
+        self._yaw_riemann = Riemann(self.imuconfig.gyro_conversion_factor)
+        self._pitch_riemann = Riemann(self.imuconfig.gyro_conversion_factor)
+        self._roll_riemann = Riemann(self.imuconfig.gyro_conversion_factor)
 
         self._accel_x = 0.0
         self._accel_y = 0.0
@@ -70,9 +80,14 @@ class IMU:
             self._roll = norm_roll - self._roll_offset
 
             # Add the values to the Exponential moving average to smooth them out a bit.
-            self._yaw_ema.add(self._yaw)
-            self._pitch_ema.add(self._pitch)
-            self._roll_ema.add(self._roll)
+            self._yaw_ema.add(self._yaw_riemann(time.time(), self._yaw_vel_riemann(time.time(), self._yaw)))
+            self._pitch_ema.add(self._pitch_riemann(time.time(), self._pitch_vel_riemann(time.time(), self._pitch)))
+            self._roll_ema.add(self._roll_riemann(time.time(), self._roll_vel_riemann(time.time(), self._roll)))
+
+            self._yaw = self._yaw_ema.ema_value
+            self._pitch = self._pitch_ema.ema_value
+            self._roll = self._roll_ema.ema_value
+
 
             # print("Gyro:", int(self._yaw_ema.ema_value), int(self._pitch_ema.ema_value), int(self._roll_ema.ema_value), end=" | ")
             # print("Gyro:", round(self._yaw_ema.ema_value, 2), round(self._pitch_ema.ema_value, 2), round(self._roll_ema.ema_value, 2), end=" | ")
@@ -110,7 +125,7 @@ class IMU:
     def initialize_imu(self, imu: I2C) -> None:
         imu.sending_vals[self.imuconfig.gyro_init_register] = self.imuconfig.gyro_init_value
         imu.sending_vals[self.imuconfig.accel_init_register] = self.imuconfig.accel_init_value
-    
+
     def calibrate_gyro(self) -> None:
         """Re-centers the gyroscope values. WARNING: Can cause unintended effects
         if not stationary when used."""

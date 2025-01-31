@@ -152,7 +152,9 @@ class ROVConfig:
             gyro_init_value=0x40,
             accel_init_value=0x40,
             gyro_name="gyro",
-            accel_name="accel"
+            accel_name="accel",
+            gyro_conversion_factor=1.0,
+            accel_conversion_factor=1.0
         )
 
         # Labels
