@@ -8,11 +8,25 @@ import json
 
 import killport
 import paho.mqtt.client as mqtt_c
-# import paho.mqtt.enums as mqtt
 
 
 class ROVConnection:
+    """A class to handle the connection between the Raspberry Pi and the PC.
 
+    Methods:
+        connect() -> None:
+            Connect to the MQTT broker.
+        publish_commands(command_list: dict[str, str | float]) -> None:
+            Send a series of packets to the Raspberry Pi with the specified commands.
+        publish_i2c(i2cs: dict[str, I2C]) -> None:
+            Send a series of packets from the Raspberry Pi with the specified I2C values.
+        publish_pins(pins: dict[str, Pin]) -> None:
+            Send a series of packets from the Raspberry Pi with the specified thruster PWM values.
+        get_subscriptions() -> dict[str, float | str | dict[str, float | str]]:
+            Get the sensor data from the Raspberry Pi.
+        shutdown() -> None:
+            Disconnect from the MQTT broker.
+    """
 
     def __init__(self, ip: str = "localhost", port: int = 1883, client_id: str = "PC") -> None:
         """Initialize the SurfaceConnection object.
@@ -181,6 +195,16 @@ class ROVConnection:
             self._client.publish(f"PC/pins/{pos}/mode", value.mode)
             self._client.publish(f"PC/pins/{pos}/val", value.val)
             self._client.publish(f"PC/pins/{pos}/freq", value.freq)
+
+    def publish_mavlink_data_request(self, mavlink: dict[str, str | float]) -> None:
+        """Send a series of packets from the Raspberry Pi with the specified mavlink data id and interval values.
+
+        Args:
+            mavlink (dict[str, str | float]):
+                List of mavlink values to be sent to the ROV.
+        """
+        for key, interval in mavlink.items():
+            self._client.publish(f"PC/mavlink/req_id/{key}", interval)
 
     def get_subscriptions(self) -> dict[str, float | str | dict[str, float | str]]:
         """Get the sensor data from the Raspberry Pi.

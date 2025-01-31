@@ -7,11 +7,12 @@ from pymavlink import mavutil
 
 
 def wait_heartbeat(m):
-    '''wait for a heartbeat so we know the target system IDs'''
+    """Wait for a heartbeat so we can know the target system IDs."""
     print("Waiting for APM heartbeat")
     msg = m.recv_match(type='HEARTBEAT', blocking=True)
     print(msg)
     print("Heartbeat from APM (system %u component %u)" % (m.target_system, m.target_component))
+
 
 # create a mavlink serial instance
 master = mavutil.mavlink_connection("COM11", baud=115200, source_system=255)
@@ -81,11 +82,11 @@ master.mav.command_long_send(
     0, 0, 0, 0  # unused parameters
 )
 
-
 # wait for the heartbeat msg to find the system ID
 # wait_heartbeat(master)
-dict = {}
+message_type_dict = {}
+
 while True:
-    msg = master.recv_match(type="SCALED_IMU",blocking=True)
-    dict[msg.get_type()] = msg.to_dict()
+    msg = master.recv_match(type="SCALED_IMU", blocking=True)
+    message_type_dict[msg.get_type()] = msg.to_dict()
     print(msg)
