@@ -31,9 +31,8 @@ class ROV:
         self._dash = Dashboard(self.root, self._config.dash_config)
 
         # Mavlink connection (fully optional)
-        self._mavlink_interval_ns = 10_000_000  # 100 Hz
         for msg_id in self._config.mavlink_subscriptions.values():
-            self._io.add_mavlink_subscription(msg_id, self._mavlink_interval_ns)
+            self._io.add_mavlink_subscription(msg_id, self._config.mavlink_interval)
 
         # Configure thrusters.
         for position, thruster_config in self._config.thruster_configs.items():

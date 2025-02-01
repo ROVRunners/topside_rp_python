@@ -66,6 +66,9 @@ class ROVConnection:
         self._last_i2c_configs: dict[str, I2C] = {}
         self._last_i2c_update: float = 0.0
 
+        self._last_mavlink_requests: dict[int, int] = {}
+        self._last_mavlink_update: float = 0.0
+
         # Do the same for commands.
         self._last_command_values = {}
         self._last_command_update: float = 0.0
@@ -203,7 +206,18 @@ class ROVConnection:
             mavlink (dict[str, str | float]):
                 List of mavlink values to be sent to the ROV.
         """
+        changed_mavlink_requests = {}
+
         for key, interval in mavlink.items():
+            if key not in self._last_mavlink_requests:
+                self._last_mavlink_requests[key] = interval
+                changed_mavlink_requests[key] = interval
+            elif self._last_mavlink_requests[key] != interval or time.time() - self._last_mavlink_update > self._idle_ping_frequency:
+                self._last_mavlink_requests[key] = interval
+                changed_mavlink_requests[key] = interval
+
+        for key, interval in changed_mavlink_requests.items():
+            self._last_mavlink_update = time.time()
             self._client.publish(f"PC/mavlink/req_id/{key}", interval)
 
     def get_subscriptions(self) -> dict[str, float | str | dict[str, float | str]]:
