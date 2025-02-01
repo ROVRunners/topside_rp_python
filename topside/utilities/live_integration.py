@@ -22,12 +22,12 @@ class Integration:
             The value of the integration.
 
     Methods:
-        add_entry(value: float | int, instance_time: float | int = time.time_ns()) -> None:
+        add_entry(value: float | int, instance_time: float | int = time.time()) -> None:
             Add an entry to the integration.
     """
 
     def __init__(self, integration_type: IntegrationTypes = IntegrationTypes.LEFT_HANDED, initial_value: float = 0.0,
-                 initial_time: float = time.time_ns(), internal_time: bool = True) -> None:
+                 initial_time: float = time.time(), internal_time: bool = True) -> None:
         """Initialize the Integration object.
 
         Args:
@@ -39,7 +39,7 @@ class Integration:
                 Defaults to 0.0.
             initial_time (float, optional):
                 The initial time of the integration.
-                Defaults to time.time_ns().
+                Defaults to time.time().
             internal_time (bool, optional):
                 Whether to use the internal time or require the user to input the time value for each entry.
                 Defaults to True.
@@ -58,10 +58,10 @@ class Integration:
         return self._integration_type
 
     @property
-    def integration_value(self) -> float:
+    def sum(self) -> float:
         return self._sum
 
-    def add_entry(self, value: float | int, instance_time: float | int = time.time_ns()) -> float:
+    def add_entry(self, value: float | int, instance_time: float | int = time.time()) -> float:
         """Add an entry to the integration.
 
         Args:
@@ -69,13 +69,19 @@ class Integration:
                 The value of the entry.
             instance_time (float | int, optional):
                 The time of the entry.
-                Defaults to time.time_ns().
+                Defaults to time.time().
         """
         self._sum += self._calculate_entry(value, instance_time)
         self._last_value = value
         self._last_time = instance_time
 
         return self._sum
+
+    def reset(self) -> None:
+        """Reset the integration."""
+        self._last_value = self._initial_value
+        self._last_time = self._initial_time
+        self._sum = self._initial_value
 
     def _calculate_entry(self, value: float | int, instance_time: float | int) -> float:
         """Calculate the entry for the integration.
@@ -195,3 +201,9 @@ class Integration:
                 The calculated entry.
         """
         raise NotImplementedError("Gaussian integration is not yet implemented.")
+
+    def __str__(self) -> str:
+        return f"Integration({self._integration_type}, {self._sum})"
+
+    def __call__(self, value: float | int, instance_time: float | int = time.time()) -> float:
+        return self.add_entry(value, instance_time)
