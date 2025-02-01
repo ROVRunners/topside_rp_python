@@ -61,7 +61,7 @@ class Integration:
     def integration_value(self) -> float:
         return self._sum
 
-    def add_entry(self, value: float | int, instance_time: float | int = time.time_ns()) -> None:
+    def add_entry(self, value: float | int, instance_time: float | int = time.time_ns()) -> float:
         """Add an entry to the integration.
 
         Args:
@@ -74,6 +74,8 @@ class Integration:
         self._sum += self._calculate_entry(value, instance_time)
         self._last_value = value
         self._last_time = instance_time
+
+        return self._sum
 
     def _calculate_entry(self, value: float | int, instance_time: float | int) -> float:
         """Calculate the entry for the integration.

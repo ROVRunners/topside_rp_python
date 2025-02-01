@@ -36,3 +36,14 @@ topside/rovs/spike_6m/__pycache__/imu.cpython-311.pyc
 topside/utilities/__pycache__/ema.cpython-311.pyc
 topside/config/__pycache__/dashboard.cpython-311.pyc
 topside/rovs/spike_6m/__pycache__/dashboard.cpython-311.pyc
+topside/hardware/__pycache__/i2c.cpython-311.pyc
+topside/hardware/__pycache__/pin.cpython-311.pyc
+topside/io_systems/__pycache__/__init__.cpython-311.pyc
+topside/io_systems/__pycache__/gpio_handler.cpython-311.pyc
+topside/io_systems/__pycache__/i2c_handler.cpython-311.pyc
+topside/io_systems/__pycache__/io_handler.cpython-311.pyc
+topside/io_systems/__pycache__/mqtt_handler.cpython-311.pyc
+topside/io_systems/__pycache__/socket_handler.cpython-311.pyc
+topside/io_systems/__pycache__/terminal_listener.cpython-311.pyc
+topside/io_systems/__pycache__/udp_socket.cpython-311.pyc
+topside/utilities/__pycache__/riemann_sum.cpython-311.pyc

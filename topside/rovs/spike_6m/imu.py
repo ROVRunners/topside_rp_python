@@ -2,6 +2,7 @@ from config.imu import IMUConfig
 from hardware.i2c import I2C
 from utilities.ema import EMA
 from utilities.riemann_sum import Riemann
+from utilities.live_integration import Integration, IntegrationTypes
 import time
 
 class IMU:
@@ -9,13 +10,23 @@ class IMU:
     def __init__(self, imuconfig: IMUConfig) -> None:
         self.imuconfig = imuconfig
 
-        self._yaw_vel_riemann = Riemann(self.imuconfig.gyro_conversion_factor)
-        self._pitch_vel_riemann = Riemann(self.imuconfig.gyro_conversion_factor)
-        self._roll_vel_riemann = Riemann(self.imuconfig.gyro_conversion_factor)
+        int_type = IntegrationTypes.TRAPEZOIDAL
 
-        self._yaw_riemann = Riemann(self.imuconfig.gyro_conversion_factor)
-        self._pitch_riemann = Riemann(self.imuconfig.gyro_conversion_factor)
-        self._roll_riemann = Riemann(self.imuconfig.gyro_conversion_factor)
+        self._yaw_vel_integral = Integration(int_type, 0, time.time(), False)
+        self._pitch_vel_integral = Integration(int_type, 0, time.time(), False)
+        self._roll_vel_integral = Integration(int_type, 0, time.time(), False)
+
+        self._yaw_integral = Integration(int_type, 0, time.time(), False)
+        self._pitch_integral = Integration(int_type, 0, time.time(), False)
+        self._roll_integral = Integration(int_type, 0, time.time(), False)
+
+        # self._yaw_vel_riemann = Riemann(self.imuconfig.gyro_conversion_factor)
+        # self._pitch_vel_riemann = Riemann(self.imuconfig.gyro_conversion_factor)
+        # self._roll_vel_riemann = Riemann(self.imuconfig.gyro_conversion_factor)
+
+        # self._yaw_riemann = Riemann(self.imuconfig.gyro_conversion_factor)
+        # self._pitch_riemann = Riemann(self.imuconfig.gyro_conversion_factor)
+        # self._roll_riemann = Riemann(self.imuconfig.gyro_conversion_factor)
 
         self._accel_x = 0.0
         self._accel_y = 0.0
@@ -75,14 +86,24 @@ class IMU:
             norm_roll = signed_roll * self._dps / 32768
 
             # Subtract the offset values.
-            self._yaw = norm_yaw - self._yaw_offset
-            self._pitch = norm_pitch - self._pitch_offset
-            self._roll = norm_roll - self._roll_offset
+            self._yaw_accel = norm_yaw - self._yaw_offset
+            self._pitch_accel = norm_pitch - self._pitch_offset
+            self._roll_accel = norm_roll - self._roll_offset
+
+            # # Add the values to the Exponential moving average to smooth them out a bit.
+            # self._yaw_ema.add(self._yaw_riemann(time.time(), self._yaw_vel_riemann(time.time(), self._yaw)))
+            # self._pitch_ema.add(self._pitch_riemann(time.time(), self._pitch_vel_riemann(time.time(), self._pitch)))
+            # self._roll_ema.add(self._roll_riemann(time.time(), self._roll_vel_riemann(time.time(), self._roll)))
+
+            # # Add the values to the Exponential moving average to smooth them out a bit.
+            # self._yaw_ema.add(self._yaw_riemann(time.time(), self._yaw_vel_riemann(time.time(), self._yaw_accel)))
+            # self._pitch_ema.add(self._pitch_riemann(time.time(), self._pitch_vel_riemann(time.time(), self._pitch_accel)))
+            # self._roll_ema.add(self._roll_riemann(time.time(), self._roll_vel_riemann(time.time(), self._roll_accel)))
 
             # Add the values to the Exponential moving average to smooth them out a bit.
-            self._yaw_ema.add(self._yaw_riemann(time.time(), self._yaw_vel_riemann(time.time(), self._yaw)))
-            self._pitch_ema.add(self._pitch_riemann(time.time(), self._pitch_vel_riemann(time.time(), self._pitch)))
-            self._roll_ema.add(self._roll_riemann(time.time(), self._roll_vel_riemann(time.time(), self._roll)))
+            self._yaw_ema.add(self._yaw_integral.add_entry(self._yaw_vel_integral.add_entry(self._yaw_accel, time.time()), time.time()))
+            self._pitch_ema.add(self._pitch_integral.add_entry(self._pitch_vel_integral.add_entry(self._pitch_accel, time.time()), time.time()))
+            self._roll_ema.add(self._roll_integral.add_entry(self._roll_vel_integral.add_entry(self._roll_accel, time.time()), time.time()))
 
             self._yaw = self._yaw_ema.ema_value
             self._pitch = self._pitch_ema.ema_value

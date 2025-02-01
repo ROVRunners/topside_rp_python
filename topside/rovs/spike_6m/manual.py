@@ -68,6 +68,7 @@ class Manual:
             gyro_yaw = self._imu.yaw
             gyro_pitch = self._imu.pitch
             gyro_roll = self._imu.roll
+            print(gyro_yaw)
         else:
             gyro_yaw = 0
             gyro_pitch = 0

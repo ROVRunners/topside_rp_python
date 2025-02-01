@@ -10,7 +10,7 @@ class Riemann:
         self.graph = []
 
     def __call__(self, y_val, x_val):
-        self.graph += [y_val, x_val]
+        self.graph.append([y_val, x_val])
         return self.left_handed_summation() * self._conversion_factor
 
 
