@@ -132,6 +132,9 @@ class Manual:
         # Test to see if button press toggles are working.
         stop = controller.buttons[enums.ControllerButtonNames.B].toggled
 
+        if controller.buttons[enums.ControllerButtonNames.Y].value:
+            self._imu.calibrate_gyro()
+
         # Publish the PWM values to the MQTT broker.
         for thruster, pwm in pwm_values.items():
             self._io.gpio_handler.pins[thruster].val = 1500

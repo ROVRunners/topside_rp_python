@@ -150,9 +150,17 @@ class IMU:
     def calibrate_gyro(self) -> None:
         """Re-centers the gyroscope values. WARNING: Can cause unintended effects
         if not stationary when used."""
-        self._yaw_offset += self._yaw_ema.ema_value
-        self._pitch_offset += self._pitch_ema.ema_value
-        self._roll_offset += self._roll_ema.ema_value
+        self._yaw_offset += self._yaw_accel
+        self._pitch_offset += self._pitch_accel
+        self._roll_offset += self._roll_accel
+
+        self._yaw_vel_integral.reset()
+        self._pitch_vel_integral.reset()
+        self._roll_vel_integral.reset()
+
+        self._yaw_integral.reset()
+        self._pitch_integral.reset()
+        self._roll_integral.reset()
     
     def calibrate_accel(self) -> None:
         """Re-centers the gyroscope values. WARNING: Can cause unintended effects
