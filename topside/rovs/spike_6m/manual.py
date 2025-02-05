@@ -1,7 +1,7 @@
 """
 """
 
-import hardware.thruster_pwm as thruster_pwm
+from hardware.thruster_pwm import FrameThrusters
 import enums
 import kinematics as kms
 from imu import IMU
@@ -16,15 +16,15 @@ class Manual:
     takes an inputs and maps and sends outputs to the rov connection
     """
 
-    def __init__(self, frame: thruster_pwm.FrameThrusters, io: IO, kinematics: kms.Kinematics, imu: IMU, dash: Dashboard) -> None:
+    def __init__(self, frame: FrameThrusters, io: IO, kinematics: kms.Kinematics, imu: IMU, dash: Dashboard) -> None:
         """Initialize the Manual object.
 
         Args:
-            frame (thruster_pwm.FrameThrusters):
+            frame (FrameThrusters):
                 The objects of the thrusters mounted to the frame.
             io (IO):
                 The IO (input output) object.
-            kinematics (kinematics.Kinematics):
+            kinematics (kms.Kinematics):
                 The Kinematics object housing the PIDs.
         """
         self._frame = frame
@@ -60,7 +60,6 @@ class Manual:
 
         subscriptions = self._io.subscriptions
         i2c = self._io.i2c_handler.i2cs
-
 
         # Get the gyro data from the subscriptions if it exists.
         if "imu" in i2c:
