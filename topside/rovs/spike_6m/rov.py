@@ -36,6 +36,10 @@ class ROV:
         for msg_id in self._config.mavlink_subscriptions.values():
             self._io.add_mavlink_subscription(msg_id, self._mavlink_interval_ns)
 
+        # Mavlink connection (fully optional)
+        for msg_id in self._config.mavlink_subscriptions.values():
+            self._io.add_mavlink_subscription(msg_id, self._config.mavlink_interval)
+
         # Configure thrusters.
         for position, thruster_config in self._config.thruster_configs.items():
             self._thrusters[position] = ThrusterPWM(thruster_config)

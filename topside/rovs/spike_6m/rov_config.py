@@ -177,6 +177,8 @@ class ROVConfig:
             )
         )
 
+        self.mavlink_interval = 10_000
+
         self.mavlink_subscriptions: dict[str, int] = {
             "heartbeat": 0,
             "sys_status": 1,
