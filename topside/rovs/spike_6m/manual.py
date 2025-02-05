@@ -35,13 +35,6 @@ class Manual:
 
         self._imu.initialize_imu(self._io.i2c_handler.i2cs["imu"])
 
-        # Set up the objects
-        # self._rov_connection: mqtt_handler.ROVConnection = self._main_system.rov_connection
-        # self._input_handler: controller_input.InputHandler = self._main_system.input_handler
-
-        # self.sensor_data = {}
-        # self.terminal_data = {}
-
         # Add whatever you need initialized here.
 
     @property

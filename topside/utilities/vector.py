@@ -50,14 +50,97 @@ class Vector3:
         """The overall hypotenuse of the vector."""
         return math.sqrt(self.x ** 2 + self.y ** 2 + self.z ** 2)
 
+    # def __add__(self, other) -> 'Vector3':
+    #     return Vector3(self.x + other.x, self.y + other.y, self.z + other.z)
+
+    # def __sub__(self, other) -> 'Vector3':
+    #     return Vector3(self.x - other.x, self.y - other.y, self.z - other.z)
+
     def __add__(self, other) -> 'Vector3':
-        return Vector3(self.x + other.x, self.y + other.y, self.z + other.z)
+        if isinstance(other, Vector3):
+            return Vector3(self.x + other.x, self.y + other.y, self.z + other.z)
+        elif isinstance(other, (int, float)):
+            return Vector3(self.x + other, self.y + other, self.z + other)
+        else:
+            raise TypeError(f"Unsupported type for addition: {type(other)}")
 
     def __sub__(self, other) -> 'Vector3':
-        return Vector3(self.x - other.x, self.y - other.y, self.z - other.z)
+        if isinstance(other, Vector3):
+            return Vector3(self.x - other.x, self.y - other.y, self.z - other.z)
+        elif isinstance(other, (int, float)):
+            return Vector3(self.x - other, self.y - other, self.z - other)
+        else:
+            raise TypeError(f"Unsupported type for subtraction: {type(other)}")
 
-    # def __mul__(self, other) -> 'Vector3':
-    #     return Vector3(self.x * other.x, self.y * other.y, self.z * other.z)
+    def __mul__(self, other) -> 'Vector3':
+        if isinstance(other, Vector3):
+            return Vector3(self.x * other.x, self.y * other.y, self.z * other.z)
+        elif isinstance(other, (int, float)):
+            return Vector3(self.x * other, self.y * other, self.z * other)
+        else:
+            raise TypeError(f"Unsupported type for multiplication: {type(other)}")
+
+    def __truediv__(self, other) -> 'Vector3':
+        if isinstance(other, Vector3):
+            return Vector3(self.x / other.x, self.y / other.y, self.z / other.z)
+        elif isinstance(other, (int, float)):
+            return Vector3(self.x / other, self.y / other, self.z / other)
+        else:
+            raise TypeError(f"Unsupported type for division: {type(other)}")
+
+    def __floordiv__(self, other) -> 'Vector3':
+        if isinstance(other, Vector3):
+            return Vector3(self.x // other.x, self.y // other.y, self.z // other.z)
+        elif isinstance(other, (int, float)):
+            return Vector3(self.x // other, self.y // other, self.z // other)
+        else:
+            raise TypeError(f"Unsupported type for floor division: {type(other)}")
+
+    def __mod__(self, other) -> 'Vector3':
+        if isinstance(other, Vector3):
+            return Vector3(self.x % other.x, self.y % other.y, self.z % other.z)
+        elif isinstance(other, (int, float)):
+            return Vector3(self.x % other, self.y % other, self.z % other)
+        else:
+            raise TypeError(f"Unsupported type for modulo: {type(other)}")
+
+    def __pow__(self, other) -> 'Vector3':
+        if isinstance(other, Vector3):
+            return Vector3(self.x ** other.x, self.y ** other.y, self.z ** other.z)
+        elif isinstance(other, (int, float)):
+            return Vector3(self.x ** other, self.y ** other, self.z ** other)
+        else:
+            raise TypeError(f"Unsupported type for exponentiation: {type(other)}")
+
+    def __abs__(self) -> 'Vector3':
+        return Vector3(abs(self.x), abs(self.y), abs(self.z))
+
+    def __neg__(self) -> 'Vector3':
+        return Vector3(-self.x, -self.y, -self.z)
+
+    def __eq__(self, other) -> bool:
+        return self.x == other.x and self.y == other.y and self.z == other.z
+
+    def __ne__(self, other) -> bool:
+        return not self == other
+
+    def __lt__(self, other) -> bool:
+        return self.magnitude < other.magnitude
+
+    def __le__(self, other) -> bool:
+        return self.magnitude <= other.magnitude
+
+    def __gt__(self, other) -> bool:
+        return self.magnitude > other.magnitude
+
+    def __ge__(self, other) -> bool:
+        return self.magnitude >= other.magnitude
+
+    def __str__(self) -> str:
+        return f"Vector3({self.x}, {self.y}, {self.z})"
+
+    def __repr__(self) -> str:
+        return str(self)
 
 
 class Vector2:
