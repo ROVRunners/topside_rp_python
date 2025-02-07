@@ -2,6 +2,7 @@ from time import time
 
 from config.imu import IMUConfig
 from hardware.i2c import I2C
+
 from utilities.ema import EMA
 from utilities.live_integration import Integration, IntegrationTypes
 from utilities.vector import Vector3

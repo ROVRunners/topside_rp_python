@@ -12,8 +12,17 @@ from dashboard import Dashboard
 
 
 class Manual:
-    """The manual control class for the ROV.
-    takes an inputs and maps and sends outputs to the rov connection
+    """One of the control modes for the ROV which take in inputs from the controller, sensors, and more to determine
+    the thrust values for the thrusters and send other commands to the ROV.
+
+    This is the manual control mode which only takes in pure controller inputs to determine the thrust values for the
+    thrusters.
+
+    Methods:
+        loop() -> None:
+            Update thrust values, send commands, and more based on the inputs.
+        shutdown() -> None:
+            Shutdown the ROV.
     """
 
     def __init__(self, frame: FrameThrusters, io: IO, kinematics: kms.Kinematics, imu: IMU, dash: Dashboard) -> None:
@@ -60,7 +69,6 @@ class Manual:
             gyro_yaw = self._imu.yaw
             gyro_pitch = self._imu.pitch
             gyro_roll = self._imu.roll
-            print(gyro_yaw)
         else:
             gyro_yaw = 0
             gyro_pitch = 0
