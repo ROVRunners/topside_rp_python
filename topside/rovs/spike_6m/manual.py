@@ -1,8 +1,7 @@
-"""
-"""
+import json
 
 from hardware.thruster_pwm import FrameThrusters
-import enums
+from enums import Directions, ControllerAxisNames, ControllerButtonNames, ThrusterPositions
 import kinematics as kms
 from imu import IMU
 import controller_input
@@ -35,6 +34,10 @@ class Manual:
                 The IO (input output) object.
             kinematics (kms.Kinematics):
                 The Kinematics object housing the PIDs.
+            imu (IMU):
+                The IMU object.
+            dash (Dashboard):
+                The Tkinter Dashboard object.
         """
         self._frame = frame
         self._io = io
@@ -90,11 +93,11 @@ class Manual:
         else:
             depth = 0
 
-        # Get the leak warning data from the subscriptions if it exists.
-        if "ROV/sensor_data/leak" in subscriptions:
-            leak = subscriptions["ROV/sensor_data/leak"]
-        else:
-            leak = 0
+        # # Get the leak warning data from the subscriptions if it exists.
+        # if "ROV/sensor_data/leak" in subscriptions:
+        #     leak = subscriptions["ROV/sensor_data/leak"]
+        # else:
+        #     leak = 0
 
         self._dash.update_images({
             "topview": gyro_yaw,
@@ -103,14 +106,14 @@ class Manual:
         })
 
         # Convert the triggers to a single value.
-        right_trigger = controller.axes[enums.ControllerAxisNames.RIGHT_TRIGGER]
-        left_trigger = controller.axes[enums.ControllerAxisNames.LEFT_TRIGGER]
+        right_trigger = controller.axes[ControllerAxisNames.RIGHT_TRIGGER]
+        left_trigger = controller.axes[ControllerAxisNames.LEFT_TRIGGER]
         vertical = controller_input.combine_triggers(left_trigger.value, right_trigger.value)
 
         self._kinematics.update_target_position(
             Vector3(
-                controller.axes[enums.ControllerAxisNames.RIGHT_X].value,
-                controller.axes[enums.ControllerAxisNames.RIGHT_Y].value,
+                controller.axes[ControllerAxisNames.RIGHT_X].value,
+                controller.axes[ControllerAxisNames.RIGHT_Y].value,
                 0,
             ),
             vertical,
@@ -118,30 +121,61 @@ class Manual:
 
         # TODO: add sensor data to pids below
         # Get the PWM values for the thrusters based on the controller inputs.
-        pwm_values: dict[enums.ThrusterPositions, int] = self._frame.get_pwm_values(
+        pwm_values: dict[ThrusterPositions, int] = self._frame.get_pwm_values(
             {
-                enums.Directions.FORWARDS: controller.axes[enums.ControllerAxisNames.LEFT_Y].value,
-                enums.Directions.RIGHT: controller.axes[enums.ControllerAxisNames.LEFT_X].value,
-                enums.Directions.UP: self._kinematics.depth_pid(depth),
-                enums.Directions.YAW: self._kinematics.yaw_pid(gyro_yaw),
-                enums.Directions.PITCH: self._kinematics.pitch_pid(gyro_pitch),
-                enums.Directions.ROLL: self._kinematics.roll_pid(gyro_roll),
+                Directions.FORWARDS: controller.axes[ControllerAxisNames.LEFT_Y].value,
+                Directions.RIGHT: controller.axes[ControllerAxisNames.LEFT_X].value,
+                Directions.UP: self._kinematics.depth_pid(depth),
+                Directions.YAW: self._kinematics.yaw_pid(gyro_yaw),
+                Directions.PITCH: self._kinematics.pitch_pid(gyro_pitch),
+                Directions.ROLL: self._kinematics.roll_pid(gyro_roll),
             },
         )
 
-        # Test to see if button press toggles are working.
-        stop = controller.buttons[enums.ControllerButtonNames.B].toggled
+        # Theoretically stop the ROV from moving if the B button is toggled. TODO: Fix.
+        stop = controller.buttons[ControllerButtonNames.B].toggled
 
-        if controller.buttons[enums.ControllerButtonNames.Y].value:
+        # Calibrate the gyro if the Y button is pressed.
+        if controller.buttons[ControllerButtonNames.Y].just_pressed:
             self._imu.calibrate_gyro()
+
+        # Update the PID values if the X button is pressed.
+        if controller.buttons[ControllerButtonNames.X].just_pressed:
+            with open("", "r") as file:
+                file_contents = json.load(file)
+
+            self.update_pid_values(file_contents)
 
         # Publish the PWM values to the MQTT broker.
         for thruster, pwm in pwm_values.items():
-            self._io.gpio_handler.pins[thruster].val = 1500
+            self._io.gpio_handler.pins[thruster].val = pwm
 
         self._io.rov_comms.publish_commands({
             "stop": stop,
         })
+
+    def update_pid_values(self, file_contents: dict) -> None:
+        """Update the PID values based on the file contents.
+
+        Args:
+            file_contents (dict):
+                The contents of the pid config file.
+        """
+        self._kinematics.yaw_pid.Kd = file_contents["yaw"]["D"]
+        self._kinematics.yaw_pid.Kp = file_contents["yaw"]["P"]
+        self._kinematics.yaw_pid.Ki = file_contents["yaw"]["I"]
+
+        self._kinematics.pitch_pid.Kd = file_contents["pitch"]["D"]
+        self._kinematics.pitch_pid.Kp = file_contents["pitch"]["P"]
+        self._kinematics.pitch_pid.Ki = file_contents["pitch"]["I"]
+
+        self._kinematics.roll_pid.Kd = file_contents["roll"]["D"]
+        self._kinematics.roll_pid.Kp = file_contents["roll"]["P"]
+        self._kinematics.roll_pid.Ki = file_contents["roll"]["I"]
+
+        self._kinematics.depth_pid.Kd = file_contents["depth"]["D"]
+        self._kinematics.depth_pid.Kp = file_contents["depth"]["P"]
+        self._kinematics.depth_pid.Ki = file_contents["depth"]["I"]
 
     def shutdown(self):
         """Shutdown the ROV."""

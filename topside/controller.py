@@ -14,6 +14,8 @@ Functions:
     combine_triggers(trigger_1: float, trigger_2: float) -> float:
         Combines the values of the two triggers into a single value.
 """
+import time
+
 import pygame
 
 import enums
@@ -166,14 +168,24 @@ class Button:
     """Describes the configuration of a button on a controller.
 
     Properties:
-        value (float):
-            The value of the button.
         index (int):
             The index of the button on the controller.
         negated (bool):
             Whether the button value is negated.
         toggled (bool):
-            The initial toggled state of the button.
+            The toggled state of the button.
+        hold_delay (float):
+            The hold delay of the button.
+        pressed (bool):
+            Whether the button is pressed.
+        held (bool):
+            Whether the button has been held for a preset amount of time.
+        released (bool):
+            Whether the button is released.
+        just_pressed (bool):
+            Whether the button had begun to be pressed during this frame.
+        just_released (bool):
+            Whether the button had begun to be released during this frame.
 
     Methods:
         update(joystick: pygame.joystick.Joystick) -> None:
@@ -197,26 +209,14 @@ class Button:
         self._negated = negated
         self._toggled = toggled
 
-        # The value of the button. Used for output and to determine if the button was just toggled.
-        self._value = False
+        self._hold_delay: float = 0.25
+        self._pressed: bool = False
+        self._held: bool = False
+        self._released: bool = False
+        self._just_pressed: bool = False
+        self._just_released: bool = False
 
-    @property
-    def value(self) -> bool:
-        return self._value
-
-    @value.setter
-    def value(self, value: bool) -> None:
-        """Set the value of the button. Goes through processing, so may not end up the same as what you entered."""
-        # Negate the value if necessary.
-        if self._negated:
-            value = not value
-
-        # Toggle the value if necessary.
-        if value and not self._value:
-            self._toggled = not self._toggled
-
-        # Update the value for reading and use next loop.
-        self._value = value
+        self._last_pressed_time: float = 0.0
 
     @property
     def index(self) -> int:
@@ -232,7 +232,7 @@ class Button:
     def negated(self, value: bool) -> None:
         """Set whether the button value is negated."""
         self._negated = value
-        self._value = not self._value
+        self._pressed = not self._pressed
         self._toggled = not self._toggled
 
     @property
@@ -245,22 +245,127 @@ class Button:
         """Set whether the button is toggled."""
         self._toggled = value
 
-    def update(self, joystick: pygame.joystick.Joystick) -> None:
+    @property
+    def hold_delay(self) -> float:
+        """The period of unbroken time the button must be pressed before it is considered held.
+
+        Returns:
+            float: The hold delay of the button in seconds.
+        """
+        return self._hold_delay
+
+    @hold_delay.setter
+    def hold_delay(self, new_hold_delay: float) -> None:
+        """Set the hold delay of the button.
+
+        Args:
+            new_hold_delay (float):
+                The new hold delay of the button.
+        """
+        self._hold_delay = new_hold_delay
+
+    @property
+    def pressed(self) -> bool:
+        """Return whether the button is pressed.
+
+        Returns:
+            bool: True if the button is pressed, False otherwise.
+        """
+        return self._pressed
+
+    @pressed.setter
+    def pressed(self, value: bool) -> None:
+        """Set whether the button is pressed.
+
+        Args:
+            value (bool):
+                The new value of the button.
+        """
+        self.update(value)
+
+    @property
+    def held(self) -> bool:
+        """Return whether the button has been held for a preset amount of time.
+
+        Returns:
+            bool: True if the button is held, False otherwise.
+        """
+        return self._held
+
+    @property
+    def released(self) -> bool:
+        """Return whether the button is released.
+
+        Returns:
+            bool: True if the button is released, False otherwise.
+        """
+        return self._released
+
+    @property
+    def just_pressed(self) -> bool:
+        """Return whether the button had begun to be pressed during this frame.
+
+        Returns:
+            bool: True if the button was just pressed, False otherwise.
+        """
+        return self._just_pressed
+
+    @property
+    def just_released(self) -> bool:
+        """Return whether the button had begun to be released during this frame.
+
+        Returns:
+            bool: True if the button was just released, False otherwise.
+        """
+        return self._just_released
+
+    def update(self, val_source: pygame.joystick.Joystick | bool) -> None:
         """Update the value of the button from the controller. Used internally, Do not call this method directly outside
         the Controller or Hat classes.
 
         Args:
-            joystick (pygame.joystick.Joystick):
-                The joystick to get the button value from.
+            val_source (pygame.joystick.Joystick | bool):
+                Either the joystick to get the button value from or the value of the button itself if it is a boolean.
         """
-        # Get the raw value of the button.
-        value = joystick.get_button(self._index)
+        # Get the raw current value of the button.
+        if isinstance(val_source, bool):
+            state = val_source
+        elif isinstance(val_source, type(pygame.joystick.Joystick)):
+            state = val_source.get_button(self._index)
+        else:
+            raise TypeError(f"val_source must be a bool or a pygame Joystick, not {type(val_source)}.")
 
-        self.value = value
+        # If the button is negated, invert the state.
+        if self._negated:
+            state = not state
+
+        # Update the button states.
+
+        # The button is considered just pressed if it was not pressed in the previous loop but is pressed now. The
+        # opposite is true for just released.
+        self._just_pressed = state and not self._pressed
+        self._just_released = not state and self._pressed
+
+        # Now, update whether the button is pressed, held, or released.
+        self._pressed = state
+        self._released = not self._pressed
+
+        # The button is considered held if it is pressed and the time since the last press is greater than the hold
+        # delay. This is similar to pressing a key on a keyboard and holding it down to get the key repeat.
+        self._held = self._pressed and (time.time() - self._last_pressed_time) > self._hold_delay
+
+        # Finally, update the last press time if the button was just pressed so that the hold delay can be calculated
+        # correctly.
+        if self._just_pressed:
+            self.toggle()
+            self._last_pressed_time = time.time()
 
     def toggle(self) -> None:
         """Alternate the toggled value of the button."""
         self._toggled = not self._toggled
+
+    def __call__(self, *args, **kwargs):
+        return self._pressed
 
 
 class Hat:
@@ -342,10 +447,10 @@ class Hat:
         # Get the raw value of the hat.
         value = joystick.get_hat(self._index)
 
-        self.buttons[enums.ControllerHatButtonNames.DPAD_LEFT].value = value[0] == -1
-        self.buttons[enums.ControllerHatButtonNames.DPAD_RIGHT].value = value[0] == 1
-        self.buttons[enums.ControllerHatButtonNames.DPAD_UP].value = value[1] == 1
-        self.buttons[enums.ControllerHatButtonNames.DPAD_DOWN].value = value[1] == -1
+        self.buttons[enums.ControllerHatButtonNames.DPAD_LEFT].pressed = value[0] == -1
+        self.buttons[enums.ControllerHatButtonNames.DPAD_RIGHT].pressed = value[0] == 1
+        self.buttons[enums.ControllerHatButtonNames.DPAD_UP].pressed = value[1] == 1
+        self.buttons[enums.ControllerHatButtonNames.DPAD_DOWN].pressed = value[1] == -1
 
 
 class Controller:

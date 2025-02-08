@@ -49,12 +49,13 @@ class ROV:
         # Set the class handling control to manual as default.
         self._control_mode = manual.Manual(self._frame, self._io, self._kinematics, self._imu, self._dash)
 
-    def run(self):
+    def run(self) -> None:
+        """Update the io system and loop the control mode."""
         self._io.update()
         self._control_mode.loop()
         self.root.update()
 
-    def shutdown(self):
+    def shutdown(self) -> None:
         """Shutdown the ROV hardware."""
         # TODO: Implement this method further.
         self._control_mode.shutdown()

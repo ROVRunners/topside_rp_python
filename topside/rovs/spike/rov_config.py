@@ -28,7 +28,8 @@ class ROVConfig:
         self.video_port = 5600
 
         # TODO: This is where you change the IP. It needs to be the local IP for remote stuff to connect.
-        #  We need to make it so it sets itself automatically or can be set by the user.
+        #  We need to make it so it sets itself automatically or can be set by the user, but if it breaks,
+        #  here is where you can manually set it.
         # Test auto-IP getter:
         hostname = socket.gethostname()
         ip_addr = socket.gethostbyname(hostname)

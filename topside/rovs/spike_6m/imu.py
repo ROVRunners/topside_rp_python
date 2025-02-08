@@ -11,6 +11,12 @@ from utilities.vector import Vector3
 class IMU:
 
     def __init__(self, imu_config: IMUConfig) -> None:
+        """Initializes the IMU object.
+
+        Args:
+            imu_config (IMUConfig):
+                The configuration for the IMU.
+        """
         self._imu_config = imu_config
 
         int_type = IntegrationTypes.TRAPEZOIDAL

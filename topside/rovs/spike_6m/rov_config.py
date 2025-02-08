@@ -186,3 +186,5 @@ class ROVConfig:
             "attitude": 30,
             "local_position_ned": 32,
         }
+
+        self.pid_value_file = f"{self.current_dir}/assets/pid_values.json"
