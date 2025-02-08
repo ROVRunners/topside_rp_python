@@ -77,15 +77,15 @@ class Manual:
             gyro_pitch = 0
             gyro_roll = 0
 
-        # Get the accelerometer data from the subscriptions if it exists.
-        if "imu" in i2c:
-            accel_x = self._imu.accel_x
-            accel_y = self._imu.accel_y
-            accel_z = self._imu.accel_z
-        else:
-            accel_x = 0
-            accel_y = 0
-            accel_z = 0
+        # # Get the accelerometer data from the subscriptions if it exists.
+        # if "imu" in i2c:
+        #     accel_x = self._imu.accel_x
+        #     accel_y = self._imu.accel_y
+        #     accel_z = self._imu.accel_z
+        # else:
+        #     accel_x = 0
+        #     accel_y = 0
+        #     accel_z = 0
 
         # Get the depth data from the subscriptions if it exists.
         if "ROV/sensor_data/depth" in subscriptions:
