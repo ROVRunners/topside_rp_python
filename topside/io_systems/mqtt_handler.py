@@ -5,6 +5,7 @@ from threading import Lock
 from hardware.pin import Pin
 from hardware.i2c import I2C
 import json
+from enums import MavlinkMessageTypes
 
 import killport
 import paho.mqtt.client as mqtt_c
@@ -66,7 +67,7 @@ class ROVConnection:
         self._last_i2c_configs: dict[str, I2C] = {}
         self._last_i2c_update: float = 0.0
 
-        self._last_mavlink_requests: dict[int, int] = {}
+        self._last_mavlink_requests: dict[int, tuple[int, int, int, int, int, int, int]] = {}
         self._last_mavlink_update: float = 0.0
 
         # Do the same for commands.
@@ -199,11 +200,35 @@ class ROVConnection:
             self._client.publish(f"PC/pins/{pos}/val", value.val)
             self._client.publish(f"PC/pins/{pos}/freq", value.freq)
 
-    def publish_mavlink_data_request(self, mavlink: dict[str, str | float]) -> None:
+    def publish_mavlink_commands(self, commands: dict[int, tuple[int, int, int, int, int, int, int]]) -> None:
+        """Send a series of packets from the Raspberry Pi with the specified mavlink commands.
+
+        Args:
+            commands (dict[int, tuple[int, int, int, int, int, int, int]]):
+                List of mavlink commands to be sent to the ROV.
+                dict[message_type, tuple[param1, param2, param3, param4, param5, param6, param7]]
+        """
+
+        changed_mavlink_requests = {}
+
+        for key, interval in commands.items():
+            if key not in self._last_mavlink_requests:
+                self._last_mavlink_requests[key] = interval
+                changed_mavlink_requests[key] = interval
+            elif self._last_mavlink_requests[
+                key] != interval or time.time() - self._last_mavlink_update > self._idle_ping_frequency:
+                self._last_mavlink_requests[key] = interval
+                changed_mavlink_requests[key] = interval
+
+        for key, interval in changed_mavlink_requests.items():
+            self._last_mavlink_update = time.time()
+            self._client.publish(f"PC/mavlink/{key}", str(interval))
+
+    def publish_mavlink_data_request(self, mavlink: dict[int, int]) -> None:
         """Send a series of packets from the Raspberry Pi with the specified mavlink data id and interval values.
 
         Args:
-            mavlink (dict[str, str | float]):
+            mavlink (dict[int, int]):
                 List of mavlink values to be sent to the ROV.
         """
         changed_mavlink_requests = {}
