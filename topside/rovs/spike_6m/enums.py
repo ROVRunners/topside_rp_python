@@ -3,6 +3,7 @@
 import enum
 
 
+# TODO: Make this accurate.
 class MavlinkMessageTypes(enum.Enum):
     HEARTBEAT = 0
     SYS_STATUS = 1
@@ -154,6 +155,7 @@ class MavlinkMessageTypes(enum.Enum):
     LOGGING_DATA = 266
     LOGGING_DATA_ACKED = 267
     LOGGING_ACK = 268
+
 
 # Define the Buttons and Axes
 class ControllerAxisNames(enum.StrEnum):
@@ -339,6 +341,40 @@ class Directions(enum.StrEnum):
     YAW = "YAW",
     PITCH = "PITCH",
     ROLL = "ROLL",
+
+    def __repr__(self):
+        return self.value
+
+
+class ControlModes(enum.StrEnum):
+    """The control modes available to the ROV.
+
+    Implements:
+        enum.StrEnum
+
+    Properties:
+        MANUAL (str):
+            The manual control mode.
+        PID_TUNING (str):
+            The PID tuning mode.
+        TESTING (str):
+            The testing mode.
+        DEPTH_HOLD (str):
+            The depth hold mode.
+        HEADING_HOLD (str):
+            The heading hold mode.
+        POSITION_HOLD (str):
+            The position hold mode.
+        FULL_PID (str):
+            The full PID control mode.
+    """
+    MANUAL = "MANUAL",
+    PID_TUNING = "PID_TUNING",
+    TESTING = "TESTING",
+    DEPTH_HOLD = "DEPTH_HOLD",
+    HEADING_HOLD = "HEADING_HOLD",
+    POSITION_HOLD = "POSITION_HOLD",
+    FULL_PID = "FULL_PID",
 
     def __repr__(self):
         return self.value

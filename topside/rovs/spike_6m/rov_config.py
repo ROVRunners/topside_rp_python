@@ -27,7 +27,7 @@ class ROVConfig:
         self.comms_port = 1883
         self.video_port = 5600
 
-        self.current_dir = os.path.dirname(os.path.realpath(__file__))
+        self.rov_dir = os.path.dirname(os.path.realpath(__file__))
 
         # TODO: This is where you change the IP. It needs to be the local IP for remote stuff to connect.
         #  We need to make it so it sets itself automatically or can be set by the user.
@@ -120,10 +120,10 @@ class ROVConfig:
         }
 
         self.kinematics_config = KinematicsConfig(
-            yaw_pid=PIDConfig(p= 0.5, i=0, d=0),
-            pitch_pid=PIDConfig(p= 0.5, i=0, d=0),
-            roll_pid=PIDConfig(p= 0.5, i=0, d=0),
-            depth_pid=PIDConfig(p= 0.5, i=0, d=0),
+            yaw_pid=PIDConfig(p=0.5, i=0, d=0),
+            pitch_pid=PIDConfig(p=0.5, i=0, d=0),
+            roll_pid=PIDConfig(p=0.5, i=0, d=0),
+            depth_pid=PIDConfig(p=0.5, i=0, d=0),
         )
 
         self.thruster_configs: dict[enums.ThrusterPositions, thruster.ThrusterPWMConfig] = {
@@ -133,7 +133,7 @@ class ROVConfig:
                 thruster_impulses=self.thruster_impulses[position]
             ) for position in self.thruster_impulses.keys()
         }
-        # TODO: add real numbers
+
         self.pins: dict[str, Pin] = {
             enums.ThrusterPositions.FRONT_RIGHT: Pin(PinConfig(id=27, mode="PWMus", val=1500, freq=50)),
             enums.ThrusterPositions.FRONT_LEFT: Pin(PinConfig(id=5, mode="PWMus", val=1500, freq=50)),
@@ -171,9 +171,9 @@ class ROVConfig:
                 ScaleConfig("Quality", 4, 3, 1, 100, 75, cspan=2)
             ),
             images=(
-                ImageConfig("topview", 1, 2, 125, 125, f"{self.current_dir}/assets/topview.png", cspan=2),
-                ImageConfig("sideview", 1, 4, 125, 125, f"{self.current_dir}/assets/sideview.png", cspan=2),
-                ImageConfig("frontview", 1, 6, 125, 125, f"{self.current_dir}/assets/frontview.png", cspan=2)
+                ImageConfig("topview", 1, 2, 125, 125, f"{self.rov_dir}/assets/topview.png", cspan=2),
+                ImageConfig("sideview", 1, 4, 125, 125, f"{self.rov_dir}/assets/sideview.png", cspan=2),
+                ImageConfig("frontview", 1, 6, 125, 125, f"{self.rov_dir}/assets/frontview.png", cspan=2)
             )
         )
 
@@ -187,4 +187,4 @@ class ROVConfig:
             "local_position_ned": 32,
         }
 
-        self.pid_value_file = f"{self.current_dir}/assets/pid_values.json"
+        self.pid_value_file = f"{self.rov_dir}/assets/pid_values.json"

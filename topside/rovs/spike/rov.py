@@ -6,7 +6,7 @@ from kinematics import Kinematics
 from imu import IMU
 import tkinter as tk
 
-import manual
+from control_modes import manual
 
 
 class ROV:

@@ -1,3 +1,4 @@
+import enums
 from hardware.thruster_pwm import ThrusterPWM, FrameThrusters
 import rov_config
 from dashboard import Dashboard
@@ -7,7 +8,7 @@ from kinematics import Kinematics
 from imu import IMU
 import tkinter as tk
 
-import manual
+from control_modes.manual import Manual
 
 
 class ROV:
@@ -33,12 +34,10 @@ class ROV:
 
         # Mavlink connection (fully optional)
         self._mavlink_interval_ns: int = int(1_000_000_000 / 100)  # 100 Hz
-        for msg_id in self._config.mavlink_subscriptions.values():
-            self._io.add_mavlink_subscription(msg_id, self._mavlink_interval_ns)
 
-        # Mavlink connection (fully optional)
-        for msg_id in self._config.mavlink_subscriptions.values():
-            self._io.add_mavlink_subscription(msg_id, self._config.mavlink_interval)
+        self._io.rov_comms.publish_mavlink_data_request(
+            {val: self._mavlink_interval_ns for val in self._config.mavlink_subscriptions.values()}
+        )
 
         # Configure thrusters.
         for position, thruster_config in self._config.thruster_configs.items():
@@ -47,7 +46,20 @@ class ROV:
         self._frame = FrameThrusters(self._thrusters)
 
         # Set the class handling control to manual as default.
-        self._control_mode = manual.Manual(self._frame, self._io, self._kinematics, self._imu, self._dash)
+        self._control_mode_dict = {
+            enums.ControlModes.MANUAL: Manual(self._frame, self._io, self._kinematics, self._imu, self._dash),
+        }
+
+        self._control_mode = self._control_mode_dict[enums.ControlModes.MANUAL]
+
+    def set_control_mode(self, control_mode: enums.ControlModes) -> None:
+        """Set the control mode of the ROV.
+
+        Args:
+            control_mode (enums.ControlModes):
+                The control mode to set.
+        """
+        self._control_mode = control_mode
 
     def run(self) -> None:
         """Update the io system and loop the control mode."""

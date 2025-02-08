@@ -1,4 +1,5 @@
 import json
+import os.path
 
 from hardware.thruster_pwm import FrameThrusters
 from enums import Directions, ControllerAxisNames, ControllerButtonNames, ThrusterPositions
@@ -141,10 +142,7 @@ class Manual:
 
         # Update the PID values if the X button is pressed.
         if controller.buttons[ControllerButtonNames.X].just_pressed:
-            with open("", "r") as file:
-                file_contents = json.load(file)
-
-            self.update_pid_values(file_contents)
+            self._update_pid_values(os.path.dirname(os.path.dirname(__file__)) + "/assets/pid_config.json")
 
         # Publish the PWM values to the MQTT broker.
         for thruster, pwm in pwm_values.items():
@@ -154,13 +152,16 @@ class Manual:
             "stop": stop,
         })
 
-    def update_pid_values(self, file_contents: dict) -> None:
+    def _update_pid_values(self, file_path: str) -> None:
         """Update the PID values based on the file contents.
 
         Args:
-            file_contents (dict):
-                The contents of the pid config file.
+            file_path (str):
+                The path to the pid config file.
         """
+        with open(file_path, "r") as file:
+            file_contents = json.load(file)
+
         self._kinematics.yaw_pid.Kd = file_contents["yaw"]["D"]
         self._kinematics.yaw_pid.Kp = file_contents["yaw"]["P"]
         self._kinematics.yaw_pid.Ki = file_contents["yaw"]["I"]
