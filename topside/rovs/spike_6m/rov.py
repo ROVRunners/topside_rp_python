@@ -1,17 +1,20 @@
-import enums
-from hardware.thruster_pwm import ThrusterPWM, FrameThrusters
-import rov_config
-from dashboard import Dashboard
-from enums import ThrusterPositions
-from io_systems.io_handler import IO
-from kinematics import Kinematics
-from imu import IMU
 import tkinter as tk
 
-from control_modes.manual import Manual
+from hardware.thruster_pwm import ThrusterPWM, FrameThrusters
+from io_systems.io_handler import IO
+
+import rov_config
+from dashboard import Dashboard
+from enums import ThrusterPositions, ControlModes
+from kinematics import Kinematics
+from imu import IMU
+
+from control_modes import *
+
+from rovs.generic_objects.generic_rov import GenericROV
 
 
-class ROV:
+class ROV(GenericROV):
 
     def __init__(self, config: rov_config.ROVConfig, io: IO) -> None:
         """Create and initialize the ROV hardware.
@@ -22,17 +25,19 @@ class ROV:
             io (IO):
                 The IO object.
         """
-        self._config = config
-        self._io = io
+        super().__init__(config, io)
+
+        # ROV hardware.
         self._thrusters: dict[ThrusterPositions, ThrusterPWM] = {}
         self._kinematics: Kinematics = Kinematics(self._config.kinematics_config)
         self._imu: IMU = IMU(self._config.imu_config)
 
+        # Tkinter GUI.
         self.root: tk.Tk = tk.Tk()
         self.root.wm_title("ROV monitor")
         self._dash: Dashboard = Dashboard(self.root, self._config.dash_config)
 
-        # Mavlink connection (fully optional)
+        # Mavlink connection.
         self._mavlink_interval_ns: int = int(1_000_000_000 / 100)  # 100 Hz
 
         self._io.rov_comms.publish_mavlink_data_request(
@@ -45,21 +50,23 @@ class ROV:
 
         self._frame = FrameThrusters(self._thrusters)
 
-        # Set the class handling control to manual as default.
+        # Set up control modes.
         self._control_mode_dict = {
-            enums.ControlModes.MANUAL: Manual(self._frame, self._io, self._kinematics, self._imu, self._dash),
+            ControlModes.MANUAL: Manual(
+                self._frame, self._io, self._kinematics, self.set_control_mode, self._dash
+            ),
         }
 
-        self._control_mode = self._control_mode_dict[enums.ControlModes.MANUAL]
+        self._control_mode = self._control_mode_dict[ControlModes.MANUAL]
 
-    def set_control_mode(self, control_mode: enums.ControlModes) -> None:
-        """Set the control mode of the ROV.
+    def set_control_mode(self, control_mode: ControlModes) -> None:
+        """Set the current control mode of the ROV.
 
         Args:
-            control_mode (enums.ControlModes):
+            control_mode (ControlModes):
                 The control mode to set.
         """
-        self._control_mode = control_mode
+        self._control_mode = self._control_mode_dict[control_mode]
 
     def run(self) -> None:
         """Update the io system and loop the control mode."""

@@ -1,17 +1,20 @@
 import json
 import os.path
+from typing import Callable
 
 from hardware.thruster_pwm import FrameThrusters
 from enums import Directions, ControllerAxisNames, ControllerButtonNames, ThrusterPositions
 import kinematics as kms
-from imu import IMU
-import controller_input
+from controller_input import combine_triggers
 from io_systems.io_handler import IO
-from utilities.vector import Vector3
 from dashboard import Dashboard
 
+from utilities.vector import Vector3
 
-class Manual:
+from rovs.generic_objects.generic_control_mode import ControlMode
+
+
+class Manual(ControlMode):
     """One of the control modes for the ROV which take in inputs from the controller, sensors, and more to determine
     the thrust values for the thrusters and send other commands to the ROV.
 
@@ -25,7 +28,8 @@ class Manual:
             Shutdown the ROV.
     """
 
-    def __init__(self, frame: FrameThrusters, io: IO, kinematics: kms.Kinematics, imu: IMU, dash: Dashboard) -> None:
+    def __init__(self, frame: FrameThrusters, io: IO, kinematics: kms.Kinematics, set_control_mode: Callable,
+                 dash: Dashboard) -> None:
         """Initialize the Manual object.
 
         Args:
@@ -35,20 +39,14 @@ class Manual:
                 The IO (input output) object.
             kinematics (kms.Kinematics):
                 The Kinematics object housing the PIDs.
-            imu (IMU):
-                The IMU object.
+            set_control_mode (Callable):
+                The function to set the control mode.
             dash (Dashboard):
                 The Tkinter Dashboard object.
         """
-        self._frame = frame
-        self._io = io
-        self._kinematics = kinematics
-        self._imu = imu
-        self._dash = dash
+        super().__init__(frame, io, kinematics, set_control_mode, dash)
 
-        self._imu.initialize_imu(self._io.i2c_handler.i2cs["imu"])
-
-        # Add whatever you need initialized here.
+        self._rov_directory = os.path.dirname(os.path.dirname(__file__))
 
     @property
     def inputs(self):
@@ -61,32 +59,9 @@ class Manual:
     def loop(self):
         """Update thrust values, send commands, and more based on the inputs."""
         inputs = self._io.controllers
+        subscriptions = self._io.subscriptions
 
         controller = inputs[enums.ControllerNames.PRIMARY_DRIVER]
-
-        subscriptions = self._io.subscriptions
-        i2c = self._io.i2c_handler.i2cs
-
-        # Get the gyro data from the subscriptions if it exists.
-        if "imu" in i2c:
-            self._imu.update(i2c["imu"])
-            gyro_yaw = self._imu.yaw
-            gyro_pitch = self._imu.pitch
-            gyro_roll = self._imu.roll
-        else:
-            gyro_yaw = 0
-            gyro_pitch = 0
-            gyro_roll = 0
-
-        # # Get the accelerometer data from the subscriptions if it exists.
-        # if "imu" in i2c:
-        #     accel_x = self._imu.accel_x
-        #     accel_y = self._imu.accel_y
-        #     accel_z = self._imu.accel_z
-        # else:
-        #     accel_x = 0
-        #     accel_y = 0
-        #     accel_z = 0
 
         # Get the depth data from the subscriptions if it exists.
         if "ROV/sensor_data/depth" in subscriptions:
@@ -94,22 +69,16 @@ class Manual:
         else:
             depth = 0
 
-        # # Get the leak warning data from the subscriptions if it exists.
-        # if "ROV/sensor_data/leak" in subscriptions:
-        #     leak = subscriptions["ROV/sensor_data/leak"]
-        # else:
-        #     leak = 0
-
-        self._dash.update_images({
-            "topview": gyro_yaw,
-            "frontview": gyro_roll,
-            "sideview": gyro_pitch
-        })
+        # self._dash.update_images({
+        #     "topview": gyro_yaw,
+        #     "frontview": gyro_roll,
+        #     "sideview": gyro_pitch
+        # })
 
         # Convert the triggers to a single value.
         right_trigger = controller.axes[ControllerAxisNames.RIGHT_TRIGGER]
         left_trigger = controller.axes[ControllerAxisNames.LEFT_TRIGGER]
-        vertical = controller_input.combine_triggers(left_trigger.value, right_trigger.value)
+        vertical = combine_triggers(left_trigger.value, right_trigger.value)
 
         self._kinematics.update_target_position(
             Vector3(
@@ -136,13 +105,12 @@ class Manual:
         # Theoretically stop the ROV from moving if the B button is toggled. TODO: Fix.
         stop = controller.buttons[ControllerButtonNames.B].toggled
 
-        # Calibrate the gyro if the Y button is pressed.
-        if controller.buttons[ControllerButtonNames.Y].just_pressed:
-            self._imu.calibrate_gyro()
-
         # Update the PID values if the X button is pressed.
         if controller.buttons[ControllerButtonNames.X].just_pressed:
-            self._update_pid_values(os.path.dirname(os.path.dirname(__file__)) + "/assets/pid_config.json")
+            self._update_pid_values(self._rov_directory + "/assets/pid_config.json")
+
+        # TODO: Add a keybind or several keybinds to change control modes.
+        # self._set_control_mode(enums.ControlModes.MANUAL)
 
         # Publish the PWM values to the MQTT broker.
         for thruster, pwm in pwm_values.items():
