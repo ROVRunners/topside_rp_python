@@ -1,6 +1,6 @@
 import controller
 import controller_input
-from io_systems import gpio_handler, i2c_handler, mqtt_handler, terminal_listener, socket_handler, udp_socket
+from io_systems import gpio_handler, i2c_handler, mqtt_handler, terminal_listener, socket_handler, udp_socket, mavlink_handler
 import enums
 import utilities.class_tools as class_tools
 
@@ -10,6 +10,7 @@ class IO:
             self,
             gpio: gpio_handler.GPIOHandler,
             i2c: i2c_handler.I2CHandler,
+            mavlink: mavlink_handler.MavlinkHandler,
             input_handler: controller_input.InputHandler | None = None,
             rov_comms: mqtt_handler.ROVConnection | None = None,
             terminal: terminal_listener.TerminalListener | None = None,
@@ -21,6 +22,7 @@ class IO:
         self._terminal = terminal
         self._rov_video = rov_video
         self._i2c_handler = i2c
+        self._mavlink = mavlink
         self._gpio_handler = gpio
 
         self._controller_inputs = self._input_handler.controllers
@@ -29,8 +31,6 @@ class IO:
         # TODO: Hook up the UDP stuff
         # self._video = self._rov_video.get_frame()
         self._timer = class_tools.Stopwatch()
-
-        self._mavlink_msg_requests: dict[int, int] = {}  # msg_id: interval
 
     @property
     def controllers(self) -> dict[enums.ControllerNames, controller.Controller]:
@@ -87,9 +87,10 @@ class IO:
         self._subscriptions = self.rov_comms.get_subscriptions()
         self._gpio_handler.update(self._subscriptions)
         self._i2c_handler.update(self._subscriptions)
+        self._mavlink.update(self._subscriptions)
         self._rov_comms.publish_i2c(self.i2c_handler.i2cs)
         self._rov_comms.publish_pins(self._gpio_handler.pins)
-        self._rov_comms.publish_mavlink_data_request(self._mavlink_msg_requests)
+        self._rov_comms.publish_mavlink_commands(self._mavlink.mavlink_commands)
 
     def shutdown(self) -> None:
         """Shut down the IO system gracefully."""
@@ -98,6 +99,6 @@ class IO:
         self._rov_comms.shutdown()
         self._input_handler.shutdown()
 
-    def add_mavlink_subscription(self, msg_id: int, interval: int = 1_000_000) -> None:
-        """Add a mavlink subscription."""
-        self._mavlink_msg_requests[msg_id] = interval
+    # def add_mavlink_subscription(self, msg_id: int, interval: int = 1_000_000) -> None:
+    #     """Add a mavlink subscription."""
+    #     self._mavlink_msg_requests[msg_id] = interval
