@@ -52,7 +52,16 @@ class ROV(GenericROV):
 
         # Set up control modes.
         self._control_mode_dict = {
-            ControlModes.MANUAL: Manual(
+            ControlModes.TESTING: Manual(
+                self._frame, self._io, self._kinematics, self.set_control_mode, self._dash
+            ),
+            # ControlModes.DEPTH_HOLD: DepthHold(
+            #     self._frame, self._io, self._kinematics, self.set_control_mode, self._dash
+            # ),
+            ControlModes.PID_TUNING: PIDTuning(
+                self._frame, self._io, self._kinematics, self.set_control_mode, self._dash
+            ),
+            ControlModes.MANUAL: PureManual(
                 self._frame, self._io, self._kinematics, self.set_control_mode, self._dash
             ),
         }
