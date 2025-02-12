@@ -5,9 +5,7 @@ from typing import Callable
 from hardware.thruster_pwm import FrameThrusters
 from enums import Directions, ControllerAxisNames, ControllerButtonNames, ThrusterPositions
 import kinematics as kms
-from imu import IMU
 from mavlink_flight_controller import FlightController
-import controller_input
 from controller_input import combine_triggers
 from io_systems.io_handler import IO
 from dashboard import Dashboard
@@ -32,7 +30,8 @@ class Manual(ControlMode):
             Shutdown the ROV.
     """
 
-    def __init__(self, frame: FrameThrusters, io: IO, kinematics: kms.Kinematics, flight_controller: FlightController, dash: Dashboard, set_control_mode: Callable,) -> None:
+    def __init__(self, frame: FrameThrusters, io: IO, kinematics: kms.Kinematics, flight_controller: FlightController,
+                 dash: Dashboard, set_control_mode: Callable) -> None:
         """Initialize the Manual object.
 
         Args:
@@ -44,10 +43,16 @@ class Manual(ControlMode):
                 The Kinematics object housing the PIDs.
             set_control_mode (Callable):
                 The function to set the control mode.
+            flight_controller (FlightController):
+                The flight controller object.
             dash (Dashboard):
                 The Tkinter Dashboard object.
+            set_control_mode (Callable):
+                The function to set the control mode.
         """
         super().__init__(frame, io, kinematics, set_control_mode, dash)
+
+        self._flight_controller = flight_controller
 
         self._rov_directory = os.path.dirname(os.path.dirname(__file__))
 
@@ -68,7 +73,7 @@ class Manual(ControlMode):
 
         subscriptions = self._io.subscriptions
         i2c = self._io.i2c_handler.i2cs
-        mavlink =self._io.subscriptions["mavlink"]
+        mavlink = self._io.subscriptions["mavlink"]
 
         # Get the gyro data from the subscriptions if it exists.
         # if "imu" in i2c:
@@ -82,10 +87,9 @@ class Manual(ControlMode):
         #     gyro_roll = 0
 
         self._flight_controller.update(mavlink)
-        gyro_yaw = self._flight_controller._attitude.yaw
-        gyro_pitch = self._flight_controller._attitude.pitch
-        gyro_roll = self._flight_controller._attitude.roll
-
+        gyro_yaw = self._flight_controller.attitude.yaw
+        gyro_pitch = self._flight_controller.attitude.pitch
+        gyro_roll = self._flight_controller.attitude.roll
 
         # # Get the accelerometer data from the subscriptions if it exists.
         # if "imu" in i2c:
@@ -98,8 +102,8 @@ class Manual(ControlMode):
         #     accel_z = 0
 
         # Get the depth data from the subscriptions if it exists.
-        if "ROV/sensor_data/depth" in subscriptions:
-            depth = subscriptions["ROV/sensor_data/depth"]
+        if "ROV/custom/depth_sensor/depth" in subscriptions:
+            depth = subscriptions["ROV/custom/depth_sensor/depth"]
         else:
             depth = 0
 
@@ -123,7 +127,6 @@ class Manual(ControlMode):
             vertical,
         )
 
-        # TODO: add sensor data to pids below
         # Get the PWM values for the thrusters based on the controller inputs.
         pwm_values: dict[ThrusterPositions, int] = self._frame.get_pwm_values(
             {

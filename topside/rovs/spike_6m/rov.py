@@ -10,8 +10,6 @@ from kinematics import Kinematics
 from imu import IMU
 from mavlink_flight_controller import FlightController
 
-import tkinter as tk
-
 from control_modes import *
 
 from rovs.generic_objects.generic_control_mode import ControlMode
