@@ -14,6 +14,7 @@ from config.kinematics import KinematicsConfig
 from config.pid import PIDConfig
 from config.imu import IMUConfig
 from config.dashboard import *
+from config.flight_controller import FlightControllerConfig
 
 
 class ROVConfig:
@@ -188,3 +189,5 @@ class ROVConfig:
         }
 
         self.pid_value_file = f"{self.rov_dir}/assets/pid_values.json"
+
+        self.flight_controller_config = FlightControllerConfig()

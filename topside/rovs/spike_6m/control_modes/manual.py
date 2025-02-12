@@ -5,9 +5,13 @@ from typing import Callable
 from hardware.thruster_pwm import FrameThrusters
 from enums import Directions, ControllerAxisNames, ControllerButtonNames, ThrusterPositions
 import kinematics as kms
+from imu import IMU
+from mavlink_flight_controller import FlightController
+import controller_input
 from controller_input import combine_triggers
 from io_systems.io_handler import IO
 from dashboard import Dashboard
+import enums
 
 from utilities.vector import Vector3
 
@@ -28,8 +32,7 @@ class Manual(ControlMode):
             Shutdown the ROV.
     """
 
-    def __init__(self, frame: FrameThrusters, io: IO, kinematics: kms.Kinematics, set_control_mode: Callable,
-                 dash: Dashboard) -> None:
+    def __init__(self, frame: FrameThrusters, io: IO, kinematics: kms.Kinematics, flight_controller: FlightController, dash: Dashboard, set_control_mode: Callable,) -> None:
         """Initialize the Manual object.
 
         Args:
@@ -62,6 +65,37 @@ class Manual(ControlMode):
         subscriptions = self._io.subscriptions
 
         controller = inputs[enums.ControllerNames.PRIMARY_DRIVER]
+
+        subscriptions = self._io.subscriptions
+        i2c = self._io.i2c_handler.i2cs
+        mavlink =self._io.subscriptions["mavlink"]
+
+        # Get the gyro data from the subscriptions if it exists.
+        # if "imu" in i2c:
+        #     self._imu.update(i2c["imu"])
+        #     gyro_yaw = self._imu.yaw
+        #     gyro_pitch = self._imu.pitch
+        #     gyro_roll = self._imu.roll
+        # else:
+        #     gyro_yaw = 0
+        #     gyro_pitch = 0
+        #     gyro_roll = 0
+
+        self._flight_controller.update(mavlink)
+        gyro_yaw = self._flight_controller._attitude.yaw
+        gyro_pitch = self._flight_controller._attitude.pitch
+        gyro_roll = self._flight_controller._attitude.roll
+
+
+        # # Get the accelerometer data from the subscriptions if it exists.
+        # if "imu" in i2c:
+        #     accel_x = self._imu.accel_x
+        #     accel_y = self._imu.accel_y
+        #     accel_z = self._imu.accel_z
+        # else:
+        #     accel_x = 0
+        #     accel_y = 0
+        #     accel_z = 0
 
         # Get the depth data from the subscriptions if it exists.
         if "ROV/sensor_data/depth" in subscriptions:
@@ -105,6 +139,10 @@ class Manual(ControlMode):
         # Theoretically stop the ROV from moving if the B button is toggled. TODO: Fix.
         stop = controller.buttons[ControllerButtonNames.B].toggled
 
+        # Calibrate the gyro if the Y button is pressed.
+        if controller.buttons[ControllerButtonNames.Y].just_pressed:
+            self._flight_controller.calibrate_gyro()
+
         # Update the PID values if the X button is pressed.
         if controller.buttons[ControllerButtonNames.X].just_pressed:
             self._update_pid_values(self._rov_directory + "/assets/pid_config.json")
@@ -130,21 +168,21 @@ class Manual(ControlMode):
         with open(file_path, "r") as file:
             file_contents = json.load(file)
 
-        self._kinematics.yaw_pid.Kd = file_contents["yaw"]["D"]
-        self._kinematics.yaw_pid.Kp = file_contents["yaw"]["P"]
-        self._kinematics.yaw_pid.Ki = file_contents["yaw"]["I"]
+        self._kinematics.yaw_pid.Kd = file_contents["yaw"]["P"]
+        self._kinematics.yaw_pid.Kp = file_contents["yaw"]["I"]
+        self._kinematics.yaw_pid.Ki = file_contents["yaw"]["D"]
 
-        self._kinematics.pitch_pid.Kd = file_contents["pitch"]["D"]
-        self._kinematics.pitch_pid.Kp = file_contents["pitch"]["P"]
-        self._kinematics.pitch_pid.Ki = file_contents["pitch"]["I"]
+        self._kinematics.pitch_pid.Kd = file_contents["pitch"]["P"]
+        self._kinematics.pitch_pid.Kp = file_contents["pitch"]["I"]
+        self._kinematics.pitch_pid.Ki = file_contents["pitch"]["D"]
 
-        self._kinematics.roll_pid.Kd = file_contents["roll"]["D"]
-        self._kinematics.roll_pid.Kp = file_contents["roll"]["P"]
-        self._kinematics.roll_pid.Ki = file_contents["roll"]["I"]
+        self._kinematics.roll_pid.Kd = file_contents["roll"]["P"]
+        self._kinematics.roll_pid.Kp = file_contents["roll"]["I"]
+        self._kinematics.roll_pid.Ki = file_contents["roll"]["D"]
 
-        self._kinematics.depth_pid.Kd = file_contents["depth"]["D"]
-        self._kinematics.depth_pid.Kp = file_contents["depth"]["P"]
-        self._kinematics.depth_pid.Ki = file_contents["depth"]["I"]
+        self._kinematics.depth_pid.Kd = file_contents["depth"]["P"]
+        self._kinematics.depth_pid.Kp = file_contents["depth"]["I"]
+        self._kinematics.depth_pid.Ki = file_contents["depth"]["D"]
 
     def shutdown(self):
         """Shutdown the ROV."""

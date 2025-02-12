@@ -8,6 +8,9 @@ from dashboard import Dashboard
 from enums import ThrusterPositions, ControlModes
 from kinematics import Kinematics
 from imu import IMU
+from mavlink_flight_controller import FlightController
+
+import tkinter as tk
 
 from control_modes import *
 
@@ -31,6 +34,7 @@ class ROV(GenericROV):
         self._thrusters: dict[ThrusterPositions, ThrusterPWM] = {}
         self._kinematics: Kinematics = Kinematics(self._config.kinematics_config)
         self._imu: IMU = IMU(self._config.imu_config)
+        self._flight_controller: FlightController = FlightController(self._config.flight_controller_config)
 
         # Tkinter GUI.
         self.root: tk.Tk = tk.Tk()
@@ -53,7 +57,7 @@ class ROV(GenericROV):
         # Set up control modes.
         self._control_mode_dict = {
             ControlModes.TESTING: Manual(
-                self._frame, self._io, self._kinematics, self.set_control_mode, self._dash
+                self._frame, self._io, self._kinematics, self._flight_controller, self._dash, self.set_control_mode,
             ),
             # ControlModes.DEPTH_HOLD: DepthHold(
             #     self._frame, self._io, self._kinematics, self.set_control_mode, self._dash
