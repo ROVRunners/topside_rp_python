@@ -33,7 +33,7 @@ class MainSystem:
         # TODO: Set this up to receive the video stream(s)
         # self.socket = socket_handler.SocketHandler(self, self.pi_ip, self.video_port)
 
-        # Set up the
+        # Set up the input handler to handle the controller inputs.
         self.input_handler = controller_input.InputHandler(self.rov_config.controllers)
 
         # The MQTT handler is used to communicate with the ROV sending and receiving thruster commands and sensor data.
@@ -43,6 +43,8 @@ class MainSystem:
 
         self.i2c_handler = i2c_handler.I2CHandler(self.rov_config.i2cs)
 
+        self.mavlink_handler = mavlink_handler.MavlinkHandler()
+
         # TODO: Incorporate terminal input and openCV video stream(s). Maybe incorporate a video stream switching
         #  system.
         # self.input_map: dict[str, Callable[[], any]] = {
@@ -50,7 +52,9 @@ class MainSystem:
         #     "subscriptions": self.rov_connection.get_subscriptions,
         #     # "socket": self.socket.get_video,
         # }
-        self._io = IO(self.gpio_handler, self.i2c_handler, self.input_handler, self.rov_connection)
+        self._io = IO(
+            self.gpio_handler, self.i2c_handler, self.mavlink_handler, self.input_handler, self.rov_connection
+        )
         self._rov = rov.ROV(self.rov_config, self._io)
 
         self.rov_connection.connect()
@@ -65,7 +69,7 @@ class MainSystem:
         start_loop: int = time.monotonic_ns()
 
         # Execute the loop of the ROV.
-        self._rov.run()
+        self._rov.loop()
 
         # Rate limit the loop to the specified number of loops per second.
         end_loop: int = time.monotonic_ns()
@@ -82,5 +86,3 @@ class MainSystem:
         # self.socket.shutdown()
         # Delay to let things close properly
         time.sleep(.25)
-
-

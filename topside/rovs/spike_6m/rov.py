@@ -3,9 +3,9 @@ import tkinter as tk
 from hardware.thruster_pwm import ThrusterPWM, FrameThrusters
 from io_systems.io_handler import IO
 
-import rov_config
+from rov_config import ROVConfig
 from dashboard import Dashboard
-from enums import ThrusterPositions, ControlModes
+from enums import ThrusterPositions, ControlModeNames
 from kinematics import Kinematics
 from imu import IMU
 from mavlink_flight_controller import FlightController
@@ -14,16 +14,18 @@ import tkinter as tk
 
 from control_modes import *
 
+from rovs.generic_objects.generic_control_mode import ControlMode
+
 from rovs.generic_objects.generic_rov import GenericROV
 
 
 class ROV(GenericROV):
 
-    def __init__(self, config: rov_config.ROVConfig, io: IO) -> None:
+    def __init__(self, config: ROVConfig, io: IO) -> None:
         """Create and initialize the ROV hardware.
 
         Args:
-            config (rov_config.ROVConfig):
+            config (ROVConfig):
                 ROV hardware configuration.
             io (IO):
                 The IO object.
@@ -52,36 +54,39 @@ class ROV(GenericROV):
         for position, thruster_config in self._config.thruster_configs.items():
             self._thrusters[position] = ThrusterPWM(thruster_config)
 
-        self._frame = FrameThrusters(self._thrusters)
+        self._frame: FrameThrusters = FrameThrusters(self._thrusters)
 
         # Set up control modes.
-        self._control_mode_dict = {
-            ControlModes.TESTING: Manual(
+        self._control_mode_dict: dict[ControlModeNames: ControlMode] = {
+            ControlModeNames.TESTING: Manual(
                 self._frame, self._io, self._kinematics, self._flight_controller, self._dash, self.set_control_mode,
             ),
             # ControlModes.DEPTH_HOLD: DepthHold(
             #     self._frame, self._io, self._kinematics, self.set_control_mode, self._dash
             # ),
-            ControlModes.PID_TUNING: PIDTuning(
+            ControlModeNames.PID_TUNING: PIDTuning(
                 self._frame, self._io, self._kinematics, self.set_control_mode, self._dash
             ),
-            ControlModes.MANUAL: PureManual(
+            ControlModeNames.MANUAL: PureManual(
                 self._frame, self._io, self._kinematics, self.set_control_mode, self._dash
             ),
         }
 
-        self._control_mode = self._control_mode_dict[ControlModes.MANUAL]
+        self._control_mode: ControlMode = self._control_mode_dict[ControlModeNames.MANUAL]
 
-    def set_control_mode(self, control_mode: ControlModes) -> None:
+    def set_control_mode(self, control_mode: ControlModeNames | ControlMode) -> None:
         """Set the current control mode of the ROV.
 
         Args:
-            control_mode (ControlModes):
-                The control mode to set.
+            control_mode (ControlModeNames | ControlMode):
+                The control mode to set, either the name of the control mode or the control mode object itself.
         """
-        self._control_mode = self._control_mode_dict[control_mode]
+        if isinstance(control_mode, ControlMode):
+            self._control_mode = control_mode
+        else:
+            self._control_mode = self._control_mode_dict[control_mode]
 
-    def run(self) -> None:
+    def loop(self) -> None:
         """Update the io system and loop the control mode."""
         self._io.update()
         self._control_mode.loop()
