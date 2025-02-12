@@ -38,7 +38,7 @@ class ControlMode:
         self._set_control_mode = set_control_mode
         self._dash = dash
 
-    def update(self) -> None:
+    def loop(self) -> None:
         """Update the control mode."""
         raise NotImplementedError
 

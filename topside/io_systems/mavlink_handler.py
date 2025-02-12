@@ -4,10 +4,9 @@ import time
 from enums import MavlinkMessageTypes
 
 
-class MavlinkHandler():
+class MavlinkHandler:
     
-    
-    mavlink_commands: dict[MavlinkMessageTypes, tuple[int, int, int, int, int, int, int]] # dict[message_type, tuple[param1, param2, param3, param4, param5, param6, param7]]
+    mavlink_commands: dict[MavlinkMessageTypes, tuple[int, int, int, int, int, int, int]]  # dict[message_type, tuple[param1, param2, param3, param4, param5, param6, param7]]
     mavlink_messages: dict[str, dict]
     # _last_mavlink_commands: dict[MavlinkMessageTypes, tuple[int, int, int, int, int, int, int]]
 
@@ -16,7 +15,6 @@ class MavlinkHandler():
         self.mavlink_commands = {}  # commands that will be sent to mavlink
         self.mavlink_messages = {}  # received data from mavlink
         # self._last_mavlink_commands = {}
-
 
     def update(self, subs: dict[str, dict]) -> None:
         for i in subs.keys():

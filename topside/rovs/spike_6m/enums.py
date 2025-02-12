@@ -346,7 +346,7 @@ class Directions(enum.StrEnum):
         return self.value
 
 
-class ControlModes(enum.StrEnum):
+class ControlModeNames(enum.StrEnum):
     """The control modes available to the ROV.
 
     Implements:

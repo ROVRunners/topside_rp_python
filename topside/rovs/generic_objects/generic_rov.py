@@ -16,7 +16,7 @@ class GenericROV:
         self._config = config
         self._io = io
 
-    def run(self) -> None:
+    def loop(self) -> None:
         """Run the ROV."""
         pass
 
