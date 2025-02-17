@@ -1,6 +1,9 @@
+import math
+
 import simple_pid
 
 from config.kinematics import KinematicsConfig
+from rov_config import ROVConfig
 
 from utilities.vector import Vector3
 
@@ -58,7 +61,15 @@ class Kinematics:
 
     #     self.depth_pid(depth)
 
-    def update_target_position(self, heading: Vector3, depth: float):
+    def update_target_position(self, heading: Vector3, depth: float) -> None:
+        """Update the target position of the ROV.
+
+        Args:
+            heading (Vector3):
+                The target heading of the ROV.
+            depth (float):
+                The target depth of the ROV.
+        """
         self.target_heading = heading
         self.target_depth = depth
 
@@ -67,3 +78,34 @@ class Kinematics:
         self.yaw_pid.setpoint = self.target_heading.yaw
 
         self.depth_pid.setpoint = self.target_depth
+
+    def get_pid_values(self) -> dict[str, dict[str, float]]:
+        pass
+
+    def calculate_direction_mixing(self, current_heading: Vector3, target_lateral: Vector3) -> Vector3:
+        """Calculate the direction mixing for the ROV.
+
+        Args:
+            current_heading (Vector3):
+                The current heading of the ROV.
+            target_lateral (Vector3):
+                The target lateral movement of the ROV.
+
+        Returns:
+            Vector3:
+                The lateral values to move the ROV in plus the  modulated by the current heading.
+        """
+        up = self.depth_pid.
+
+        # TODO: Verify that this actually makes sense.
+        up_dir: Vector3 = Vector3(
+            x=math.sin(current_heading.pitch),  # ROV Forward
+            y=math.sin(current_heading.roll),  # ROV Right
+            z=math.cos(current_heading.pitch)*math.cos(current_heading.roll),  # ROV Up
+        )
+
+        return Vector3(
+            x=up_dir.x + target_lateral.x,
+            y=up_dir.y + target_lateral.y,
+            z=up_dir.z + target_lateral.z,
+        )

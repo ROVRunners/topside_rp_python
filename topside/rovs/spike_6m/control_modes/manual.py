@@ -1,5 +1,6 @@
 import json
 import os.path
+from copy import copy
 from typing import Callable
 
 from hardware.thruster_pwm import FrameThrusters
@@ -87,9 +88,11 @@ class Manual(ControlMode):
         #     gyro_roll = 0
 
         self._flight_controller.update(mavlink)
-        gyro_yaw = self._flight_controller.attitude.yaw
-        gyro_pitch = self._flight_controller.attitude.pitch
-        gyro_roll = self._flight_controller.attitude.roll
+        # gyro_yaw = self._flight_controller.attitude.yaw
+        # gyro_pitch = self._flight_controller.attitude.pitch
+        # gyro_roll = self._flight_controller.attitude.roll
+
+        gyro_orientation: Vector3 = copy(self._flight_controller.attitude)
 
         # # Get the accelerometer data from the subscriptions if it exists.
         # if "imu" in i2c:
@@ -133,18 +136,18 @@ class Manual(ControlMode):
                 Directions.FORWARDS: controller.axes[ControllerAxisNames.LEFT_Y].value,
                 Directions.RIGHT: controller.axes[ControllerAxisNames.LEFT_X].value,
                 Directions.UP: self._kinematics.depth_pid(depth),
-                Directions.YAW: self._kinematics.yaw_pid(gyro_yaw),
-                Directions.PITCH: self._kinematics.pitch_pid(gyro_pitch),
-                Directions.ROLL: self._kinematics.roll_pid(gyro_roll),
+                Directions.YAW: self._kinematics.yaw_pid(gyro_orientation.yaw),
+                Directions.PITCH: self._kinematics.pitch_pid(gyro_orientation.pitch),
+                Directions.ROLL: self._kinematics.roll_pid(gyro_orientation.roll),
             },
         )
 
         # Theoretically stop the ROV from moving if the B button is toggled. TODO: Fix.
         stop = controller.buttons[ControllerButtonNames.B].toggled
 
-        # Calibrate the gyro if the Y button is pressed.
-        if controller.buttons[ControllerButtonNames.Y].just_pressed:
-            self._flight_controller.calibrate_gyro()
+        # # Calibrate the gyro if the Y button is pressed.
+        # if controller.buttons[ControllerButtonNames.Y].just_pressed:
+        #     self._flight_controller.calibrate_gyro()
 
         # Update the PID values if the X button is pressed.
         if controller.buttons[ControllerButtonNames.X].just_pressed:
@@ -155,6 +158,11 @@ class Manual(ControlMode):
 
         # Publish the PWM values to the MQTT broker.
         for thruster, pwm in pwm_values.items():
+            # If the stop button is toggled, set the PWM to 1500, stopping the thrusters. This is useful for testing and
+            # emergency situations where the thrusters are above water.
+            if stop:
+                pwm = 1500
+
             self._io.gpio_handler.pins[thruster].val = pwm
 
         self._io.rov_comms.publish_commands({
