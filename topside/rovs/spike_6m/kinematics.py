@@ -85,7 +85,7 @@ class Kinematics:
     @classmethod
     def rotate_target_lateral_movement(cls, ch: Vector3, tl: Vector3) -> Vector3:
         """Calculate the combination of directions the thrusters need to push to move the ROV in the desired direction
-        while taking into account the current heading of the ROV. Does not account for rotating the ROV.
+        while taking into account the current heading of the ROV. Does not account for yaw.
 
         Args:
             ch (Vector3):
@@ -132,9 +132,9 @@ class Kinematics:
 
         return translated_lateral
 
-    # TODO: Test and work on this to make it more efficient.
+    # TODO: Test and work on this to make it more efficient. Maybe use Numpy for this and its sub-functions?
     def mix_directions(self, heading: Vector3, lateral_target: Vector3, rotational_target: Vector3,
-                       pid_impulses: dict[str, float]) -> dict[str, float]:
+                       pid_impulses: dict[enums.Directions, float]) -> dict[enums.Directions, float]:
         """Mix the thrusters to move the ROV in the desired direction.
 
         Args:
@@ -144,28 +144,39 @@ class Kinematics:
                 The target lateral movement of the ROV. Do not include anything PID-controlled.
             rotational_target (Vector3):
                 The target rotational movement of the ROV. Do not include anything PID-controlled.
-            pid_impulses (dict[str, float]):
+            pid_impulses (dict[enums.Directions, float]):
                 The PID-controlled values for the directions.
 
         Returns:
-            dict[str, float]:
+            dict[enums.Directions, float]:
                 The output values for the thrusters.
         """
-        directional_values: dict[str, float] = {name: 0 for name in enums.Directions}
+        # TODO: Un-hardcode this.
+        directional_values: dict[enums.Directions, float] = {
+            enums.Directions.FORWARDS: 0,
+            enums.Directions.RIGHT: 0,
+            enums.Directions.UP: 0,
+            enums.Directions.YAW: 0,
+            enums.Directions.PITCH: 0,
+            enums.Directions.ROLL: 0,
+        }
 
         lateral: Vector3 = self.rotate_target_lateral_movement(heading, lateral_target)
 
-        directional_values[enums.Directions.FORWARDS] = lateral.x
-        directional_values[enums.Directions.RIGHT] = lateral.y
+        # Add base values from the controllers.
+        directional_values[enums.Directions.FORWARDS] = lateral.y
+        directional_values[enums.Directions.RIGHT] = lateral.x
         directional_values[enums.Directions.UP] = lateral.z
 
         directional_values[enums.Directions.YAW] = rotational_target.yaw
         directional_values[enums.Directions.PITCH] = rotational_target.pitch
         directional_values[enums.Directions.ROLL] = rotational_target.roll
 
+        # Add weight from the PID controllers.
         for direction, value in pid_impulses.items():
             directional_values[direction] += value
 
+        # Normalize the values to be between -1 and 1 to prevent thruster saturation.
         normalized_dir_vals = {}
 
         thruster_norm = max(
@@ -183,4 +194,5 @@ class Kinematics:
         else:
             normalized_dir_vals = directional_values
 
+        # Return the normalized values.
         return normalized_dir_vals

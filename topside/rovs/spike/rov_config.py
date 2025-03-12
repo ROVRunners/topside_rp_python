@@ -141,9 +141,9 @@ class ROVConfig:
             depth_pid=PIDConfig(p= 0, i=0, d=0),
         )
 
-        self.thruster_configs: dict[enums.ThrusterPositions, thruster.ThrusterPWMConfig] = {
+        self.thruster_configs: dict[enums.ThrusterPositions, thruster.ThrusterConfig] = {
 
-            position: thruster.ThrusterPWMConfig(
+            position: thruster.ThrusterConfig(
                 pwm_pulse_range=typed_range.IntRange(min=1100, max=1900),
                 thruster_impulses=self.thruster_impulses[position]
             ) for position in self.thruster_impulses.keys()

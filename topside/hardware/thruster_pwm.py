@@ -3,7 +3,7 @@ Input is given through lateral_thruster_calc_circular and returned as a FrameThr
 
 import math
 
-from config.thruster import ThrusterPWMConfig
+from config.thruster import ThrusterConfig
 # noinspection PyUnresolvedReferences
 import enums
 
@@ -16,7 +16,7 @@ class ThrusterPWM:
     """Basic wrapper for a servo-based PWM thruster."""
 
     _power: float
-    _config: ThrusterPWMConfig
+    _config: ThrusterConfig
     _pwm: int  # Cached pwm output for current requested power
 
     @property
@@ -45,11 +45,11 @@ class ThrusterPWM:
     def thruster_impulses(self) -> dict[str, float]:
         return self._impulses
 
-    def __init__(self, thruster_config: ThrusterPWMConfig, power: float = 0.0):
+    def __init__(self, thruster_config: ThrusterConfig, power: float = 0.0):
         """Initialize a new thruster
 
         Args:
-            thruster_config (ThrusterPWMConfig):
+            thruster_config (ThrusterConfig):
                 Configuration for the thruster.
             power (float):
                 Motor power.

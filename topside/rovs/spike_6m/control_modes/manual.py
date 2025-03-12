@@ -67,14 +67,14 @@ class Manual(ControlMode):
 
     def loop(self):
         """Update thrust values, send commands, and more based on the inputs."""
+        # Get the controller inputs, subscriptions, and i2c data and put them into local variables.
         inputs = self._io.controllers
         subscriptions = self._io.subscriptions
+        i2c = self._io.i2c_handler.i2cs
 
         controller = inputs[enums.ControllerNames.PRIMARY_DRIVER]
 
-        subscriptions = self._io.subscriptions
-        i2c = self._io.i2c_handler.i2cs
-        mavlink = self._io.subscriptions["mavlink"]
+        mavlink = subscriptions["mavlink"]
 
         # Get the gyro data from the subscriptions if it exists.
         # if "imu" in i2c:
@@ -88,9 +88,6 @@ class Manual(ControlMode):
         #     gyro_roll = 0
 
         self._flight_controller.update(mavlink)
-        # gyro_yaw = self._flight_controller.attitude.yaw
-        # gyro_pitch = self._flight_controller.attitude.pitch
-        # gyro_roll = self._flight_controller.attitude.roll
 
         gyro_orientation: Vector3 = copy(self._flight_controller.attitude)
 
@@ -121,6 +118,7 @@ class Manual(ControlMode):
         left_trigger = controller.axes[ControllerAxisNames.LEFT_TRIGGER]
         vertical = combine_triggers(left_trigger.value, right_trigger.value)
 
+        # Update the target position of the ROV based on the controller inputs for the PID controllers.
         self._kinematics.update_target_position(
             Vector3(
                 controller.axes[ControllerAxisNames.RIGHT_X].value,
@@ -130,17 +128,42 @@ class Manual(ControlMode):
             vertical,
         )
 
-        # Get the PWM values for the thrusters based on the controller inputs.
-        pwm_values: dict[ThrusterPositions, int] = self._frame.get_pwm_values(
-            {
-                Directions.FORWARDS: controller.axes[ControllerAxisNames.LEFT_Y].value,
-                Directions.RIGHT: controller.axes[ControllerAxisNames.LEFT_X].value,
-                Directions.UP: self._kinematics.depth_pid(depth),
+        # Get the mixed directions based on the controller inputs, gyro data, and PID outputs.
+        overall_thruster_impulses: dict[Directions, float] = self._kinematics.mix_directions(
+            heading=gyro_orientation,
+            lateral_target=Vector3(
+                controller.axes[ControllerAxisNames.LEFT_X].value,
+                controller.axes[ControllerAxisNames.LEFT_Y].value,
+                0,  # Set to zero because we are using PIDs for this.
+            ),
+            rotational_target=Vector3(  # Set to zero because we are using PIDs for this.
+                yaw=0,
+                pitch=0,
+                roll=0,
+            ),
+            pid_impulses={
                 Directions.YAW: self._kinematics.yaw_pid(gyro_orientation.yaw),
                 Directions.PITCH: self._kinematics.pitch_pid(gyro_orientation.pitch),
                 Directions.ROLL: self._kinematics.roll_pid(gyro_orientation.roll),
+                Directions.UP: self._kinematics.depth_pid(depth),
             },
         )
+
+        # Get the PWM values for the thrusters based on the controller inputs.
+        pwm_values: dict[ThrusterPositions, int] = self._frame.get_pwm_values(
+            overall_thruster_impulses
+        )
+
+        # pwm_values: dict[ThrusterPositions, int] = self._frame.get_pwm_values(
+        #     {
+        #         Directions.FORWARDS: controller.axes[ControllerAxisNames.LEFT_Y].value,
+        #         Directions.RIGHT: controller.axes[ControllerAxisNames.LEFT_X].value,
+        #         Directions.UP: self._kinematics.depth_pid(depth),
+        #         Directions.YAW: self._kinematics.yaw_pid(gyro_orientation.yaw),
+        #         Directions.PITCH: self._kinematics.pitch_pid(gyro_orientation.pitch),
+        #         Directions.ROLL: self._kinematics.roll_pid(gyro_orientation.roll),
+        #     },
+        # )
 
         # Theoretically stop the ROV from moving if the B button is toggled. TODO: Fix.
         stop = controller.buttons[ControllerButtonNames.B].toggled
@@ -163,6 +186,7 @@ class Manual(ControlMode):
             if stop:
                 pwm = 1500
 
+            # Set the PWM value for the thruster.
             self._io.gpio_handler.pins[thruster].val = pwm
 
         self._io.rov_comms.publish_commands({

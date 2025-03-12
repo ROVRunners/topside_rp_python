@@ -5,7 +5,7 @@ import rov
 import rov_config
 
 import controller_input
-from io_systems import gpio_handler, i2c_handler, mqtt_handler
+from io_systems import gpio_handler, i2c_handler, mqtt_handler, mavlink_handler
 from io_systems.io_handler import IO
 
 
