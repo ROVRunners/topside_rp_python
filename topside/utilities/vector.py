@@ -69,6 +69,23 @@ class Vector3:
         """The overall hypotenuse of the vector."""
         return math.sqrt(self.x ** 2 + self.y ** 2 + self.z ** 2)
 
+    def cross(self, other) -> 'Vector3':
+        """Calculate the cross product of the vector and another vector.
+
+        Args:
+            other (Vector3):
+                The vector to calculate the cross product with.
+
+        Returns:
+            Vector3:
+                The cross product of the vector and another vector.
+        """
+        return Vector3(
+            self.y * other.z - self.z * other.y,
+            self.z * other.x - self.x * other.z,
+            self.x * other.y - self.y * other.x
+        )
+
     def __add__(self, other) -> 'Vector3':
         if isinstance(other, Vector3):
             return Vector3(self.x + other.x, self.y + other.y, self.z + other.z)

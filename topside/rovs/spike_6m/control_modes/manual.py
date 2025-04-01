@@ -91,27 +91,17 @@ class Manual(ControlMode):
 
         gyro_orientation: Vector3 = copy(self._flight_controller.attitude)
 
-        # # Get the accelerometer data from the subscriptions if it exists.
-        # if "imu" in i2c:
-        #     accel_x = self._imu.accel_x
-        #     accel_y = self._imu.accel_y
-        #     accel_z = self._imu.accel_z
-        # else:
-        #     accel_x = 0
-        #     accel_y = 0
-        #     accel_z = 0
-
         # Get the depth data from the subscriptions if it exists.
         if "ROV/custom/depth_sensor/depth" in subscriptions:
             depth = subscriptions["ROV/custom/depth_sensor/depth"]
         else:
             depth = 0
 
-        # self._dash.update_images({
-        #     "topview": gyro_yaw,
-        #     "frontview": gyro_roll,
-        #     "sideview": gyro_pitch
-        # })
+        self._dash.update_images({
+            "topview": gyro_orientation.yaw,
+            "frontview": gyro_orientation.roll,
+            "sideview": gyro_orientation.pitch,
+        })
 
         # Convert the triggers to a single value.
         right_trigger = controller.axes[ControllerAxisNames.RIGHT_TRIGGER]
@@ -153,17 +143,6 @@ class Manual(ControlMode):
         pwm_values: dict[ThrusterPositions, int] = self._frame.get_pwm_values(
             overall_thruster_impulses
         )
-
-        # pwm_values: dict[ThrusterPositions, int] = self._frame.get_pwm_values(
-        #     {
-        #         Directions.FORWARDS: controller.axes[ControllerAxisNames.LEFT_Y].value,
-        #         Directions.RIGHT: controller.axes[ControllerAxisNames.LEFT_X].value,
-        #         Directions.UP: self._kinematics.depth_pid(depth),
-        #         Directions.YAW: self._kinematics.yaw_pid(gyro_orientation.yaw),
-        #         Directions.PITCH: self._kinematics.pitch_pid(gyro_orientation.pitch),
-        #         Directions.ROLL: self._kinematics.roll_pid(gyro_orientation.roll),
-        #     },
-        # )
 
         # Theoretically stop the ROV from moving if the B button is toggled. TODO: Fix.
         stop = controller.buttons[ControllerButtonNames.B].toggled

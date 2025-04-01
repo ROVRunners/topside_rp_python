@@ -38,7 +38,7 @@ class Axis:
             The output range to map the input to.
 
     Methods:
-        update(joystick: pygame.joystick.Joystick) -> None:
+        update(joystick: type(pygame.joystick.Joystick)) -> None:
             Update the value of the axis from the controller.
     """
 
@@ -113,12 +113,12 @@ class Axis:
     def output_range(self, output_range: range_util.Range) -> None:
         self._output_range = output_range
 
-    def update(self, joystick: pygame.joystick.Joystick) -> None:
+    def update(self, joystick: type(pygame.joystick.Joystick)) -> None:
         """Get the value of the axis from the controller. Used internally, Do not call this method directly outside
         the Controller class.
 
         Args:
-            joystick (pygame.joystick.Joystick):
+            joystick (type(pygame.joystick.Joystick)):
                 The joystick to get the axis value from.
         """
         # Get the raw value of the axis.
@@ -188,7 +188,7 @@ class Button:
             Whether the button had begun to be released during this frame.
 
     Methods:
-        update(joystick: pygame.joystick.Joystick) -> None:
+        update(joystick: type(pygame.joystick.Joystick)) -> None:
             Update the value of the button from the controller.
         toggle() -> None:
             Alternate the toggled value of the button.
@@ -319,21 +319,24 @@ class Button:
         """
         return self._just_released
 
-    def update(self, val_source: pygame.joystick.Joystick | bool) -> None:
+    def update(self, val_source: type(pygame.joystick.Joystick) | bool) -> None:
         """Update the value of the button from the controller. Used internally, Do not call this method directly outside
         the Controller or Hat classes.
 
         Args:
-            val_source (pygame.joystick.Joystick | bool):
+            val_source (type(pygame.joystick.Joystick) | bool):
                 Either the joystick to get the button value from or the value of the button itself if it is a boolean.
         """
         # Get the raw current value of the button.
         if isinstance(val_source, bool):
             state = val_source
-        elif isinstance(val_source, type(pygame.joystick.Joystick)):
-            state = val_source.get_button(self._index)
+        # elif isinstance(val_source, type(pygame.joystick.Joystick)):
+        #     state = val_source.get_button(self._index)
+        # else:
+        #     raise TypeError(f"val_source must be a bool or a {type(pygame.joystick.JoystickType)}, " +
+        #     "not {type(val_source)}.")
         else:
-            raise TypeError(f"val_source must be a bool or a pygame Joystick, not {type(val_source)}.")
+            state = val_source.get_button(self._index)
 
         # If the button is negated, invert the state.
         if self._negated:
@@ -380,7 +383,7 @@ class Hat:
             Whether to invert the y value of the hat.
 
     Methods:
-        update(joystick: pygame.joystick.Joystick) -> None:
+        update(joystick: type(pygame.joystick.Joystick)) -> None:
             Update the value of the hat.
     """
 
@@ -437,11 +440,11 @@ class Hat:
         self.buttons[enums.ControllerHatButtonNames.DPAD_LEFT].negated = value
         self.buttons[enums.ControllerHatButtonNames.DPAD_RIGHT].negated = value
 
-    def update(self, joystick: pygame.joystick.Joystick) -> None:
+    def update(self, joystick: type(pygame.joystick.Joystick)) -> None:
         """Get the value of the hat from the controller.
 
         Args:
-            joystick (pygame.joystick.Joystick):
+            joystick (type(pygame.joystick.Joystick)):
                 The joystick to get the hat value from.
         """
         # Get the raw value of the hat.
@@ -465,7 +468,7 @@ class Controller:
             Mapping of hat numbers to Hat objects.
         index (int):
             The index of the controller to use.
-        joystick (pygame.joystick.Joystick):
+        joystick (type(pygame.joystick.Joystick)):
             The joystick object to use.
 
     Methods:
@@ -500,7 +503,7 @@ class Controller:
         return self._index
 
     @property
-    def joystick(self) -> pygame.joystick.Joystick:
+    def joystick(self) -> type(pygame.joystick.Joystick):
         """The joystick object to use."""
         return self._joystick
 

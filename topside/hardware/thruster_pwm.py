@@ -6,7 +6,7 @@ import math
 from config.thruster import ThrusterConfig
 # noinspection PyUnresolvedReferences
 import enums
-
+from utilities.vector import Vector3
 
 # Imma be honest, this feels needlessly precise. Why do we need it down to the 10 Quadrillionth place?
 INV_SQRT2 = 0.7071067811865476
@@ -58,7 +58,50 @@ class ThrusterPWM:
         self._config = thruster_config
         self._pwm = self.min_pwm_output
         self._power = power
-        self._impulses = thruster_config.thruster_impulses
+        self._position = thruster_config.thruster_position
+        self._orientation = thruster_config.thruster_orientation
+        self._thrust = thruster_config.thrust
+
+        # Calculate the angle of the thruster relative to the line drawn from the center of mass to the thruster to
+        # determine the proportion of torque that the thruster will apply in each direction.
+        torque_angles = Vector3(
+            yaw=(
+                math.radians(180-self._orientation.yaw)+math.atan(self._position.x/self._position.y)
+                if self._position.y > 0 else
+                -math.radians(self._orientation.yaw)+math.atan(self._position.x/self._position.y)
+                if self._position.y < 0 else
+                math.radians(180-self._orientation.yaw)+(math.pi/2)*self._position.x
+            ),
+            pitch=(
+                math.radians(180-self._orientation.pitch)+math.atan(self._position.y/self._position.z)
+                if self._position.z > 0 else
+                -math.radians(self._orientation.pitch)+math.atan(self._position.y/self._position.z)
+                if self._position.z < 0 else
+                math.radians(180-self._orientation.pitch)+(math.pi/2)*self._position.y
+            ),
+            roll=(
+                math.radians(180-self._orientation.roll)+math.atan(self._position.z/self._position.x)
+                if self._position.x > 0 else
+                -math.radians(self._orientation.roll)+math.atan(self._position.z/self._position.x)
+                if self._position.x < 0 else
+                math.radians(180-self._orientation.roll)+(math.pi/2)*self._position.z
+            ),
+        )
+
+        # Calculate the torques that the thruster will apply in each direction based on the relative force of the
+        # thruster, the distance from the center of mass, and the angle of the thruster.
+        self._torques: Vector3 = Vector3(
+            yaw=self._position.magnitude * self._thrust * math.sin(torque_angles.yaw),
+            pitch=self._position.magnitude * self._thrust * math.sin(torque_angles.pitch),
+            roll=self._position.magnitude * self._thrust * math.sin(torque_angles.roll),
+        )
+
+        # Calculate the proportion of the thrust that the thruster will apply in each orthogonal direction.
+        self._forces: Vector3 = Vector3(
+            x=self._thrust * math.sin(self._orientation.yaw) * math.cos(self._orientation.pitch),
+            y=self._thrust * math.cos(self._orientation.yaw) * math.cos(self._orientation.pitch),
+            z=self._thrust * math.sin(self._orientation.pitch),
+        )
 
     def _calculate_pwm(self) -> int:
         """Calculate a PWM value for the thruster at its current power."""

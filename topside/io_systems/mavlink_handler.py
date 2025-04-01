@@ -28,9 +28,9 @@ class MavlinkHandler:
     
     @property
     def mavlink_commands(self):
-        return self.mavlink_commands
+        return self._mavlink_commands
     
     @mavlink_commands.setter
     def mavlink_commands(self, mavlink_commands: dict[MavlinkMessageTypes, tuple[int, int, int, int, int, int, int]]):
-        self.mavlink_commands = mavlink_commands
+        self._mavlink_commands = mavlink_commands
     

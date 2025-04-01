@@ -54,7 +54,11 @@ class I2C:
         self._reading_registers = reading_registers
 
     def __eq__(self, other):
-        return self._addr == other._addr and self._poll_val == other._poll_val and self._sending_vals == other._sending_vals, self._received_vals == other._received_vals, self._reading_registers == other._reading_registers
+        return (
+            self._addr == other.addr and self._poll_val == other.poll_val and
+            self._sending_vals == other.sending_vals, self._received_vals == other.received_vals,
+            self._reading_registers == other.reading_registers
+        )
 
     def __ne__(self, other):
         return not self.__eq__(other)

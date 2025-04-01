@@ -1,5 +1,6 @@
 from typing import NamedTuple
 
+
 class IMUConfig(NamedTuple):
     gyro_init_register: int
     accel_init_register: int
