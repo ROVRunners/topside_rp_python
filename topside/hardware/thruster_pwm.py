@@ -3,6 +3,8 @@ Input is given through lateral_thruster_calc_circular and returned as a FrameThr
 
 import math
 
+import numpy as np
+
 from config.thruster import ThrusterConfig
 # noinspection PyUnresolvedReferences
 import enums
@@ -42,8 +44,54 @@ class ThrusterPWM:
         return self._config.pwm_pulse_range.max
 
     @property
-    def thruster_impulses(self) -> dict[str, float]:
-        return self._impulses
+    def torques(self) -> Vector3:
+        """The torque applied by the thruster in each direction."""
+        return self._torques
+
+    @property
+    def forces(self) -> Vector3:
+        """The thrust applied by the thruster in each direction."""
+        return self._forces
+
+    @property
+    def position(self) -> Vector3:
+        """The position of the thruster in the ROV."""
+        return self._position
+
+    @property
+    def orientation(self) -> Vector3:
+        """The orientation of the thruster in the ROV."""
+        return self._orientation
+
+    @property
+    def thrust(self) -> float:
+        """The thrust applied by the thruster."""
+        return self._thrust
+
+    @position.setter
+    def position(self, value: Vector3):
+        """Set the position of the thruster in the ROV."""
+        self._position = value
+        self.calculate_torques()
+
+    @orientation.setter
+    def orientation(self, value: Vector3):
+        """Set the orientation of the thruster in the ROV."""
+        self._orientation = value
+        self.calculate_forces()
+        self.calculate_torques()
+
+    @thrust.setter
+    def thrust(self, value: float):
+        """Set the thrust applied by the thruster."""
+        self._thrust = value
+        self.calculate_forces()
+        self.calculate_torques()
+
+    @property
+    def reverse_polarity(self) -> bool:
+        """Whether the thruster is reversed or not."""
+        return self._reverse_polarity
 
     def __init__(self, thruster_config: ThrusterConfig, power: float = 0.0):
         """Initialize a new thruster
@@ -61,47 +109,101 @@ class ThrusterPWM:
         self._position = thruster_config.thruster_position
         self._orientation = thruster_config.thruster_orientation
         self._thrust = thruster_config.thrust
+        self._reverse_polarity = thruster_config.reverse_polarity
+
+        self._forces: Vector3 = Vector3()
+        self._torques: Vector3 = Vector3()
+
+        # Calculate the forces and torques applied by the thruster in each direction.
+        self.calculate_forces()
+        self.calculate_torques()
+
+    def calculate_forces(self) -> None:
+        """Calculate or recalculate the lateral forces applied by the thruster in each direction."""
+        force: Vector3 = Vector3(
+            x=self._thrust * math.sin(self._orientation.yaw) * math.cos(self._orientation.pitch),
+            y=self._thrust * math.cos(self._orientation.yaw) * math.cos(self._orientation.pitch),
+            z=self._thrust * math.sin(self._orientation.pitch),
+        )
+
+        # Apply the reverse polarity if needed.
+        if self._config.reverse_polarity:
+            force.x = -force.x
+            force.y = -force.y
+            force.z = -force.z
+
+        self._forces = force
+
+    def calculate_torques(self) -> None:
+        """Calculate or recalculate the torques applied by the thruster in each direction."""
 
         # Calculate the angle of the thruster relative to the line drawn from the center of mass to the thruster to
         # determine the proportion of torque that the thruster will apply in each direction.
+        angle_math = lambda orient, pos_1, pos2: (
+            math.radians(180-orient) + math.atan(pos_1/pos2)
+            if pos2 > 0 else
+            -math.radians(orient) + math.atan(pos_1/pos2)
+            if pos2 < 0 else
+            math.radians(180-orient) + (math.pi/2)*pos_1
+        )
+
         torque_angles = Vector3(
             yaw=(
-                math.radians(180-self._orientation.yaw)+math.atan(self._position.x/self._position.y)
-                if self._position.y > 0 else
-                -math.radians(self._orientation.yaw)+math.atan(self._position.x/self._position.y)
-                if self._position.y < 0 else
-                math.radians(180-self._orientation.yaw)+(math.pi/2)*self._position.x
+                angle_math(
+                    self._orientation.yaw,
+                    self._position.x,
+                    self._position.y
+                )
+
+                # math.radians(180-self._orientation.yaw)+math.atan(self._position.x/self._position.y)
+                # if self._position.y > 0 else
+                # -math.radians(self._orientation.yaw)+math.atan(self._position.x/self._position.y)
+                # if self._position.y < 0 else
+                # math.radians(180-self._orientation.yaw)+(math.pi/2)*self._position.x
             ),
             pitch=(
-                math.radians(180-self._orientation.pitch)+math.atan(self._position.y/self._position.z)
-                if self._position.z > 0 else
-                -math.radians(self._orientation.pitch)+math.atan(self._position.y/self._position.z)
-                if self._position.z < 0 else
-                math.radians(180-self._orientation.pitch)+(math.pi/2)*self._position.y
+                angle_math(
+                    self._orientation.pitch,
+                    self._position.y,
+                    self._position.z
+                )
+
+                # math.radians(180-self._orientation.pitch)+math.atan(self._position.y/self._position.z)
+                # if self._position.z > 0 else
+                # -math.radians(self._orientation.pitch)+math.atan(self._position.y/self._position.z)
+                # if self._position.z < 0 else
+                # math.radians(180-self._orientation.pitch)+(math.pi/2)*self._position.y
             ),
             roll=(
-                math.radians(180-self._orientation.roll)+math.atan(self._position.z/self._position.x)
-                if self._position.x > 0 else
-                -math.radians(self._orientation.roll)+math.atan(self._position.z/self._position.x)
-                if self._position.x < 0 else
-                math.radians(180-self._orientation.roll)+(math.pi/2)*self._position.z
+                angle_math(
+                    self._orientation.roll,
+                    self._position.z,
+                    self._position.x
+                )
+
+                # math.radians(180-self._orientation.roll)+math.atan(self._position.z/self._position.x)
+                # if self._position.x > 0 else
+                # -math.radians(self._orientation.roll)+math.atan(self._position.z/self._position.x)
+                # if self._position.x < 0 else
+                # math.radians(180-self._orientation.roll)+(math.pi/2)*self._position.z
             ),
         )
 
         # Calculate the torques that the thruster will apply in each direction based on the relative force of the
         # thruster, the distance from the center of mass, and the angle of the thruster.
-        self._torques: Vector3 = Vector3(
+        torque: Vector3 = Vector3(
             yaw=self._position.magnitude * self._thrust * math.sin(torque_angles.yaw),
             pitch=self._position.magnitude * self._thrust * math.sin(torque_angles.pitch),
             roll=self._position.magnitude * self._thrust * math.sin(torque_angles.roll),
         )
 
-        # Calculate the proportion of the thrust that the thruster will apply in each orthogonal direction.
-        self._forces: Vector3 = Vector3(
-            x=self._thrust * math.sin(self._orientation.yaw) * math.cos(self._orientation.pitch),
-            y=self._thrust * math.cos(self._orientation.yaw) * math.cos(self._orientation.pitch),
-            z=self._thrust * math.sin(self._orientation.pitch),
-        )
+        # Apply the reverse polarity if needed.
+        if self._config.reverse_polarity:
+            torque.x = -torque.x
+            torque.y = -torque.y
+            torque.z = -torque.z
+
+        self._torques = torque
 
     def _calculate_pwm(self) -> int:
         """Calculate a PWM value for the thruster at its current power."""
@@ -129,7 +231,9 @@ class FrameThrusters:
         return {position: thruster.pwm_output for position, thruster in self.thrusters.items()}
 
     def __repr__(self) -> str:
-        return f"FrameThrusters({', '.join([str(thruster) + '=' + str(thruster.pwm_output) for thruster in self.thrusters.values()])})"
+        return f"FrameThrusters({
+            ', '.join([str(thruster) + '=' + str(thruster.pwm_output) for thruster in self.thrusters.values()])
+        })"
 
     def _thruster_calc(self, motions: dict[enums.Directions, float]) -> None:
         """Calculate thruster values for a given set of inputs.
@@ -141,59 +245,49 @@ class FrameThrusters:
         Returns:
             FrameThrusters: A collection of Thrusters at the correct power levels."""
 
-        # Assume that positive values are all going forward.
-        # We can reason what should happen if we only have a single non-zero input:
+        # Matrix multiplication using the forces and torques of each thruster to calculate the values needed to achieve
+        # the desired direction of motion.
+        motor_matrix: np.array = np.array([
+            [t.forces.x, t.forces.y, t.forces.z, t.torques.yaw, t.torques.pitch, t.torques.roll]
+            for t in self.thrusters.values()
+        ])
 
-        # [x, y, r] -> [fr, fl, rr, rl]
-        # [1, 0, 0] -> [-1, +1, +1, -1]
-        # [0, 1, 0] -> [+1, +1, +1, +1]
-        # [0, 0, 1] -> [+1, +1, -1, -1]
+        desired_direction_matrix: np.array = np.array([
+            [motions[enums.Directions.FORWARDS]],
+            [motions[enums.Directions.RIGHT]],
+            [motions[enums.Directions.UP]],
+            [motions[enums.Directions.PITCH]],
+            [motions[enums.Directions.ROLL]],
+            [motions[enums.Directions.YAW]],
+        ])
 
-        # We can calculate thruster values as a linear combination of the input values
-        # by repeating this pattern with each output scaled by the actual value of each input.
+        motor_thrust_matrix: np.array = motor_matrix @ desired_direction_matrix
 
-        # x_contrib = [-x,  x,  x, -x]
-        # y_contrib = [y,  y,  y,  y]
-        # r_contrib = [r,  r, -r, -r]
+        # The result of the matrix multiplication is a 8x1 matrix.
+        motor_thrust_array: list[float] = list(motor_thrust_matrix.flatten())
 
-        # The following is a more general version of the above code. It iterates over all thruster orientations and
-        # sums the contributions of each thruster to that orientation.
-        orientations = [
-            enums.Directions.FORWARDS,
-            enums.Directions.RIGHT,
-            enums.Directions.UP,
-            enums.Directions.PITCH,
-            enums.Directions.ROLL,
-            enums.Directions.YAW,
-        ]
+        # Normalize the values to be in the range [-1.0, 1.0].
+        norm_motor_thrust_array = motor_thrust_array.copy()
 
-        contributions = {
-            orient: [
-                self.thrusters[position].thruster_impulses[orient] * motions[orient] for position in self.thrusters.keys()
-            ] for orient in orientations
-        }
+        norm_div = max([abs(val) for val in motor_thrust_array])
+        if norm_div != 0:
+            for i, val in enumerate(norm_motor_thrust_array):
+                norm_motor_thrust_array[i] = val / norm_div
 
-        # Next, we sum the contributions of each thruster to each orientation to get the ratio of power that should be
-        # applied to each thruster.
-        vals = {
-            thruster: sum(contributions[orient][i] for orient in orientations) for i, thruster in enumerate(self.thrusters.keys())
-        }
+        # Scale the values to be proportional to the highest value in the desired directions. Skip if the multiplier is
+        # 1.0, as this means that the values are already normalized.
+        multiplier = max([abs(val) for val in motions.values()])
+        if multiplier != 1:
+            for i, val in enumerate(norm_motor_thrust_array):
+                norm_motor_thrust_array[i] = val * multiplier
 
-        # However, we want thruster values to be in the range [-1.0, 1.0], so we need to normalize based on the maximum
-        # value in the dictionary.
-        normalization_divisor = max(abs(val) for val in vals.values())
-
-        # We only need to normalize if the maximum value is greater than 1.
-        if normalization_divisor > 1:
-            for thruster in self.thrusters.keys():
-                vals[thruster] /= normalization_divisor
-
-        # Finally, we set the power of each thruster to the calculated value.
-        for position in self.thrusters.keys():
-            self.thrusters[position].power = vals[position]
+        # Set the power of each thruster to the calculated value.
+        for i, position in enumerate(self.thrusters.keys()):
+            self.thrusters[position].power = norm_motor_thrust_array[i]
 
     # TODO: This function should probably be moved into the ROV-specific files
-    def _map_to_circle(self, x: float, y: float) -> tuple[float, float]:
+    @classmethod
+    def _map_to_circle(cls, x: float, y: float) -> tuple[float, float]:
         """Map rectangular controller inputs to a circle.
 
         Args:
