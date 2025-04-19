@@ -4,13 +4,12 @@ from copy import copy
 from typing import Callable
 
 from hardware.thruster_pwm import FrameThrusters
-from enums import Directions, ControllerAxisNames, ControllerButtonNames, ThrusterPositions
+from enums import Directions, ControllerAxisNames, ControllerButtonNames, ThrusterPositions, ControllerNames
 import kinematics as kms
 from mavlink_flight_controller import FlightController
 from controller_input import combine_triggers
 from io_systems.io_handler import IO
 from dashboard import Dashboard
-import enums
 
 from utilities.vector import Vector3
 
@@ -72,7 +71,7 @@ class Manual(ControlMode):
         subscriptions = self._io.subscriptions
         i2c = self._io.i2c_handler.i2cs
 
-        controller = inputs[enums.ControllerNames.PRIMARY_DRIVER]
+        controller = inputs[ControllerNames.PRIMARY_DRIVER]
 
         mavlink = subscriptions["mavlink"]
 
@@ -156,7 +155,7 @@ class Manual(ControlMode):
             self._update_pid_values(self._rov_directory + "/assets/pid_config.json")
 
         # TODO: Add a keybind or several keybinds to change control modes.
-        # self._set_control_mode(enums.ControlModes.MANUAL)
+        # self._set_control_mode(ControlModeNames.MANUAL)
 
         # Publish the PWM values to the MQTT broker.
         for thruster, pwm in pwm_values.items():

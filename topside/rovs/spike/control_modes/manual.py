@@ -6,17 +6,18 @@ from typing import Callable
 from hardware.thruster_pwm import FrameThrusters
 from enums import Directions, ControllerAxisNames, ControllerButtonNames, ThrusterPositions
 import kinematics as kms
+from mavlink_flight_controller import FlightController
 from controller_input import combine_triggers
 from io_systems.io_handler import IO
 from dashboard import Dashboard
-from mavlink_flight_controller import FlightController
+import enums
 
 from utilities.vector import Vector3
 
 from rovs.generic_objects.generic_control_mode import ControlMode
 
 
-class PIDTuning(ControlMode):
+class Manual(ControlMode):
     """One of the control modes for the ROV which take in inputs from the controller, sensors, and more to determine
     the thrust values for the thrusters and send other commands to the ROV.
 

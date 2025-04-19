@@ -71,59 +71,6 @@ class ROVConfig:
             enums.ControllerNames.PRIMARY_DRIVER: controller.Controller(0, self.buttons, self.axes, self.hats),
         }
 
-        # Definitions of the forces applied by the thrusters.
-        # self.thruster_impulses: dict[enums.ThrusterPositions, dict[enums.Directions, float]] = {
-        #     enums.ThrusterPositions.FRONT_RIGHT: {
-        #         enums.Directions.FORWARDS: -1,
-        #         enums.Directions.RIGHT: -1,
-        #         enums.Directions.UP: 0,
-        #         enums.Directions.YAW: -1,
-        #         enums.Directions.PITCH: 0,
-        #         enums.Directions.ROLL: 0,
-        #     },
-        #     enums.ThrusterPositions.FRONT_LEFT: {
-        #         enums.Directions.FORWARDS: 1,
-        #         enums.Directions.RIGHT: -1,
-        #         enums.Directions.UP: 0,
-        #         enums.Directions.YAW: -1,
-        #         enums.Directions.PITCH: 0,
-        #         enums.Directions.ROLL: 0,
-        #     },
-        #     enums.ThrusterPositions.REAR_RIGHT: {
-        #         enums.Directions.FORWARDS: 1,
-        #         enums.Directions.RIGHT: -1,
-        #         enums.Directions.UP: 0,
-        #         enums.Directions.YAW: 1,
-        #         enums.Directions.PITCH: 0,
-        #         enums.Directions.ROLL: 0,
-        #     },
-        #     enums.ThrusterPositions.REAR_LEFT: {
-        #         enums.Directions.FORWARDS: 1,
-        #         enums.Directions.RIGHT: 1,
-        #         enums.Directions.UP: 0,
-        #         enums.Directions.YAW: -1,
-        #         enums.Directions.PITCH: 0,
-        #         enums.Directions.ROLL: 0,
-        #     },
-        #     enums.ThrusterPositions.FRONT_VERTICAL: {
-        #         enums.Directions.FORWARDS: 0,
-        #         enums.Directions.RIGHT: 0,
-        #         enums.Directions.UP: -1,
-        #         enums.Directions.YAW: 0,
-        #         enums.Directions.PITCH: 1,
-        #         enums.Directions.ROLL: 0,
-        #     },
-        #     enums.ThrusterPositions.REAR_VERTICAL: {
-        #         enums.Directions.FORWARDS: 0,
-        #         enums.Directions.RIGHT: 0,
-        #         enums.Directions.UP: -1,
-        #         enums.Directions.YAW: 0,
-        #         enums.Directions.PITCH: -1,
-        #         enums.Directions.ROLL: 0,
-        #     },
-        # }
-
-        # TODO: Insert the correct thruster positions here when the ROV is re-assembled.
         self.thruster_positions: dict[enums.ThrusterPositions, Vector3] = {
             enums.ThrusterPositions.FRONT_RIGHT: Vector3(1, 1, 0),
             enums.ThrusterPositions.FRONT_LEFT: Vector3(-1, 1, 0),
@@ -170,10 +117,10 @@ class ROVConfig:
         }
 
         self.pins: dict[str, Pin] = {
-            enums.ThrusterPositions.FRONT_RIGHT: Pin(PinConfig(id=27, mode="PWMus", val=1500, freq=50)),
             enums.ThrusterPositions.FRONT_LEFT: Pin(PinConfig(id=5, mode="PWMus", val=1500, freq=50)),
-            enums.ThrusterPositions.REAR_RIGHT: Pin(PinConfig(id=6, mode="PWMus", val=1500, freq=50)),
+            enums.ThrusterPositions.FRONT_RIGHT: Pin(PinConfig(id=27, mode="PWMus", val=1500, freq=50)),
             enums.ThrusterPositions.REAR_LEFT: Pin(PinConfig(id=13, mode="PWMus", val=1500, freq=50)),
+            enums.ThrusterPositions.REAR_RIGHT: Pin(PinConfig(id=6, mode="PWMus", val=1500, freq=50)),
             enums.ThrusterPositions.FRONT_VERTICAL: Pin(PinConfig(id=19, mode="PWMus", val=1500, freq=50)),
             enums.ThrusterPositions.REAR_VERTICAL: Pin(PinConfig(id=26, mode="PWMus", val=1500, freq=50)),
         }
