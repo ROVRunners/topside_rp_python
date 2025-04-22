@@ -41,7 +41,7 @@ class ROVConfig:
         ip_addr = socket.gethostbyname(hostname)
 
         self.host_ip = ip_addr
-        # self.host_ip = "192.168.1.142"
+        # self.host_ip = "192.168.2.3"
 
         # Put specific settings for each axis/button here. I recommend using a second set of dictionaries for a second
         # controller, if you plan on using one.
@@ -125,9 +125,9 @@ class ROVConfig:
 
         self.pins: dict[str, Pin] = {
             enums.ThrusterPositions.FRONT_LEFT: Pin(PinConfig(id=5, mode="PWMus", val=1500, freq=50)),
-            enums.ThrusterPositions.FRONT_RIGHT: Pin(PinConfig(id= 27, mode="PWMus", val=1500, freq=50)),
-            enums.ThrusterPositions.REAR_LEFT: Pin(PinConfig(id=13, mode="PWMus", val=1500, freq=50)),
-            enums.ThrusterPositions.REAR_RIGHT: Pin(PinConfig(id=6, mode="PWMus", val=1500, freq=50)),
+            enums.ThrusterPositions.FRONT_RIGHT: Pin(PinConfig(id=13, mode="PWMus", val=1500, freq=50)),
+            enums.ThrusterPositions.REAR_LEFT: Pin(PinConfig(id=6, mode="PWMus", val=1500, freq=50)),
+            enums.ThrusterPositions.REAR_RIGHT: Pin(PinConfig(id=27, mode="PWMus", val=1500, freq=50)),
             enums.ThrusterPositions.FRONT_LEFT_VERTICAL: Pin(PinConfig(id=26, mode="PWMus", val=1500, freq=50)),
             enums.ThrusterPositions.FRONT_RIGHT_VERTICAL: Pin(PinConfig(id=19, mode="PWMus", val=1500, freq=50)),
             enums.ThrusterPositions.REAR_LEFT_VERTICAL: Pin(PinConfig(id=17, mode="PWMus", val=1500, freq=50)),
@@ -136,7 +136,7 @@ class ROVConfig:
         }
 
         self.i2cs: dict[str, I2C] = {
-            "imu": I2C(I2CConfig(addr=0x6A, reading_registers={"gyro": (0x28, 6), "accel": (0x22, 6)}),)
+            # "imu": I2C(I2CConfig(addr=0x6A, reading_registers={"gyro": (0x28, 6), "accel": (0x22, 6)}),)
         }
 
         self.imu_config = IMUConfig(

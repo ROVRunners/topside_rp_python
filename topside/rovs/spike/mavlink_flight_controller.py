@@ -55,18 +55,18 @@ class FlightController:
                 The messages from the mavlink handler.
         """
         if "ATTITUDE" in messages:
-            self._attitude = (
-                messages["ATTITUDE"]["yaw"], messages["ATTITUDE"]["pitch"], messages["ATTITUDE"]["roll"]
+            self._attitude = Vector3(
+                yaw=messages["ATTITUDE"]["yaw"], pitch=messages["ATTITUDE"]["pitch"], roll=messages["ATTITUDE"]["roll"]
             )
-            self._attitude_speed = (
-                messages["ATTITUDE"]["yawspeed"], messages["ATTITUDE"]["pitchspeed"], messages["ATTITUDE"]["rollspeed"]
+            self._attitude_speed = Vector3(
+                yaw=messages["ATTITUDE"]["yawspeed"], pitch=messages["ATTITUDE"]["pitchspeed"], roll=messages["ATTITUDE"]["rollspeed"]
             )
 
         if "SCALED_IMU" in messages:
-            self._lateral_accel = (
+            self._lateral_accel = Vector3(
                 messages["SCALED_IMU"]["xacc"], messages["SCALED_IMU"]["yacc"], messages["SCALED_IMU"]["zacc"]
             )
-            self._compass = (
+            self._compass = Vector3(
                 messages["SCALED_IMU"]["xmag"], messages["SCALED_IMU"]["ymag"], messages["SCALED_IMU"]["zmag"]
             )
 

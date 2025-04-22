@@ -1,7 +1,7 @@
 import controller
 import controller_input
 from io_systems import gpio_handler, i2c_handler, mqtt_handler, terminal_listener, socket_handler, udp_socket, mavlink_handler
-import enums
+from enums import ControllerNames
 import utilities.class_tools as class_tools
 
 class IO:
@@ -33,7 +33,7 @@ class IO:
         self._timer = class_tools.Stopwatch()
 
     @property
-    def controllers(self) -> dict[enums.ControllerNames, controller.Controller]:
+    def controllers(self) -> dict[ControllerNames, controller.Controller]:
         """Get the controller inputs."""
         return self._input_handler.controllers
 

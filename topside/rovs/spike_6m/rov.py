@@ -63,7 +63,7 @@ class ROV(GenericROV):
             #     self._frame, self._io, self._kinematics, self.set_control_mode, self._dash
             # ),
             ControlModeNames.PID_TUNING: PIDTuning(
-                self._frame, self._io, self._kinematics, self.set_control_mode, self._dash
+                self._frame, self._io, self._kinematics, self._flight_controller, self._dash, self.set_control_mode,
             ),
             ControlModeNames.MANUAL: PureManual(
                 self._frame, self._io, self._kinematics, self.set_control_mode, self._dash

@@ -33,7 +33,7 @@ class ROV(GenericROV):
         # ROV hardware.
         self._thrusters: dict[ThrusterPositions, ThrusterPWM] = {}
         self._kinematics: Kinematics = Kinematics(self._config.kinematics_config)
-        self._imu: IMU = IMU(self._config.imu_config)
+        # self._imu: IMU = IMU(self._config.imu_config)
         self._flight_controller: FlightController = FlightController(self._config.flight_controller_config)
 
         # Tkinter GUI.
@@ -42,7 +42,7 @@ class ROV(GenericROV):
         self._dash: Dashboard = Dashboard(self.root, self._config.dash_config)
 
         # Mavlink connection.
-        self._mavlink_interval_ns: int = int(1_000_000_000 / 100)  # 100 Hz
+        self._mavlink_interval_ns: int = int(1_000_000_000 / 10000)  # 100 Hz
 
         self._io.rov_comms.publish_mavlink_data_request(
             {val: self._mavlink_interval_ns for val in self._config.mavlink_subscriptions.values()}
@@ -70,7 +70,7 @@ class ROV(GenericROV):
             ),
         }
 
-        self._control_mode: ControlMode = self._control_mode_dict[ControlModeNames.MANUAL]
+        self._control_mode: ControlMode = self._control_mode_dict[ControlModeNames.TESTING]
 
     def set_control_mode(self, control_mode: ControlModeNames | ControlMode) -> None:
         """Set the current control mode of the ROV.

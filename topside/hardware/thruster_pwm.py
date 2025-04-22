@@ -231,9 +231,9 @@ class FrameThrusters:
         return {position: thruster.pwm_output for position, thruster in self.thrusters.items()}
 
     def __repr__(self) -> str:
-        return f"FrameThrusters({
-            ', '.join([str(thruster) + '=' + str(thruster.pwm_output) for thruster in self.thrusters.values()])
-        })"
+        return ("FrameThrusters(" +
+            f"', '.join([str(thruster) + '=' + str(thruster.pwm_output) for thruster in self.thrusters.values()])" +
+        "}")
 
     def _thruster_calc(self, motions: dict[enums.Directions, float]) -> None:
         """Calculate thruster values for a given set of inputs.

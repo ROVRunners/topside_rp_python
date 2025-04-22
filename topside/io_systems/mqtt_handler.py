@@ -89,6 +89,8 @@ class ROVConnection:
         self._client.connect(host=self._ip, port=self._port)
         self._client.loop_start()
 
+        time.sleep(1)
+
     def publish_commands(self, command_list: dict[str, str | float]) -> None:
         """Send a series of packets to the Raspberry Pi with the specified commands.
 
