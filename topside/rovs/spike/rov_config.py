@@ -124,14 +124,14 @@ class ROVConfig:
         }
 
         self.pins: dict[str, Pin] = {
-            enums.ThrusterPositions.FRONT_LEFT: Pin(PinConfig(id=5, mode="PWMus", val=1500, freq=50)),
-            enums.ThrusterPositions.FRONT_RIGHT: Pin(PinConfig(id=13, mode="PWMus", val=1500, freq=50)),
-            enums.ThrusterPositions.REAR_LEFT: Pin(PinConfig(id=6, mode="PWMus", val=1500, freq=50)),
-            enums.ThrusterPositions.REAR_RIGHT: Pin(PinConfig(id=27, mode="PWMus", val=1500, freq=50)),
+            enums.ThrusterPositions.FRONT_LEFT: Pin(PinConfig(id=17, mode="PWMus", val=1500, freq=50)),
+            enums.ThrusterPositions.FRONT_RIGHT: Pin(PinConfig(id=22, mode="PWMus", val=1500, freq=50)),
+            enums.ThrusterPositions.REAR_LEFT: Pin(PinConfig(id=5, mode="PWMus", val=1500, freq=50)),
+            enums.ThrusterPositions.REAR_RIGHT: Pin(PinConfig(id=6, mode="PWMus", val=1500, freq=50)),
             enums.ThrusterPositions.FRONT_LEFT_VERTICAL: Pin(PinConfig(id=26, mode="PWMus", val=1500, freq=50)),
             enums.ThrusterPositions.FRONT_RIGHT_VERTICAL: Pin(PinConfig(id=19, mode="PWMus", val=1500, freq=50)),
-            enums.ThrusterPositions.REAR_LEFT_VERTICAL: Pin(PinConfig(id=17, mode="PWMus", val=1500, freq=50)),
-            enums.ThrusterPositions.REAR_RIGHT_VERTICAL: Pin(PinConfig(id=22, mode="PWMus", val=1500, freq=50)),
+            enums.ThrusterPositions.REAR_LEFT_VERTICAL: Pin(PinConfig(id=27, mode="PWMus", val=1500, freq=50)),
+            enums.ThrusterPositions.REAR_RIGHT_VERTICAL: Pin(PinConfig(id=13, mode="PWMus", val=1500, freq=50)),
 
         }
 

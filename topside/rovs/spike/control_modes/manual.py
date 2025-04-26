@@ -136,8 +136,8 @@ class Manual(ControlMode):
                 vertical,
             ),
             rotational_target=Vector3(  # Set to zero because we are using PIDs for this.
-                yaw=controller.axes[ControllerAxisNames.LEFT_X].value,
-                pitch=controller.axes[ControllerAxisNames.LEFT_Y].value,
+                yaw=controller.axes[ControllerAxisNames.RIGHT_X].value,
+                pitch=controller.axes[ControllerAxisNames.RIGHT_Y].value,
                 roll=0,
             ),
             pid_impulses={
