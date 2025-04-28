@@ -42,7 +42,7 @@ class ROV(GenericROV):
         self._dash: Dashboard = Dashboard(self.root, self._config.dash_config)
 
         # Mavlink connection.
-        self._mavlink_interval_ns: int = int(1_000_000_000 / 100)  # 100 Hz
+        self._mavlink_interval_ns: int = config.mavlink_interval
 
         self._io.rov_comms.publish_mavlink_data_request(
             {val: self._mavlink_interval_ns for val in self._config.mavlink_subscriptions.values()}
