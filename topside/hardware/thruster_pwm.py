@@ -140,11 +140,17 @@ class ThrusterPWM:
         # Calculate the angle of the thruster relative to the line drawn from the center of mass to the thruster to
         # determine the proportion of torque that the thruster will apply in each direction.
         angle_math = lambda orient, pos_1, pos2: (
-            math.radians(180-orient) + math.atan(pos_1/pos2)
+            math.radians(180-orient) - math.atan(pos_1/pos2)
             if pos2 > 0 else
-            -math.radians(orient) + math.atan(pos_1/pos2)
+            -math.radians(360-orient) - math.atan(pos_1/pos2)
             if pos2 < 0 else
-            math.radians(180-orient) + (math.pi/2)*pos_1
+            (
+                    math.radians(180-orient) - (math.pi/2)
+                    if pos_1 > 0 else
+                    -math.radians(180-orient) - (math.pi/2)
+                    if pos_1 < 0 else
+                    0
+            )
         )
 
         torque_angles = Vector3(
