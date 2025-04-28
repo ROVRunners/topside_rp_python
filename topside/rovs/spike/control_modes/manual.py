@@ -110,12 +110,12 @@ class Manual(ControlMode):
             "sideview": gyro_orientation.pitch * 180 / math.pi,
         })
 
-        print("(manual.py) gyro_orintation [degrees]:", gyro_orientation * 180 / math.pi)
+        # print("(manual.py) gyro_orintation [degrees]:", gyro_orientation * 180 / math.pi)
 
         # Convert the triggers to a single value.
         right_trigger = controller.axes[ControllerAxisNames.RIGHT_TRIGGER]
         left_trigger = controller.axes[ControllerAxisNames.LEFT_TRIGGER]
-        vertical = combine_triggers(left_trigger.value, right_trigger.value)
+        vertical = combine_triggers(right_trigger.value, left_trigger.value)
 
         # # Update the target position of the ROV based on the controller inputs for the PID controllers.
         # self._kinematics.update_target_position(
@@ -129,7 +129,7 @@ class Manual(ControlMode):
 
         # Get the mixed directions based on the controller inputs, gyro data, and PID outputs.
         overall_thruster_impulses: dict[Directions, float] = self._kinematics.mix_directions(
-            heading=gyro_orientation,
+            heading=Vector3(yaw=0, pitch=0, roll=0),
             lateral_target=Vector3(
                 controller.axes[ControllerAxisNames.LEFT_X].value,
                 controller.axes[ControllerAxisNames.LEFT_Y].value,
@@ -153,6 +153,11 @@ class Manual(ControlMode):
             overall_thruster_impulses
         )
 
+
+
+        print("Forces:")
+        for pos in ThrusterPositions:
+            print(pos, self._frame.thrusters[pos].forces)
         # Theoretically stop the ROV from moving if the B button is toggled. TODO: Fix.
         stop = controller.buttons[ControllerButtonNames.B].toggled
 
@@ -177,9 +182,9 @@ class Manual(ControlMode):
             # Set the PWM value for the thruster.
             self._io.gpio_handler.pins[thruster].val = pwm
 
-        self._io.rov_comms.publish_commands({
-            "stop": stop,
-        })
+        # self._io.rov_comms.publish_commands({
+        #     "stop": stop,
+        # })
 
     # def _update_pid_values(self, file_path: str) -> None:
     #     """Update the PID values based on the file contents.

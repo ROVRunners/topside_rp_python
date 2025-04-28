@@ -98,13 +98,13 @@ class ROVConfig:
         # Used to set the thrust of each thruster in the case that some thrusters are more powerful than others.
         self.thruster_thrusts: dict[enums.ThrusterPositions, float] = {
             enums.ThrusterPositions.FRONT_LEFT: 1,
-            enums.ThrusterPositions.FRONT_RIGHT: 1,
-            enums.ThrusterPositions.REAR_LEFT: 1,
-            enums.ThrusterPositions.REAR_RIGHT: 1,
+            enums.ThrusterPositions.FRONT_RIGHT: -1,
+            enums.ThrusterPositions.REAR_LEFT: -1,
+            enums.ThrusterPositions.REAR_RIGHT: -1,
             enums.ThrusterPositions.FRONT_LEFT_VERTICAL: 1,
             enums.ThrusterPositions.FRONT_RIGHT_VERTICAL: 1,
-            enums.ThrusterPositions.REAR_LEFT_VERTICAL: 1,
-            enums.ThrusterPositions.REAR_RIGHT_VERTICAL: 1,
+            enums.ThrusterPositions.REAR_LEFT_VERTICAL: -1,
+            enums.ThrusterPositions.REAR_RIGHT_VERTICAL: -1,
         }
 
         self.kinematics_config = KinematicsConfig(
@@ -120,6 +120,7 @@ class ROVConfig:
                 pwm_pulse_range=typed_range.IntRange(min=1100, max=1900),
                 thruster_position=self.thruster_positions[position],
                 thruster_orientation=self.thruster_orientations[position],
+                thrust=self.thruster_thrusts[position],
             ) for position in self.thruster_positions.keys()
         }
 
