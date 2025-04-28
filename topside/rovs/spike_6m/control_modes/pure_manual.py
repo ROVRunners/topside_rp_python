@@ -2,7 +2,7 @@ import os.path
 from typing import Callable
 
 from hardware.thruster_pwm import FrameThrusters
-from enums import Directions, ControllerAxisNames, ControllerButtonNames, ThrusterPositions
+from enums import Directions, ControllerAxisNames, ControllerButtonNames, ThrusterPositions, ControllerNames
 import kinematics as kms
 from controller_input import combine_triggers
 from io_systems.io_handler import IO
@@ -58,7 +58,7 @@ class PureManual(ControlMode):
         inputs = self._io.controllers
         # subscriptions = self._io.subscriptions
 
-        controller = inputs[enums.ControllerNames.PRIMARY_DRIVER]
+        controller = inputs[ControllerNames.PRIMARY_DRIVER]
 
         # self._dash.update_images({
         #     "topview": gyro_yaw,

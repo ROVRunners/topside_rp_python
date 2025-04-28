@@ -13,8 +13,8 @@ class GenericROV:
             io (IO):
                 The IO object.
         """
-        self._config = config
-        self._io = io
+        self._config: rov_config.ROVConfig = config
+        self._io: IO = io
 
     def loop(self) -> None:
         """Run the ROV."""

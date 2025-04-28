@@ -33,7 +33,7 @@ class ROV(GenericROV):
         # ROV hardware.
         self._thrusters: dict[ThrusterPositions, ThrusterPWM] = {}
         self._kinematics: Kinematics = Kinematics(self._config.kinematics_config)
-        self._imu: IMU = IMU(self._config.imu_config)
+        # self._imu: IMU = IMU(self._config.imu_config)
         self._flight_controller: FlightController = FlightController(self._config.flight_controller_config)
 
         # Tkinter GUI.
@@ -70,7 +70,7 @@ class ROV(GenericROV):
             ),
         }
 
-        self._control_mode: ControlMode = self._control_mode_dict[ControlModeNames.MANUAL]
+        self._control_mode: ControlMode = self._control_mode_dict[ControlModeNames.TESTING]
 
     def set_control_mode(self, control_mode: ControlModeNames | ControlMode) -> None:
         """Set the current control mode of the ROV.

@@ -1,4 +1,5 @@
 import json
+import math
 import os.path
 from copy import copy
 from typing import Callable
@@ -70,11 +71,17 @@ class Manual(ControlMode):
         # Get the controller inputs, subscriptions, and i2c data and put them into local variables.
         inputs = self._io.controllers
         subscriptions = self._io.subscriptions
-        i2c = self._io.i2c_handler.i2cs
+        # i2c = self._io.i2c_handler.i2cs
 
         controller = inputs[enums.ControllerNames.PRIMARY_DRIVER]
 
-        mavlink = subscriptions["mavlink"]
+        # mavlink = subscriptions["mavlink"]
+
+        mavlink = {}
+        for key, val in subscriptions.items():
+            path = key.split("/")
+            if path[1] == "mavlink":
+                mavlink[path[2]] = val
 
         # Get the gyro data from the subscriptions if it exists.
         # if "imu" in i2c:
@@ -98,25 +105,27 @@ class Manual(ControlMode):
             depth = 0
 
         self._dash.update_images({
-            "topview": gyro_orientation.yaw,
-            "frontview": gyro_orientation.roll,
-            "sideview": gyro_orientation.pitch,
+            "topview": gyro_orientation.yaw * 180 / math.pi,
+            "frontview": gyro_orientation.roll * 180 / math.pi,
+            "sideview": gyro_orientation.pitch * 180 / math.pi,
         })
+
+        print("(manual.py) gyro_orintation [degrees]:", gyro_orientation * 180 / math.pi)
 
         # Convert the triggers to a single value.
         right_trigger = controller.axes[ControllerAxisNames.RIGHT_TRIGGER]
         left_trigger = controller.axes[ControllerAxisNames.LEFT_TRIGGER]
         vertical = combine_triggers(left_trigger.value, right_trigger.value)
 
-        # Update the target position of the ROV based on the controller inputs for the PID controllers.
-        self._kinematics.update_target_position(
-            Vector3(
-                controller.axes[ControllerAxisNames.RIGHT_X].value,
-                controller.axes[ControllerAxisNames.RIGHT_Y].value,
-                0,
-            ),
-            vertical,
-        )
+        # # Update the target position of the ROV based on the controller inputs for the PID controllers.
+        # self._kinematics.update_target_position(
+        #     Vector3(
+        #         controller.axes[ControllerAxisNames.RIGHT_X].value,
+        #         controller.axes[ControllerAxisNames.RIGHT_Y].value,
+        #         0,
+        #     ),
+        #     vertical,
+        # )
 
         # Get the mixed directions based on the controller inputs, gyro data, and PID outputs.
         overall_thruster_impulses: dict[Directions, float] = self._kinematics.mix_directions(
@@ -124,18 +133,18 @@ class Manual(ControlMode):
             lateral_target=Vector3(
                 controller.axes[ControllerAxisNames.LEFT_X].value,
                 controller.axes[ControllerAxisNames.LEFT_Y].value,
-                0,  # Set to zero because we are using PIDs for this.
+                vertical,
             ),
             rotational_target=Vector3(  # Set to zero because we are using PIDs for this.
-                yaw=0,
-                pitch=0,
+                yaw=controller.axes[ControllerAxisNames.RIGHT_X].value,
+                pitch=controller.axes[ControllerAxisNames.RIGHT_Y].value,
                 roll=0,
             ),
             pid_impulses={
-                Directions.YAW: self._kinematics.yaw_pid(gyro_orientation.yaw),
-                Directions.PITCH: self._kinematics.pitch_pid(gyro_orientation.pitch),
-                Directions.ROLL: self._kinematics.roll_pid(gyro_orientation.roll),
-                Directions.UP: self._kinematics.depth_pid(depth),
+                # Directions.YAW: self._kinematics.yaw_pid(gyro_orientation.yaw),
+                # Directions.PITCH: self._kinematics.pitch_pid(gyro_orientation.pitch),
+                # Directions.ROLL: self._kinematics.roll_pid(gyro_orientation.roll),
+                # Directions.UP: self._kinematics.depth_pid(depth),
             },
         )
 
@@ -151,9 +160,9 @@ class Manual(ControlMode):
         # if controller.buttons[ControllerButtonNames.Y].just_pressed:
         #     self._flight_controller.calibrate_gyro()
 
-        # Update the PID values if the X button is pressed.
-        if controller.buttons[ControllerButtonNames.X].just_pressed:
-            self._update_pid_values(self._rov_directory + "/assets/pid_config.json")
+        # # Update the PID values if the X button is pressed.
+        # if controller.buttons[ControllerButtonNames.X].just_pressed:
+        #     self._update_pid_values(self._rov_directory + "/assets/pid_config.json")
 
         # TODO: Add a keybind or several keybinds to change control modes.
         # self._set_control_mode(enums.ControlModes.MANUAL)
@@ -172,31 +181,31 @@ class Manual(ControlMode):
             "stop": stop,
         })
 
-    def _update_pid_values(self, file_path: str) -> None:
-        """Update the PID values based on the file contents.
+    # def _update_pid_values(self, file_path: str) -> None:
+    #     """Update the PID values based on the file contents.
 
-        Args:
-            file_path (str):
-                The path to the pid config file.
-        """
-        with open(file_path, "r") as file:
-            file_contents = json.load(file)
+    #     Args:
+    #         file_path (str):
+    #             The path to the pid config file.
+    #     """
+    #     with open(file_path, "r") as file:
+    #         file_contents = json.load(file)
 
-        self._kinematics.yaw_pid.Kd = file_contents["yaw"]["P"]
-        self._kinematics.yaw_pid.Kp = file_contents["yaw"]["I"]
-        self._kinematics.yaw_pid.Ki = file_contents["yaw"]["D"]
+    #     self._kinematics.yaw_pid.Kd = file_contents["yaw"]["P"]
+    #     self._kinematics.yaw_pid.Kp = file_contents["yaw"]["I"]
+    #     self._kinematics.yaw_pid.Ki = file_contents["yaw"]["D"]
 
-        self._kinematics.pitch_pid.Kd = file_contents["pitch"]["P"]
-        self._kinematics.pitch_pid.Kp = file_contents["pitch"]["I"]
-        self._kinematics.pitch_pid.Ki = file_contents["pitch"]["D"]
+    #     self._kinematics.pitch_pid.Kd = file_contents["pitch"]["P"]
+    #     self._kinematics.pitch_pid.Kp = file_contents["pitch"]["I"]
+    #     self._kinematics.pitch_pid.Ki = file_contents["pitch"]["D"]
 
-        self._kinematics.roll_pid.Kd = file_contents["roll"]["P"]
-        self._kinematics.roll_pid.Kp = file_contents["roll"]["I"]
-        self._kinematics.roll_pid.Ki = file_contents["roll"]["D"]
+    #     self._kinematics.roll_pid.Kd = file_contents["roll"]["P"]
+    #     self._kinematics.roll_pid.Kp = file_contents["roll"]["I"]
+    #     self._kinematics.roll_pid.Ki = file_contents["roll"]["D"]
 
-        self._kinematics.depth_pid.Kd = file_contents["depth"]["P"]
-        self._kinematics.depth_pid.Kp = file_contents["depth"]["I"]
-        self._kinematics.depth_pid.Ki = file_contents["depth"]["D"]
+    #     self._kinematics.depth_pid.Kd = file_contents["depth"]["P"]
+    #     self._kinematics.depth_pid.Kp = file_contents["depth"]["I"]
+    #     self._kinematics.depth_pid.Ki = file_contents["depth"]["D"]
 
     def shutdown(self):
         """Shutdown the ROV."""

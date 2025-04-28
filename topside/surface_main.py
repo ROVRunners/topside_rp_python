@@ -55,9 +55,10 @@ class MainSystem:
         self._io = IO(
             self.gpio_handler, self.i2c_handler, self.mavlink_handler, self.input_handler, self.rov_connection
         )
-        self._rov = rov.ROV(self.rov_config, self._io)
 
         self.rov_connection.connect()
+
+        self._rov = rov.ROV(self.rov_config, self._io)
 
         # self.socket.connect_outbound()
         # self.socket.start_listening()
