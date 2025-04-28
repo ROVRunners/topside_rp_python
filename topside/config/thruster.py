@@ -1,5 +1,7 @@
 from typing import NamedTuple
 
+from enums import ThrusterPositions
+
 import config.typed_range as typed_range
 from utilities.vector import Vector3
 
@@ -31,6 +33,7 @@ class ThrusterConfig(NamedTuple):
         reverse_polarity (bool):
             Whether the thruster has reverse polarity.
     """
+    name: ThrusterPositions
     pwm_pulse_range: typed_range.IntRange
     thruster_position: Vector3 = Vector3(0, 0, 0)
     thruster_orientation: Vector3 = Vector3(0, 0, 0)

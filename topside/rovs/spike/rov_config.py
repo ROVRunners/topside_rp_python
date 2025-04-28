@@ -84,14 +84,14 @@ class ROVConfig:
         }
 
         self.thruster_orientations: dict[enums.ThrusterPositions, Vector3] = {
-            enums.ThrusterPositions.FRONT_LEFT: Vector3(yaw=-45),
-            enums.ThrusterPositions.FRONT_RIGHT: Vector3(yaw=45),
-            enums.ThrusterPositions.REAR_LEFT: Vector3(yaw=-135),
-            enums.ThrusterPositions.REAR_RIGHT: Vector3(yaw=135),
-            enums.ThrusterPositions.FRONT_LEFT_VERTICAL: Vector3(pitch=90),
-            enums.ThrusterPositions.FRONT_RIGHT_VERTICAL: Vector3(pitch=90),
-            enums.ThrusterPositions.REAR_LEFT_VERTICAL: Vector3(pitch=90),
-            enums.ThrusterPositions.REAR_RIGHT_VERTICAL: Vector3(pitch=90),
+            enums.ThrusterPositions.FRONT_LEFT: Vector3(yaw=-45, roll=90),
+            enums.ThrusterPositions.FRONT_RIGHT: Vector3(yaw=45, roll=-90),
+            enums.ThrusterPositions.REAR_LEFT: Vector3(yaw=-135, roll=90),
+            enums.ThrusterPositions.REAR_RIGHT: Vector3(yaw=135, roll=-90),
+            enums.ThrusterPositions.FRONT_LEFT_VERTICAL: Vector3(yaw=45, pitch=90),
+            enums.ThrusterPositions.FRONT_RIGHT_VERTICAL: Vector3(yaw=-45, pitch=90),
+            enums.ThrusterPositions.REAR_LEFT_VERTICAL: Vector3(yaw=135, pitch=90),
+            enums.ThrusterPositions.REAR_RIGHT_VERTICAL: Vector3(yaw=-135, pitch=90),
         }
 
         # TODO: Insert the correct thruster impulses here when the ROV is re-assembled.
@@ -117,6 +117,7 @@ class ROVConfig:
         self.thruster_configs: dict[enums.ThrusterPositions, thruster.ThrusterConfig] = {
 
             position: thruster.ThrusterConfig(
+                name=position,
                 pwm_pulse_range=typed_range.IntRange(min=1100, max=1900),
                 thruster_position=self.thruster_positions[position],
                 thruster_orientation=self.thruster_orientations[position],

@@ -14,6 +14,7 @@ from dashboard import Dashboard
 import enums
 
 from utilities.vector import Vector3
+import utilities.cursor as cursor
 
 from rovs.generic_objects.generic_control_mode import ControlMode
 
@@ -117,6 +118,8 @@ class Manual(ControlMode):
         left_trigger = controller.axes[ControllerAxisNames.LEFT_TRIGGER]
         vertical = combine_triggers(right_trigger.value, left_trigger.value)
 
+        # print(controller.axes[ControllerAxisNames.LEFT_X].value)
+
         # # Update the target position of the ROV based on the controller inputs for the PID controllers.
         # self._kinematics.update_target_position(
         #     Vector3(
@@ -127,26 +130,41 @@ class Manual(ControlMode):
         #     vertical,
         # )
 
-        # Get the mixed directions based on the controller inputs, gyro data, and PID outputs.
-        overall_thruster_impulses: dict[Directions, float] = self._kinematics.mix_directions(
-            heading=Vector3(yaw=0, pitch=0, roll=0),
-            lateral_target=Vector3(
-                controller.axes[ControllerAxisNames.LEFT_X].value,
-                controller.axes[ControllerAxisNames.LEFT_Y].value,
-                vertical,
-            ),
-            rotational_target=Vector3(  # Set to zero because we are using PIDs for this.
-                yaw=controller.axes[ControllerAxisNames.RIGHT_X].value,
-                pitch=controller.axes[ControllerAxisNames.RIGHT_Y].value,
-                roll=0,
-            ),
-            pid_impulses={
-                # Directions.YAW: self._kinematics.yaw_pid(gyro_orientation.yaw),
-                # Directions.PITCH: self._kinematics.pitch_pid(gyro_orientation.pitch),
-                # Directions.ROLL: self._kinematics.roll_pid(gyro_orientation.roll),
-                # Directions.UP: self._kinematics.depth_pid(depth),
-            },
-        )
+        # # Get the mixed directions based on the controller inputs, gyro data, and PID outputs.
+        # overall_thruster_impulses: dict[Directions, float] = self._kinematics.mix_directions(
+        #     heading=Vector3(yaw=0, pitch=0, roll=0),
+        #     lateral_target=Vector3(
+        #         controller.axes[ControllerAxisNames.LEFT_X].value,
+        #         controller.axes[ControllerAxisNames.LEFT_Y].value,
+        #         vertical,
+        #     ),
+        #     rotational_target=Vector3(  # Set to zero because we are using PIDs for this. (No :P)
+        #         yaw=controller.axes[ControllerAxisNames.RIGHT_X].value,
+        #         pitch=controller.axes[ControllerAxisNames.RIGHT_Y].value,
+        #         roll=0,
+        #     ),
+        #     pid_impulses={
+        #         # Directions.YAW: self._kinematics.yaw_pid(gyro_orientation.yaw),
+        #         # Directions.PITCH: self._kinematics.pitch_pid(gyro_orientation.pitch),
+        #         # Directions.ROLL: self._kinematics.roll_pid(gyro_orientation.roll),
+        #         # Directions.UP: self._kinematics.depth_pid(depth),
+        #     },
+        # )
+
+        overall_thruster_impulses: dict[Directions, float] = {
+            Directions.FORWARDS: controller.axes[ControllerAxisNames.LEFT_Y].value,
+            Directions.RIGHT: controller.axes[ControllerAxisNames.LEFT_X].value,
+            Directions.UP: vertical,
+            Directions.YAW: controller.axes[ControllerAxisNames.RIGHT_X].value,
+            Directions.PITCH: controller.axes[ControllerAxisNames.RIGHT_Y].value,
+            Directions.ROLL: 0,
+        } 
+
+        # cursor.clear_screen()
+        # cursor.set_pos(0, 0)
+        # print("Overall thruster impulses:")
+        # for pos in Directions:
+        #     print(pos, overall_thruster_impulses[pos])
 
         # Get the PWM values for the thrusters based on the controller inputs.
         pwm_values: dict[ThrusterPositions, int] = self._frame.get_pwm_values(
@@ -155,9 +173,9 @@ class Manual(ControlMode):
 
 
 
-        print("Forces:")
-        for pos in ThrusterPositions:
-            print(pos, self._frame.thrusters[pos].forces)
+        # print("Torques:")
+        # for pos in ThrusterPositions:
+        #     print(pos, self._frame.thrusters[pos].torques)
         # Theoretically stop the ROV from moving if the B button is toggled. TODO: Fix.
         stop = controller.buttons[ControllerButtonNames.B].toggled
 

@@ -63,6 +63,21 @@ class Vector3:
     def roll(self) -> float:
         """The roll of the vector."""
         return self.z
+    
+    @yaw.setter
+    def yaw(self, value: float) -> None:
+        """Set the yaw of the vector."""
+        self.x = value
+
+    @pitch.setter
+    def pitch(self, value: float) -> None:
+        """Set the pitch of the vector."""
+        self.y = value
+
+    @roll.setter
+    def roll(self, value: float) -> None:
+        """Set the roll of the vector."""
+        self.z = value
 
     @property
     def magnitude(self) -> float:
