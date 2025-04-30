@@ -7,7 +7,7 @@ from rov_config import ROVConfig
 from dashboard import Dashboard
 from enums import ThrusterPositions, ControlModeNames
 from kinematics import Kinematics
-from imu import IMU
+# from imu import IMU
 from mavlink_flight_controller import FlightController
 
 from control_modes import *

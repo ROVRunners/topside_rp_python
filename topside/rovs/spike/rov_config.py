@@ -10,7 +10,7 @@ from hardware.i2c import I2C
 
 import config.thruster as thruster
 from config.pin import PinConfig
-from config.i2c import I2CConfig
+# from config.i2c import I2CConfig
 from config.kinematics import KinematicsConfig
 from config.pid import PIDConfig
 from config.imu import IMUConfig
@@ -43,6 +43,8 @@ class ROVConfig:
         self.host_ip = ip_addr
         # self.host_ip = "192.168.2.3"
 
+        ### CONTROLLERS ###
+
         # Put specific settings for each axis/button here. I recommend using a second set of dictionaries for a second
         # controller, if you plan on using one.
         self.axes: dict[enums.ControllerAxisNames, controller.Axis] = {
@@ -72,6 +74,8 @@ class ROVConfig:
             enums.ControllerNames.PRIMARY_DRIVER: controller.Controller(0, self.buttons, self.axes, self.hats),
         }
 
+        ### THRUSTERS ###
+
         self.thruster_positions: dict[enums.ThrusterPositions, Vector3] = {
             enums.ThrusterPositions.FRONT_LEFT: Vector3(-1, 1, 0),
             enums.ThrusterPositions.FRONT_RIGHT: Vector3(1, 1, 0),
@@ -84,14 +88,19 @@ class ROVConfig:
         }
 
         self.thruster_orientations: dict[enums.ThrusterPositions, Vector3] = {
-            enums.ThrusterPositions.FRONT_LEFT: Vector3(yaw=-45, roll=90),
-            enums.ThrusterPositions.FRONT_RIGHT: Vector3(yaw=45, roll=-90),
-            enums.ThrusterPositions.REAR_LEFT: Vector3(yaw=-135, roll=90),
-            enums.ThrusterPositions.REAR_RIGHT: Vector3(yaw=135, roll=-90),
-            enums.ThrusterPositions.FRONT_LEFT_VERTICAL: Vector3(yaw=45, pitch=90),
-            enums.ThrusterPositions.FRONT_RIGHT_VERTICAL: Vector3(yaw=-45, pitch=90),
-            enums.ThrusterPositions.REAR_LEFT_VERTICAL: Vector3(yaw=135, pitch=90),
-            enums.ThrusterPositions.REAR_RIGHT_VERTICAL: Vector3(yaw=-135, pitch=90),
+            enums.ThrusterPositions.FRONT_LEFT: Vector3(
+                # Left rotation is positive in all of the following cases.
+                yaw=-45,  # Set by viewing the ROV from the top, looking down. 0 degrees is the front of the ROV.
+                pitch=0,  # Set by viewing the ROV from its left side. 0 degrees is vertical up.
+                roll=90  # Set by viewing the ROV from its rear. 0 degrees is vertical up.
+            ),
+            enums.ThrusterPositions.FRONT_RIGHT: Vector3(yaw=45, pitch=0, roll=-90),
+            enums.ThrusterPositions.REAR_LEFT: Vector3(yaw=-135, pitch=0, roll=90),
+            enums.ThrusterPositions.REAR_RIGHT: Vector3(yaw=135, pitch=0, roll=-90),
+            enums.ThrusterPositions.FRONT_LEFT_VERTICAL: Vector3(yaw=45, pitch=90, roll=0),
+            enums.ThrusterPositions.FRONT_RIGHT_VERTICAL: Vector3(yaw=-45, pitch=90, roll=0),
+            enums.ThrusterPositions.REAR_LEFT_VERTICAL: Vector3(yaw=135, pitch=90, roll=0),
+            enums.ThrusterPositions.REAR_RIGHT_VERTICAL: Vector3(yaw=-135, pitch=90, roll=0),
         }
 
         # TODO: Insert the correct thruster impulses here when the ROV is re-assembled.
@@ -107,13 +116,6 @@ class ROVConfig:
             enums.ThrusterPositions.REAR_RIGHT_VERTICAL: -1,
         }
 
-        self.kinematics_config = KinematicsConfig(
-            yaw_pid=PIDConfig(p=0.5, i=0, d=0),
-            pitch_pid=PIDConfig(p=0.5, i=0, d=0),
-            roll_pid=PIDConfig(p=0.5, i=0, d=0),
-            depth_pid=PIDConfig(p=0.5, i=0, d=0),
-        )
-
         self.thruster_configs: dict[enums.ThrusterPositions, thruster.ThrusterConfig] = {
 
             position: thruster.ThrusterConfig(
@@ -124,6 +126,19 @@ class ROVConfig:
                 thrust=self.thruster_thrusts[position],
             ) for position in self.thruster_positions.keys()
         }
+
+        ### PIDs ###
+
+        self.kinematics_config = KinematicsConfig(
+            yaw_pid=PIDConfig(p=0.5, i=0, d=0),
+            pitch_pid=PIDConfig(p=0.5, i=0, d=0),
+            roll_pid=PIDConfig(p=0.5, i=0, d=0),
+            depth_pid=PIDConfig(p=0.5, i=0, d=0),
+        )
+
+        self.pid_value_file = f"{self.rov_dir}/assets/pid_values.json"
+
+        ### PI I/O ###
 
         self.pins: dict[str, Pin] = {
             enums.ThrusterPositions.FRONT_LEFT: Pin(PinConfig(id=17, mode="PWMus", val=1500, freq=50)),
@@ -152,12 +167,26 @@ class ROVConfig:
             accel_conversion_factor=1.0
         )
 
-        # Labels
+        self.mavlink_interval = 10_000_000  # 10ms
+
+        self.mavlink_subscriptions: dict[str, int] = {
+            "heartbeat": 0,
+            "sys_status": 1,
+            "scaled_imu": 26,
+            "attitude": 30,
+            "local_position_ned": 32,
+        }
+
+        self.flight_controller_config = FlightControllerConfig(initial_commands={})
+
+        ### DASHBOARD ###
+
         self.dash_config = DashboardConfig(
             labels=(
                 LabelConfig("Height", 2, 2, "Height"),
                 LabelConfig("FPS", 3, 2, "FPS"),
-                LabelConfig("Quality", 4, 2, "Quality")
+                LabelConfig("Quality", 4, 2, "Quality"),
+                LabelConfig("Depth", 5, 1, "Depth: "),
             ),
             scales=(
                 ScaleConfig("Height", 2, 3, 50, 300, 150, cspan=2),
@@ -170,17 +199,3 @@ class ROVConfig:
                 ImageConfig("frontview", 1, 6, 125, 125, f"{self.rov_dir}/assets/frontview.png", cspan=2)
             )
         )
-
-        self.mavlink_interval = 10_000  # 10ms
-
-        self.mavlink_subscriptions: dict[str, int] = {
-            "heartbeat": 0,
-            "sys_status": 1,
-            "scaled_imu": 26,
-            "attitude": 30,
-            "local_position_ned": 32,
-        }
-
-        self.pid_value_file = f"{self.rov_dir}/assets/pid_values.json"
-
-        self.flight_controller_config = FlightControllerConfig(initial_commands={})
