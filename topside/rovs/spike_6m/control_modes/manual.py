@@ -69,7 +69,7 @@ class Manual(ControlMode):
         # Get the controller inputs, subscriptions, and i2c data and put them into local variables.
         inputs = self._io.controllers
         subscriptions = self._io.subscriptions
-        i2c = self._io.i2c_handler.i2cs
+        # i2c = self._io.i2c_handler.i2cs
 
         controller = inputs[ControllerNames.PRIMARY_DRIVER]
 
@@ -102,10 +102,15 @@ class Manual(ControlMode):
             "sideview": gyro_orientation.pitch,
         })
 
-        # Convert the triggers to a single value.
+        # Convert the triggers to a single value indicating desired vertical movement.
         right_trigger = controller.axes[ControllerAxisNames.RIGHT_TRIGGER]
         left_trigger = controller.axes[ControllerAxisNames.LEFT_TRIGGER]
         vertical = combine_triggers(left_trigger.value, right_trigger.value)
+
+        # Convert the back buttons to a single value indicating desired roll thrust.
+        right_bumper = controller.buttons[ControllerButtonNames.RIGHT_BUMPER]
+        left_bumper = controller.buttons[ControllerButtonNames.LEFT_BUMPER]
+        roll = combine_triggers(float(left_bumper.pressed), float(right_bumper.pressed))
 
         # Update the target position of the ROV based on the controller inputs for the PID controllers.
         self._kinematics.update_target_position(

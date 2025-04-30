@@ -1,4 +1,3 @@
-import json
 import math
 import os.path
 from copy import copy
@@ -14,7 +13,7 @@ from dashboard import Dashboard
 import enums
 
 from utilities.vector import Vector3
-import utilities.cursor as cursor
+# import utilities.cursor as cursor
 
 from rovs.generic_objects.generic_control_mode import ControlMode
 
@@ -105,18 +104,25 @@ class Manual(ControlMode):
         else:
             depth = 0
 
+        self._dash.get_entry("depth", None).set_value(f"Depth: {depth}")
+
         self._dash.update_images({
             "topview": gyro_orientation.yaw * 180 / math.pi,
             "frontview": gyro_orientation.roll * 180 / math.pi,
             "sideview": gyro_orientation.pitch * 180 / math.pi,
         })
 
-        # print("(manual.py) gyro_orintation [degrees]:", gyro_orientation * 180 / math.pi)
+        # print("(manual.py) gyro_orientation [degrees]:", gyro_orientation * 180 / math.pi)
 
         # Convert the triggers to a single value.
         right_trigger = controller.axes[ControllerAxisNames.RIGHT_TRIGGER]
         left_trigger = controller.axes[ControllerAxisNames.LEFT_TRIGGER]
         vertical = combine_triggers(right_trigger.value, left_trigger.value)
+
+        # Convert the back buttons to a single value indicating desired roll thrust.
+        right_bumper = controller.buttons[ControllerButtonNames.RIGHT_BUMPER]
+        left_bumper = controller.buttons[ControllerButtonNames.LEFT_BUMPER]
+        roll = combine_triggers(float(left_bumper.pressed), float(right_bumper.pressed))
 
         # print(controller.axes[ControllerAxisNames.LEFT_X].value)
 
@@ -157,7 +163,7 @@ class Manual(ControlMode):
             Directions.UP: vertical,
             Directions.YAW: controller.axes[ControllerAxisNames.RIGHT_X].value,
             Directions.PITCH: controller.axes[ControllerAxisNames.RIGHT_Y].value,
-            Directions.ROLL: 0,
+            Directions.ROLL: roll,
         } 
 
         # cursor.clear_screen()
