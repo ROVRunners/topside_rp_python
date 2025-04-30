@@ -111,7 +111,7 @@ class Manual(ControlMode):
             "sideview": gyro_orientation.pitch * 180 / math.pi,
         })
 
-        # print("(manual.py) gyro_orintation [degrees]:", gyro_orientation * 180 / math.pi)
+        print("(manual.py) gyro_orintation [degrees]:", gyro_orientation * 180 / math.pi)
 
         # Convert the triggers to a single value.
         right_trigger = controller.axes[ControllerAxisNames.RIGHT_TRIGGER]
