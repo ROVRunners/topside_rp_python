@@ -99,3 +99,14 @@ class FlightController:
         """
         if not self._currently_calibrating:
             mavlink.mavlink_commands[MavlinkMessageTypes.MAV_CMD_PREFLIGHT_CALIBRATION] = (0, 1, 0, 0, 0, 0, 0)
+
+
+    # def set_gyro_offsets(mavlink: MavlinkHandler.mavlink_commands) -> None:
+    #     """Calibrate the gyroscope.
+    #
+    #     Args:
+    #         mavlink (MavlinkHandler.mavlink_commands):
+    #             The mavlink commands property.
+    #     """
+    #     if not self._currently_calibrating:
+    #         mavlink.mavlink_commands[MavlinkMessageTypes.MAV_CMD_PREFLIGHT_SET_SENSOR_OFFSETS] = (0, 180, 90, 0, 0, 0, 0)

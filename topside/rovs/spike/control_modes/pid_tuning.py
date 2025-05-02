@@ -153,6 +153,8 @@ class PIDTuning(ControlMode):
         # Update the PID values if the X button is pressed.
         if controller.buttons[ControllerButtonNames.X].just_pressed:
             self._update_pid_values(self._rov_directory + "/assets/pid_config.json")
+        if controller.buttons[ControllerButtonNames.Y].just_pressed:
+            self._flight_controller.calibrate_gyro(mavlink)
 
         # TODO: Add a keybind or several keybinds to change control modes.
         # self._set_control_mode(enums.ControlModes.MANUAL)
