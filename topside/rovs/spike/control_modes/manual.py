@@ -164,7 +164,7 @@ class Manual(ControlMode):
             Directions.UP: vertical,
             Directions.YAW: controller.axes[ControllerAxisNames.RIGHT_X].value,
             Directions.PITCH: -controller.axes[ControllerAxisNames.RIGHT_Y].value,
-            Directions.ROLL: -roll,
+            Directions.ROLL: roll,
         } 
 
         # cursor.clear_screen()
