@@ -13,7 +13,7 @@ from dashboard import Dashboard
 import enums
 
 from utilities.vector import Vector3
-# import utilities.cursor as cursor
+import utilities.cursor as cursor
 
 from rovs.generic_objects.generic_control_mode import ControlMode
 
@@ -98,13 +98,14 @@ class Manual(ControlMode):
 
         gyro_orientation: Vector3 = copy(self._flight_controller.attitude)
 
+        depth = 0
         # Get the depth data from the subscriptions if it exists.
         if "ROV/custom/depth_sensor/depth" in subscriptions:
             depth = subscriptions["ROV/custom/depth_sensor/depth"]
         else:
             depth = 0
 
-        self._dash.get_entry("depth", None).set_value(f"Depth: {depth}")
+        # self._dash.get_entry("Depth", None).set_value(f"Depth: {depth}")
 
         self._dash.update_images({
             "topview": gyro_orientation.yaw * 180 / math.pi,
@@ -122,7 +123,7 @@ class Manual(ControlMode):
         # Convert the back buttons to a single value indicating desired roll thrust.
         right_bumper = controller.buttons[ControllerButtonNames.RIGHT_BUMPER]
         left_bumper = controller.buttons[ControllerButtonNames.LEFT_BUMPER]
-        roll = combine_triggers(float(left_bumper.pressed), float(right_bumper.pressed))
+        roll = 2*combine_triggers(float(left_bumper.pressed), float(right_bumper.pressed))
 
         # print(controller.axes[ControllerAxisNames.LEFT_X].value)
 
@@ -158,12 +159,12 @@ class Manual(ControlMode):
         # )
 
         overall_thruster_impulses: dict[Directions, float] = {
-            Directions.FORWARDS: controller.axes[ControllerAxisNames.LEFT_Y].value,
-            Directions.RIGHT: controller.axes[ControllerAxisNames.LEFT_X].value,
+            Directions.FORWARDS: controller.axes[ControllerAxisNames.LEFT_X].value,
+            Directions.RIGHT: controller.axes[ControllerAxisNames.LEFT_Y].value,
             Directions.UP: vertical,
             Directions.YAW: controller.axes[ControllerAxisNames.RIGHT_X].value,
-            Directions.PITCH: controller.axes[ControllerAxisNames.RIGHT_Y].value,
-            Directions.ROLL: roll,
+            Directions.PITCH: -controller.axes[ControllerAxisNames.RIGHT_Y].value,
+            Directions.ROLL: -roll,
         } 
 
         # cursor.clear_screen()
@@ -184,6 +185,9 @@ class Manual(ControlMode):
         #     print(pos, self._frame.thrusters[pos].torques)
         # Theoretically stop the ROV from moving if the B button is toggled. TODO: Fix.
         stop = controller.buttons[ControllerButtonNames.B].toggled
+
+        if controller.buttons[ControllerButtonNames.Y].just_pressed:
+            self._flight_controller.calibrate_gyro(self._io._mavlink)
 
         # # Calibrate the gyro if the Y button is pressed.
         # if controller.buttons[ControllerButtonNames.Y].just_pressed:

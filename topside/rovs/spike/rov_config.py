@@ -103,16 +103,29 @@ class ROVConfig:
             enums.ThrusterPositions.REAR_RIGHT_VERTICAL: Vector3(yaw=-135, pitch=90, roll=0),
         }
 
+        # # TODO: Insert the correct thruster impulses here when the ROV is re-assembled.
+        # # Used to set the thrust of each thruster in the case that some thrusters are more powerful than others.
+        # self.thruster_thrusts: dict[enums.ThrusterPositions, float] = {
+        #     enums.ThrusterPositions.FRONT_LEFT: 1,
+        #     enums.ThrusterPositions.FRONT_RIGHT: 1,
+        #     enums.ThrusterPositions.REAR_LEFT: 1,
+        #     enums.ThrusterPositions.REAR_RIGHT: -1,
+        #     enums.ThrusterPositions.FRONT_LEFT_VERTICAL: 1,
+        #     enums.ThrusterPositions.FRONT_RIGHT_VERTICAL: 1,
+        #     enums.ThrusterPositions.REAR_LEFT_VERTICAL: 1,
+        #     enums.ThrusterPositions.REAR_RIGHT_VERTICAL: -1,
+        # }
+
         # TODO: Insert the correct thruster impulses here when the ROV is re-assembled.
         # Used to set the thrust of each thruster in the case that some thrusters are more powerful than others.
         self.thruster_thrusts: dict[enums.ThrusterPositions, float] = {
-            enums.ThrusterPositions.FRONT_LEFT: 1,
-            enums.ThrusterPositions.FRONT_RIGHT: -1,
-            enums.ThrusterPositions.REAR_LEFT: -1,
-            enums.ThrusterPositions.REAR_RIGHT: -1,
+            enums.ThrusterPositions.FRONT_LEFT: -1,
+            enums.ThrusterPositions.FRONT_RIGHT: 1,
+            enums.ThrusterPositions.REAR_LEFT: 1,
+            enums.ThrusterPositions.REAR_RIGHT: 1,
             enums.ThrusterPositions.FRONT_LEFT_VERTICAL: 1,
             enums.ThrusterPositions.FRONT_RIGHT_VERTICAL: 1,
-            enums.ThrusterPositions.REAR_LEFT_VERTICAL: -1,
+            enums.ThrusterPositions.REAR_LEFT_VERTICAL: 1,
             enums.ThrusterPositions.REAR_RIGHT_VERTICAL: -1,
         }
 
@@ -167,7 +180,7 @@ class ROVConfig:
             accel_conversion_factor=1.0
         )
 
-        self.mavlink_interval = 10_000_000  # 10ms
+        self.mavlink_interval = 10_000  # 10ms
 
         self.mavlink_subscriptions: dict[str, int] = {
             "heartbeat": 0,
@@ -177,7 +190,12 @@ class ROVConfig:
             "local_position_ned": 32,
         }
 
-        self.flight_controller_config = FlightControllerConfig(initial_commands={})
+        # initial_commands = [
+        #     (enums.MavlinkMessageTypes.MAV_CMD_PREFLIGHT_CALIBRATION: (1, 0, 0, 0, 0, 0, 0)),
+        #     (enums.MavlinkMessageTypes.MAV_CMD_PREFLIGHT_CALIBRATION: (0, 0, 0, 0, 0, 0, 0)),
+        # ]
+
+        self.flight_controller_config: FlightControllerConfig = FlightControllerConfig(initial_commands={})
 
         ### DASHBOARD ###
 
@@ -186,7 +204,7 @@ class ROVConfig:
                 LabelConfig("Height", 2, 2, "Height"),
                 LabelConfig("FPS", 3, 2, "FPS"),
                 LabelConfig("Quality", 4, 2, "Quality"),
-                LabelConfig("Depth", 5, 1, "Depth: "),
+                # LabelConfig("Depth", 5, 1, "Depth: "),
             ),
             scales=(
                 ScaleConfig("Height", 2, 3, 50, 300, 150, cspan=2),

@@ -119,6 +119,8 @@ class ThrusterPWM:
         self.calculate_forces()
         self.calculate_torques()
 
+        print(f"{self._name} torques: {self._torques}")
+
     def calculate_forces(self) -> None:
         """Calculate or recalculate the lateral forces applied by the thruster in each direction."""
         force: Vector3 = Vector3(

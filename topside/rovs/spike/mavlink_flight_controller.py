@@ -44,7 +44,7 @@ class FlightController:
     def currently_calibrating(self):
         return self._currently_calibrating
 
-    def initialize_flight_controller(self, mavlink: MavlinkHandler.mavlink_commands) -> None:
+    def initialize_flight_controller(self, mavlink: MavlinkHandler) -> None:
         mavlink.mavlink_commands = self._flight_controller_config.initial_commands
 
     def update(self, messages: dict[str, dict]) -> None:
@@ -70,7 +70,7 @@ class FlightController:
                 messages["SCALED_IMU"]["xmag"], messages["SCALED_IMU"]["ymag"], messages["SCALED_IMU"]["zmag"]
             )
 
-    def calibrate_gyro(self, mavlink: MavlinkHandler.mavlink_commands) -> None:
+    def calibrate_gyro(self, mavlink: MavlinkHandler) -> None:
         """Calibrate the gyroscope.
 
         Args:
@@ -78,9 +78,10 @@ class FlightController:
                 The mavlink commands property.
         """
         if not self._currently_calibrating:
-            mavlink.mavlink_commands[MavlinkMessageTypes.MAV_CMD_PREFLIGHT_CALIBRATION] = (1, 0, 0, 0, 0, 0, 0)
+            # mavlink.mavlink_commands[MavlinkMessageTypes.MAV_CMD_PREFLIGHT_CALIBRATION] = (1, 0, 0, 0, 0, 0, 0)
+            mavlink.add_command(MavlinkMessageTypes.MAV_CMD_PREFLIGHT_CALIBRATION, (1, 0, 0, 0, 0, 0, 0))
 
-    def calibrate_accelerometer(self, mavlink: MavlinkHandler.mavlink_commands) -> None:
+    def calibrate_accelerometer(self, mavlink: MavlinkHandler) -> None:
         """Calibrate the accelerometer.
 
         Args:
@@ -88,9 +89,10 @@ class FlightController:
                 The mavlink commands property.
         """
         if not self._currently_calibrating:
-            mavlink.mavlink_commands[MavlinkMessageTypes.MAV_CMD_PREFLIGHT_CALIBRATION] = (0, 0, 0, 0, 1, 0, 0)
+            # mavlink.mavlink_commands[MavlinkMessageTypes.MAV_CMD_PREFLIGHT_CALIBRATION] = (0, 0, 0, 0, 1, 0, 0)
+            mavlink.add_command(MavlinkMessageTypes.MAV_CMD_PREFLIGHT_CALIBRATION, (0, 0, 0, 0, 1, 0, 0))
 
-    def calibrate_compass(self, mavlink: MavlinkHandler.mavlink_commands) -> None:
+    def calibrate_compass(self, mavlink: MavlinkHandler) -> None:
         """Calibrate the compass.
 
         Args:
@@ -98,4 +100,5 @@ class FlightController:
                 The mavlink commands property.
         """
         if not self._currently_calibrating:
-            mavlink.mavlink_commands[MavlinkMessageTypes.MAV_CMD_PREFLIGHT_CALIBRATION] = (0, 1, 0, 0, 0, 0, 0)
+            # mavlink.mavlink_commands[MavlinkMessageTypes.MAV_CMD_PREFLIGHT_CALIBRATION] = (0, 1, 0, 0, 0, 0, 0)
+            mavlink.add_command(MavlinkMessageTypes.MAV_CMD_PREFLIGHT_CALIBRATION, (0, 1, 0, 0, 0, 0, 0))

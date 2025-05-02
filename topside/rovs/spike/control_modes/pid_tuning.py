@@ -4,7 +4,7 @@ from copy import copy
 from typing import Callable
 
 from hardware.thruster_pwm import FrameThrusters
-from enums import Directions, ControllerAxisNames, ControllerButtonNames, ThrusterPositions
+from enums import Directions, ControllerAxisNames, ControllerButtonNames, ThrusterPositions, ControllerNames
 import kinematics as kms
 from controller_input import combine_triggers
 from io_systems.io_handler import IO
@@ -71,7 +71,7 @@ class PIDTuning(ControlMode):
         subscriptions = self._io.subscriptions
         i2c = self._io.i2c_handler.i2cs
 
-        controller = inputs[enums.ControllerNames.PRIMARY_DRIVER]
+        controller = inputs[ControllerNames.PRIMARY_DRIVER]
 
         mavlink = subscriptions["mavlink"]
 
