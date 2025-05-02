@@ -78,6 +78,7 @@ class FlightController:
                 The mavlink commands property.
         """
         if not self._currently_calibrating:
+            mavlink.add_command(MavlinkMessageTypes.MAV_CMD_DO_SET_MODE, (0, 0, 0, 0, 0, 0, 0))
             # mavlink.mavlink_commands[MavlinkMessageTypes.MAV_CMD_PREFLIGHT_CALIBRATION] = (1, 0, 0, 0, 0, 0, 0)
             mavlink.add_command(MavlinkMessageTypes.MAV_CMD_PREFLIGHT_CALIBRATION, (1, 0, 0, 0, 0, 0, 0))
 
