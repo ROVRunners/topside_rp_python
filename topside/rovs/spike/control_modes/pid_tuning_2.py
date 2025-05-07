@@ -65,6 +65,12 @@ class PIDTuning2(ControlMode):
         # The trim values for the rotational velocity inputs used to compensate for drift.
         self._omega_trim = Vector3(yaw=0, pitch=0, roll=0)
 
+        self._input_modifier = Vector3(
+            yaw=1,
+            pitch=.75,
+            roll=.75,
+        )
+
     @property
     def inputs(self):
         return self.inputs
@@ -140,8 +146,8 @@ class PIDTuning2(ControlMode):
         self._kinematics.update_target_position(
             Vector3(
                 yaw=0,  # Doing this manually
-                pitch=self._controller.axes[ControllerAxisNames.RIGHT_Y].value,
-                roll=roll_speed,
+                pitch=self._controller.axes[ControllerAxisNames.RIGHT_Y].value * self._input_modifier.pitch,
+                roll=roll_speed * self._input_modifier.roll,
             ),
             vertical_speed,
         )
