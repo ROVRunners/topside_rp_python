@@ -211,20 +211,23 @@ class ROVConnection:
                 dict[message_type, tuple[param1, param2, param3, param4, param5, param6, param7]]
         """
 
-        changed_mavlink_requests = {}
+        # changed_mavlink_requests = {}
 
-        for key, interval in commands.items():
-            if key not in self._last_mavlink_requests:
-                self._last_mavlink_requests[key] = interval
-                changed_mavlink_requests[key] = interval
-            elif self._last_mavlink_requests[
-                key] != interval or time.time() - self._last_mavlink_update > self._idle_ping_frequency:
-                self._last_mavlink_requests[key] = interval
-                changed_mavlink_requests[key] = interval
+        # for key, interval in commands.items():
+        #     if key not in self._last_mavlink_requests:
+        #         self._last_mavlink_requests[key] = interval
+        #         changed_mavlink_requests[key] = interval
+        #     elif self._last_mavlink_requests[
+        #         key] != interval or time.time() - self._last_mavlink_update > self._idle_ping_frequency:
+        #         self._last_mavlink_requests[key] = interval
+        #         changed_mavlink_requests[key] = interval
 
-        for key, interval in changed_mavlink_requests.items():
-            self._last_mavlink_update = time.time()
-            self._client.publish(f"PC/mavlink/{key}", str(interval))
+        for key, payload in commands.items():
+            # self._last_mavlink_update = time.time()
+            print(f"Publishing {payload} to {key}")
+            self._client.publish(f"PC/mavlink/send_msg/{key}", str(payload)[1:-1])
+
+        commands.clear()
 
     def publish_mavlink_data_request(self, mavlink: dict[int, int]) -> None:
         """Send a series of packets from the Raspberry Pi with the specified mavlink data id and interval values.
@@ -233,13 +236,26 @@ class ROVConnection:
             mavlink (dict[int, int]):
                 List of mavlink values to be sent to the ROV.
         """
+        # changed_mavlink_requests = {}
+
+        # for key, interval in mavlink.items():
+        #     if key not in self._last_mavlink_requests:
+        #         self._last_mavlink_requests[key] = interval
+        #         changed_mavlink_requests[key] = interval
+        #     elif self._last_mavlink_requests[key] != interval or time.time() - self._last_mavlink_update > self._idle_ping_frequency:
+        #         self._last_mavlink_requests[key] = interval
+        #         changed_mavlink_requests[key] = interval
+
+        
+
         changed_mavlink_requests = {}
 
         for key, interval in mavlink.items():
             if key not in self._last_mavlink_requests:
                 self._last_mavlink_requests[key] = interval
                 changed_mavlink_requests[key] = interval
-            elif self._last_mavlink_requests[key] != interval or time.time() - self._last_mavlink_update > self._idle_ping_frequency:
+            elif self._last_mavlink_requests[
+                key] != interval or time.time() - self._last_mavlink_update > self._idle_ping_frequency:
                 self._last_mavlink_requests[key] = interval
                 changed_mavlink_requests[key] = interval
 
