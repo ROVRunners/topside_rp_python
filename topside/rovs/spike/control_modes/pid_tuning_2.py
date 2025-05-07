@@ -1,10 +1,11 @@
 import json
+import math
 import os.path
 from copy import copy
 from typing import Callable
 
 from hardware.thruster_pwm import FrameThrusters
-from enums import Directions, ControllerAxisNames, ControllerButtonNames, ThrusterPositions, ControllerNames
+from enums import Directions, ControllerAxisNames, ControllerButtonNames, ThrusterPositions, ControllerNames, ControllerHatNames, ControllerHatButtonNames
 import kinematics as kms
 from controller_input import combine_triggers
 from io_systems.io_handler import IO
@@ -56,6 +57,14 @@ class PIDTuning2(ControlMode):
 
         self._rov_directory = os.path.dirname(os.path.dirname(__file__))
 
+        self._inputs = self._io.controllers
+        self._controller = self._inputs[ControllerNames.PRIMARY_DRIVER]
+
+        self._controller.buttons[ControllerButtonNames.B].toggled = True
+
+        # The trim values for the rotational velocity inputs used to compensate for drift.
+        self._omega_trim = Vector3(yaw=0, pitch=0, roll=0)
+
     @property
     def inputs(self):
         return self.inputs
@@ -67,13 +76,15 @@ class PIDTuning2(ControlMode):
     def loop(self):
         """Update thrust values, send commands, and more based on the inputs."""
         # Get the controller inputs, subscriptions, and i2c data and put them into local variables.
-        inputs = self._io.controllers
         subscriptions = self._io.subscriptions
-        i2c = self._io.i2c_handler.i2cs
+        # i2c = self._io.i2c_handler.i2cs
 
-        controller = inputs[ControllerNames.PRIMARY_DRIVER]
-
-        mavlink = subscriptions["mavlink"]
+        # mavlink = subscriptions["mavlink"]
+        mavlink = {}
+        for key, val in subscriptions.items():
+            path = key.split("/")
+            if path[1] == "mavlink":
+                mavlink[path[2]] = val
 
         # Get the gyro data from the subscriptions if it exists.
         # if "imu" in i2c:
@@ -89,6 +100,7 @@ class PIDTuning2(ControlMode):
         self._flight_controller.update(mavlink)
 
         gyro_orientation: Vector3 = copy(self._flight_controller.attitude)
+        gyro_omega: Vector3 = copy(self._flight_controller.attitude_speed)
 
         # Get the depth data from the subscriptions if it exists.
         if "ROV/custom/depth_sensor/depth" in subscriptions:
@@ -96,44 +108,61 @@ class PIDTuning2(ControlMode):
         else:
             depth = 0
 
+        # self._dash.get_entry("Depth", None).set_value(f"Depth: {depth}")
+
         self._dash.update_images({
-            "topview": gyro_orientation.yaw,
-            "frontview": gyro_orientation.roll,
-            "sideview": gyro_orientation.pitch,
+            "topview": 360 - gyro_orientation.yaw * 180 / math.pi,
+            "frontview": 360 - gyro_orientation.roll * 180 / math.pi,
+            "sideview": 360 - gyro_orientation.pitch * 180 / math.pi,
         })
 
         # Convert the triggers to a single value.
-        right_trigger = controller.axes[ControllerAxisNames.RIGHT_TRIGGER]
-        left_trigger = controller.axes[ControllerAxisNames.LEFT_TRIGGER]
-        vertical = combine_triggers(left_trigger.value, right_trigger.value)
+        right_trigger = self._controller.axes[ControllerAxisNames.RIGHT_TRIGGER]
+        left_trigger = self._controller.axes[ControllerAxisNames.LEFT_TRIGGER]
+        vertical_speed = combine_triggers(left_trigger.value, right_trigger.value)
+
+        # Convert the back buttons to a single value indicating desired roll thrust.
+        right_bumper = self._controller.buttons[ControllerButtonNames.RIGHT_BUMPER]
+        left_bumper = self._controller.buttons[ControllerButtonNames.LEFT_BUMPER]
+        roll_speed = 2*combine_triggers(float(left_bumper.pressed), float(right_bumper.pressed))
+
+        # Get the values from the controller hat (D-Pad) to adjust the trim values.
+        if self._controller.hats[ControllerHatNames.DPAD].buttons[ControllerHatButtonNames.DPAD_UP].held:
+            self._omega_trim.pitch += 0.01
+        if self._controller.hats[ControllerHatNames.DPAD].buttons[ControllerHatButtonNames.DPAD_DOWN].held:
+            self._omega_trim.pitch -= 0.01
+        if self._controller.hats[ControllerHatNames.DPAD].buttons[ControllerHatButtonNames.DPAD_LEFT].held:
+            self._omega_trim.roll += 0.01
+        if self._controller.hats[ControllerHatNames.DPAD].buttons[ControllerHatButtonNames.DPAD_RIGHT].held:
+            self._omega_trim.roll -= 0.01
 
         # Update the target position of the ROV based on the controller inputs for the PID controllers.
         self._kinematics.update_target_position(
             Vector3(
-                controller.axes[ControllerAxisNames.RIGHT_X].value,
-                controller.axes[ControllerAxisNames.RIGHT_Y].value,
-                0,
+                yaw=0,  # Doing this manually
+                pitch=self._controller.axes[ControllerAxisNames.RIGHT_Y].value,
+                roll=roll_speed,
             ),
-            vertical,
+            vertical_speed,
         )
 
         # Get the mixed directions based on the controller inputs, gyro data, and PID outputs.
         overall_thruster_impulses: dict[Directions, float] = self._kinematics.mix_directions(
             heading=gyro_orientation,
             lateral_target=Vector3(
-                controller.axes[ControllerAxisNames.LEFT_X].value,
-                controller.axes[ControllerAxisNames.LEFT_Y].value,
+                self._controller.axes[ControllerAxisNames.LEFT_X].value,
+                self._controller.axes[ControllerAxisNames.LEFT_Y].value,
                 0,  # Set to zero because we are using PIDs for this.
             ),
             rotational_target=Vector3(  # Set to zero because we are using PIDs for this.
-                yaw=0,
+                yaw=self._controller.axes[ControllerAxisNames.RIGHT_X].value,
                 pitch=0,
                 roll=0,
             ),
             pid_impulses={
-                Directions.YAW: self._kinematics.yaw_pid(gyro_orientation.yaw),
-                Directions.PITCH: self._kinematics.pitch_pid(gyro_orientation.pitch),
-                Directions.ROLL: self._kinematics.roll_pid(gyro_orientation.roll),
+                # Directions.YAW: self._kinematics.yaw_pid(gyro_orientation.yaw + self._omega_trim.yaw),
+                Directions.PITCH: self._kinematics.pitch_pid(-gyro_omega.pitch + self._omega_trim.pitch),
+                Directions.ROLL: self._kinematics.roll_pid(-gyro_omega.roll + self._omega_trim.roll),
                 Directions.UP: self._kinematics.depth_pid(depth),
             },
         )
@@ -143,18 +172,16 @@ class PIDTuning2(ControlMode):
             overall_thruster_impulses
         )
 
-        # Theoretically stop the ROV from moving if the B button is toggled. TODO: Fix.
-        stop = controller.buttons[ControllerButtonNames.B].toggled
+        # Theoretically stop the ROV from moving if the B button is toggled.
+        stop = self._controller.buttons[ControllerButtonNames.B].toggled
 
         # # Calibrate the gyro if the Y button is pressed.
         # if controller.buttons[ControllerButtonNames.Y].just_pressed:
         #     self._flight_controller.calibrate_gyro()
 
         # Update the PID values if the X button is pressed.
-        if controller.buttons[ControllerButtonNames.X].just_pressed:
+        if self._controller.buttons[ControllerButtonNames.X].just_pressed:
             self._update_pid_values(self._rov_directory + "/assets/pid_config.json")
-        if controller.buttons[ControllerButtonNames.Y].just_pressed:
-            self._flight_controller.calibrate_gyro(mavlink)
 
         # TODO: Add a keybind or several keybinds to change control modes.
         # self._set_control_mode(enums.ControlModes.MANUAL)
@@ -169,9 +196,9 @@ class PIDTuning2(ControlMode):
             # Set the PWM value for the thruster.
             self._io.gpio_handler.pins[thruster].val = pwm
 
-        self._io.rov_comms.publish_commands({
-            "stop": stop,
-        })
+        # self._io.rov_comms.publish_commands({
+        #     "stop": stop,
+        # })
 
     def _update_pid_values(self, file_path: str) -> None:
         """Update the PID values based on the file contents.

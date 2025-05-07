@@ -13,7 +13,7 @@ from dashboard import Dashboard
 import enums
 
 from utilities.vector import Vector3
-import utilities.cursor as cursor
+# import utilities.cursor as cursor
 
 from rovs.generic_objects.generic_control_mode import ControlMode
 
@@ -98,7 +98,6 @@ class Manual(ControlMode):
 
         gyro_orientation: Vector3 = copy(self._flight_controller.attitude)
 
-        depth = 0
         # Get the depth data from the subscriptions if it exists.
         if "ROV/custom/depth_sensor/depth" in subscriptions:
             depth = subscriptions["ROV/custom/depth_sensor/depth"]
@@ -108,9 +107,9 @@ class Manual(ControlMode):
         # self._dash.get_entry("Depth", None).set_value(f"Depth: {depth}")
 
         self._dash.update_images({
-            "topview": gyro_orientation.yaw * 180 / math.pi,
-            "frontview": gyro_orientation.roll * 180 / math.pi,
-            "sideview": gyro_orientation.pitch * 180 / math.pi,
+            "topview": 360 - gyro_orientation.yaw * 180 / math.pi,
+            "frontview": 360 - gyro_orientation.roll * 180 / math.pi,
+            "sideview": 360 - gyro_orientation.pitch * 180 / math.pi,
         })
 
         # print("(manual.py) gyro_orientation [degrees]:", gyro_orientation * 180 / math.pi)
