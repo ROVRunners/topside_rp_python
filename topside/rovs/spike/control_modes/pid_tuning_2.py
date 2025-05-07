@@ -71,6 +71,11 @@ class PIDTuning2(ControlMode):
             roll=.75,
         )
 
+        # Quick and dirty feed-forward system variable
+        self._past_pids = {
+            direction: 0 for direction in Directions
+        }
+
     @property
     def inputs(self):
         return self.inputs
@@ -152,6 +157,13 @@ class PIDTuning2(ControlMode):
             vertical_speed,
         )
 
+        pids: dict[Directions, float] = {
+            # Directions.YAW: self._kinematics.yaw_pid(gyro_orientation.yaw) + self._omega_trim.yaw + self._past_pids[Directions.YAW],
+            Directions.PITCH: self._kinematics.pitch_pid(-gyro_omega.pitch) + self._omega_trim.pitch + self._past_pids[Directions.PITCH],
+            Directions.ROLL: self._kinematics.roll_pid(-gyro_omega.roll) + self._omega_trim.roll + self._past_pids[Directions.ROLL],
+            Directions.UP: self._kinematics.depth_pid(depth) + self._past_pids[Directions.UP],
+        }
+
         # Get the mixed directions based on the controller inputs, gyro data, and PID outputs.
         overall_thruster_impulses: dict[Directions, float] = self._kinematics.mix_directions(
             heading=gyro_orientation,
@@ -165,12 +177,7 @@ class PIDTuning2(ControlMode):
                 pitch=0,
                 roll=0,
             ),
-            pid_impulses={
-                # Directions.YAW: self._kinematics.yaw_pid(gyro_orientation.yaw + self._omega_trim.yaw),
-                Directions.PITCH: self._kinematics.pitch_pid(-gyro_omega.pitch + self._omega_trim.pitch),
-                Directions.ROLL: self._kinematics.roll_pid(-gyro_omega.roll + self._omega_trim.roll),
-                Directions.UP: self._kinematics.depth_pid(depth),
-            },
+            pid_impulses=pids,
         )
 
         # Get the PWM values for the thrusters based on the controller inputs.
