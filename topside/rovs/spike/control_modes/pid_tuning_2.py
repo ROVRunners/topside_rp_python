@@ -17,7 +17,7 @@ from utilities.vector import Vector3
 from rovs.generic_objects.generic_control_mode import ControlMode
 
 
-class PIDTuning2(ControlMode):
+class PIDTuning(ControlMode):
     """One of the control modes for the ROV which take in inputs from the controller, sensors, and more to determine
     the thrust values for the thrusters and send other commands to the ROV.
 
@@ -130,7 +130,7 @@ class PIDTuning2(ControlMode):
         # Convert the triggers to a single value.
         right_trigger = self._controller.axes[ControllerAxisNames.RIGHT_TRIGGER]
         left_trigger = self._controller.axes[ControllerAxisNames.LEFT_TRIGGER]
-        vertical_speed = combine_triggers(left_trigger.value, right_trigger.value)
+        vertical_speed = combine_triggers(right_trigger.value, left_trigger.value)
 
         # Convert the back buttons to a single value indicating desired roll thrust.
         right_bumper = self._controller.buttons[ControllerButtonNames.RIGHT_BUMPER]
@@ -194,7 +194,7 @@ class PIDTuning2(ControlMode):
 
         # Update the PID values if the X button is pressed.
         if self._controller.buttons[ControllerButtonNames.X].just_pressed:
-            self._update_pid_values(self._rov_directory + "/assets/pid_config.json")
+            self._update_pid_values(self._rov_directory + "/assets/pid_values.json")
 
         # TODO: Add a keybind or several keybinds to change control modes.
         # self._set_control_mode(enums.ControlModes.MANUAL)
