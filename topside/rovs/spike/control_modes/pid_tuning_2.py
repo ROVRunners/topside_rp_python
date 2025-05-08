@@ -65,15 +65,25 @@ class PIDTuning(ControlMode):
         # The trim values for the rotational velocity inputs used to compensate for drift.
         self._omega_trim = Vector3(yaw=0, pitch=0, roll=0)
 
-        self._input_modifier = Vector3(
+        self._goal_angle = Vector3(yaw=0, pitch=0, roll=0)
+        self._goal_position = Vector3(x=0, y=0, z=0)
+
+        self._rotational_input_modifier = Vector3(
             yaw=1,
-            pitch=.75,
-            roll=.75,
+            pitch=1,
+            roll=1,
+        )
+
+        self._lateral_input_modifier = Vector3(
+            x=0,
+            y=0,
+            z=.2,
         )
 
         # Quick and dirty feed-forward system variable
-        self._past_pids = {
-            direction: 0 for direction in Directions
+        # noinspection PyTypeChecker
+        self._past_pids: dict[Directions, float] = {
+            direction: 0.0 for direction in Directions
         }
 
     @property
@@ -112,6 +122,8 @@ class PIDTuning(ControlMode):
 
         gyro_orientation: Vector3 = copy(self._flight_controller.attitude)
         gyro_omega: Vector3 = copy(self._flight_controller.attitude_speed)
+        gyro_delta: Vector3 = Vector3()
+        # copy(self._flight_controller.attitude))
 
         #adjust for weird gyro thing that jason understands
         if abs(gyro_orientation.roll) > math.pi / 2:
@@ -135,38 +147,52 @@ class PIDTuning(ControlMode):
         # Convert the triggers to a single value.
         right_trigger = self._controller.axes[ControllerAxisNames.RIGHT_TRIGGER]
         left_trigger = self._controller.axes[ControllerAxisNames.LEFT_TRIGGER]
-        vertical_speed = combine_triggers(right_trigger.value, left_trigger.value)
+        vertical = combine_triggers(right_trigger.value, left_trigger.value)
 
         # Convert the back buttons to a single value indicating desired roll thrust.
         right_bumper = self._controller.buttons[ControllerButtonNames.RIGHT_BUMPER]
         left_bumper = self._controller.buttons[ControllerButtonNames.LEFT_BUMPER]
         roll_speed = 2*combine_triggers(float(left_bumper.pressed), float(right_bumper.pressed))
 
-        # Get the values from the controller hat (D-Pad) to adjust the trim values.
-        if self._controller.hats[ControllerHatNames.DPAD].buttons[ControllerHatButtonNames.DPAD_UP].held:
-            self._omega_trim.pitch += 0.01
-        if self._controller.hats[ControllerHatNames.DPAD].buttons[ControllerHatButtonNames.DPAD_DOWN].held:
-            self._omega_trim.pitch -= 0.01
-        if self._controller.hats[ControllerHatNames.DPAD].buttons[ControllerHatButtonNames.DPAD_LEFT].held:
-            self._omega_trim.roll += 0.01
-        if self._controller.hats[ControllerHatNames.DPAD].buttons[ControllerHatButtonNames.DPAD_RIGHT].held:
-            self._omega_trim.roll -= 0.01
+        # # Get the values from the controller hat (D-Pad) to adjust the trim values.
+        # if self._controller.hats[ControllerHatNames.DPAD].buttons[ControllerHatButtonNames.DPAD_UP].held:
+        #     self._omega_trim.pitch += 0.01
+        # if self._controller.hats[ControllerHatNames.DPAD].buttons[ControllerHatButtonNames.DPAD_DOWN].held:
+        #     self._omega_trim.pitch -= 0.01
+        # if self._controller.hats[ControllerHatNames.DPAD].buttons[ControllerHatButtonNames.DPAD_LEFT].held:
+        #     self._omega_trim.roll += 0.01
+        # if self._controller.hats[ControllerHatNames.DPAD].buttons[ControllerHatButtonNames.DPAD_RIGHT].held:
+        #     self._omega_trim.roll -= 0.01
+
+        self._goal_angle += Vector3(
+            yaw=0,
+            pitch=self._controller.axes[ControllerAxisNames.RIGHT_Y].value * self._rotational_input_modifier.pitch,
+            roll=roll_speed * self._rotational_input_modifier.roll,
+        )
+        delta_angle = self._goal_angle - gyro_orientation
+
+        self._goal_position += Vector3(
+            x=0,
+            y=0,
+            z=vertical * self._lateral_input_modifier.z,
+        )
+        delta_position = self._goal_position - Vector3(0, 0, depth)
 
         # Update the target position of the ROV based on the controller inputs for the PID controllers.
         self._kinematics.update_target_position(
             Vector3(
                 yaw=0,  # Doing this manually
-                pitch=self._controller.axes[ControllerAxisNames.RIGHT_Y].value * self._input_modifier.pitch,
-                roll=roll_speed * self._input_modifier.roll,
+                pitch=delta_angle.pitch,
+                roll=delta_angle.roll,
             ),
-            vertical_speed,
+            vertical,
         )
 
         pids: dict[Directions, float] = {
             # Directions.YAW: self._kinematics.yaw_pid(gyro_orientation.yaw) + self._omega_trim.yaw + self._past_pids[Directions.YAW],
-            Directions.PITCH: self._kinematics.pitch_pid(-gyro_omega.pitch) + self._omega_trim.pitch + self._past_pids[Directions.PITCH],
-            Directions.ROLL: self._kinematics.roll_pid(-gyro_omega.roll) + self._omega_trim.roll + self._past_pids[Directions.ROLL],
-            Directions.UP: self._kinematics.depth_pid(depth) + self._past_pids[Directions.UP],
+            Directions.PITCH: self._kinematics.pitch_pid(-delta_angle.pitch) + self._past_pids[Directions.PITCH],
+            Directions.ROLL: self._kinematics.roll_pid(-delta_angle.roll) + self._past_pids[Directions.ROLL],
+            Directions.UP: -self._kinematics.depth_pid(delta_position.z) + self._past_pids[Directions.UP],
         }
 
         # Get the mixed directions based on the controller inputs, gyro data, and PID outputs.

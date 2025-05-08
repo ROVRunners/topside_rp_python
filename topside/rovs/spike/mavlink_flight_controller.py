@@ -70,6 +70,7 @@ class FlightController:
                 messages["SCALED_IMU"]["xmag"], messages["SCALED_IMU"]["ymag"], messages["SCALED_IMU"]["zmag"]
             )
 
+
     def calibrate_gyro(self, mavlink: MavlinkHandler) -> None:
         """Calibrate the gyroscope.
 
