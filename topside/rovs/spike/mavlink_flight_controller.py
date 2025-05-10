@@ -3,6 +3,7 @@ from io_systems.mavlink_handler import MavlinkHandler
 from enums import MavlinkMessageTypes
 
 from utilities.vector import Vector3
+from utilities.math_help.shared import wrap_angle
 
 
 class FlightController:
@@ -56,11 +57,15 @@ class FlightController:
         """
         if "ATTITUDE" in messages:
             self._attitude = Vector3(
-                yaw=messages["ATTITUDE"]["yaw"], pitch=messages["ATTITUDE"]["pitch"], roll=messages["ATTITUDE"]["roll"]
+                yaw=wrap_angle(messages["ATTITUDE"]["yaw"]), pitch=wrap_angle(messages["ATTITUDE"]["pitch"]),
+                roll=wrap_angle(messages["ATTITUDE"]["roll"])
             )
             self._attitude_speed = Vector3(
                 yaw=messages["ATTITUDE"]["yawspeed"], pitch=messages["ATTITUDE"]["pitchspeed"], roll=messages["ATTITUDE"]["rollspeed"]
             )
+
+
+
 
         if "SCALED_IMU" in messages:
             self._lateral_accel = Vector3(
