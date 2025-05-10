@@ -1,3 +1,4 @@
+import copy
 import math
 
 import simple_pid
@@ -161,7 +162,8 @@ class Kinematics:
             enums.Directions.ROLL: 0,
         }
 
-        lateral: Vector3 = self.rotate_target_lateral_movement(heading, lateral_target)
+        lateral: Vector3 = copy.copy(lateral_target)
+        # pid_rotate: Vector3 = self.rotate_target_lateral_movement(heading, lateral_target)
 
         # Add base values from the controllers.
         directional_values[enums.Directions.FORWARDS] = lateral.y

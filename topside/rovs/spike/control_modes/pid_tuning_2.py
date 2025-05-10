@@ -69,9 +69,9 @@ class PIDTuning(ControlMode):
         self._goal_position = Vector3(x=0, y=0, z=0)
 
         self._rotational_input_modifier = Vector3(
-            yaw=1,
-            pitch=1,
-            roll=1,
+            yaw=.005,
+            pitch=.005,
+            roll=.005,
         )
 
         self._lateral_input_modifier = Vector3(
@@ -85,6 +85,8 @@ class PIDTuning(ControlMode):
         self._past_pids: dict[Directions, float] = {
             direction: 0.0 for direction in Directions
         }
+
+        self._update_pid_values(self._rov_directory + "/assets/pid_values.json")
 
     @property
     def inputs(self):
@@ -182,25 +184,29 @@ class PIDTuning(ControlMode):
         self._kinematics.update_target_position(
             Vector3(
                 yaw=0,  # Doing this manually
-                pitch=delta_angle.pitch,
-                roll=delta_angle.roll,
+                pitch=self._goal_angle.pitch,
+                roll=self._goal_angle.roll,
             ),
             vertical,
         )
 
         pids: dict[Directions, float] = {
             # Directions.YAW: self._kinematics.yaw_pid(gyro_orientation.yaw) + self._omega_trim.yaw + self._past_pids[Directions.YAW],
-            Directions.PITCH: self._kinematics.pitch_pid(-delta_angle.pitch) + self._past_pids[Directions.PITCH],
-            Directions.ROLL: self._kinematics.roll_pid(-delta_angle.roll) + self._past_pids[Directions.ROLL],
+            Directions.PITCH: self._kinematics.pitch_pid(gyro_orientation.pitch) + self._past_pids[Directions.PITCH],
+            Directions.ROLL: self._kinematics.roll_pid(gyro_orientation.roll) + self._past_pids[Directions.ROLL],
             Directions.UP: -self._kinematics.depth_pid(delta_position.z) + self._past_pids[Directions.UP],
         }
+
+        self._past_pids = copy(pids)
+
+        print(self._goal_angle.pitch, gyro_orientation.pitch, pids)
 
         # Get the mixed directions based on the controller inputs, gyro data, and PID outputs.
         overall_thruster_impulses: dict[Directions, float] = self._kinematics.mix_directions(
             heading=gyro_orientation,
             lateral_target=Vector3(
-                self._controller.axes[ControllerAxisNames.LEFT_X].value,
                 self._controller.axes[ControllerAxisNames.LEFT_Y].value,
+                self._controller.axes[ControllerAxisNames.LEFT_X].value,
                 0,  # Set to zero because we are using PIDs for this.
             ),
             rotational_target=Vector3(  # Set to zero because we are using PIDs for this.
@@ -210,6 +216,9 @@ class PIDTuning(ControlMode):
             ),
             pid_impulses=pids,
         )
+
+        # print(self._controller.axes[ControllerAxisNames.RIGHT_X].value,
+        #         self._controller.axes[ControllerAxisNames.RIGHT_Y].value,)
 
         # Get the PWM values for the thrusters based on the controller inputs.
         pwm_values: dict[ThrusterPositions, int] = self._frame.get_pwm_values(
@@ -226,6 +235,9 @@ class PIDTuning(ControlMode):
         # Update the PID values if the X button is pressed.
         if self._controller.buttons[ControllerButtonNames.X].just_pressed:
             self._update_pid_values(self._rov_directory + "/assets/pid_values.json")
+
+        if self._controller.buttons[ControllerButtonNames.A].just_pressed:
+            self._goal_angle = copy(gyro_orientation)
 
         # TODO: Add a keybind or several keybinds to change control modes.
         # self._set_control_mode(enums.ControlModes.MANUAL)
@@ -253,22 +265,24 @@ class PIDTuning(ControlMode):
         """
         with open(file_path, "r") as file:
             file_contents = json.load(file)
+        
+        print(file_contents)
 
-        self._kinematics.yaw_pid.Kd = file_contents["yaw"]["P"]
-        self._kinematics.yaw_pid.Kp = file_contents["yaw"]["I"]
-        self._kinematics.yaw_pid.Ki = file_contents["yaw"]["D"]
+        self._kinematics.yaw_pid.Kp = file_contents["yaw"]["P"]
+        self._kinematics.yaw_pid.Ki = file_contents["yaw"]["I"]
+        self._kinematics.yaw_pid.Kd = file_contents["yaw"]["D"]
 
-        self._kinematics.pitch_pid.Kd = file_contents["pitch"]["P"]
-        self._kinematics.pitch_pid.Kp = file_contents["pitch"]["I"]
-        self._kinematics.pitch_pid.Ki = file_contents["pitch"]["D"]
+        self._kinematics.pitch_pid.Kp = file_contents["pitch"]["P"]
+        self._kinematics.pitch_pid.Ki = file_contents["pitch"]["I"]
+        self._kinematics.pitch_pid.Kd = file_contents["pitch"]["D"]
 
-        self._kinematics.roll_pid.Kd = file_contents["roll"]["P"]
-        self._kinematics.roll_pid.Kp = file_contents["roll"]["I"]
-        self._kinematics.roll_pid.Ki = file_contents["roll"]["D"]
+        self._kinematics.roll_pid.Kp = file_contents["roll"]["P"]
+        self._kinematics.roll_pid.Ki = file_contents["roll"]["I"]
+        self._kinematics.roll_pid.Kd = file_contents["roll"]["D"]
 
-        self._kinematics.depth_pid.Kd = file_contents["depth"]["P"]
-        self._kinematics.depth_pid.Kp = file_contents["depth"]["I"]
-        self._kinematics.depth_pid.Ki = file_contents["depth"]["D"]
+        self._kinematics.depth_pid.Kp = file_contents["depth"]["P"]
+        self._kinematics.depth_pid.Ki = file_contents["depth"]["I"]
+        self._kinematics.depth_pid.Kd = file_contents["depth"]["D"]
 
     def shutdown(self):
         """Shutdown the ROV."""
