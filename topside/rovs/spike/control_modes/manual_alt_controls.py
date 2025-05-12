@@ -175,9 +175,11 @@ class Manual(ControlMode):
         #     print(pos, overall_thruster_impulses[pos])
 
         # Get the PWM values for the thrusters based on the controller inputs.
-        pwm_values: dict[ThrusterPositions, int] = self._frame.get_pwm_values(
+        self._frame.update_thruster_output(
             overall_thruster_impulses
         )
+
+        pwm_values = self._frame.pwm
 
         # print("Torques:")
         # for pos in ThrusterPositions:

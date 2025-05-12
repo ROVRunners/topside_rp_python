@@ -117,7 +117,7 @@ class Manual:
 
         # TODO: add sensor data to pids below
         # Get the PWM values for the thrusters based on the controller inputs.
-        pwm_values: dict[enums.ThrusterPositions, int] = self._frame.get_pwm_values(
+        self._frame.update_thruster_output(
             {
                 enums.Directions.FORWARDS: controller.axes[enums.ControllerAxisNames.LEFT_Y].value,
                 enums.Directions.RIGHT: controller.axes[enums.ControllerAxisNames.LEFT_X].value,
@@ -127,6 +127,8 @@ class Manual:
                 enums.Directions.ROLL: self._kinematics.roll_pid(gyro_roll),
             },
         )
+
+        pwm_values = self._frame.pwm
 
         # Test to see if button press toggles are working.
         stop = controller.buttons[enums.ControllerButtonNames.B].toggled

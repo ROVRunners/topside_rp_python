@@ -139,7 +139,7 @@ class PIDTuning(ControlMode):
         )
 
         # Get the PWM values for the thrusters based on the controller inputs.
-        pwm_values: dict[ThrusterPositions, int] = self._frame.get_pwm_values(
+        pwm_values: dict[ThrusterPositions, int] = self._frame.update_thruster_output(
             overall_thruster_impulses
         )
 

@@ -138,10 +138,11 @@ class PIDTuning(ControlMode):
             },
         )
 
-        # Get the PWM values for the thrusters based on the controller inputs.
-        pwm_values: dict[ThrusterPositions, int] = self._frame.get_pwm_values(
+        self._frame.update_thruster_output(
             overall_thruster_impulses
         )
+        # Get the PWM values for the thrusters based on the controller inputs.
+        pwm_values: dict[ThrusterPositions, int] =self._frame.update_thruster_output.pwm
 
         # Theoretically stop the ROV from moving if the B button is toggled. TODO: Fix.
         stop = controller.buttons[ControllerButtonNames.B].toggled

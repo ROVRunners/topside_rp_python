@@ -119,14 +119,25 @@ class ROVConfig:
         # TODO: Insert the correct thruster impulses here when the ROV is re-assembled.
         # Used to set the thrust of each thruster in the case that some thrusters are more powerful than others.
         self.thruster_thrusts: dict[enums.ThrusterPositions, float] = {
-            enums.ThrusterPositions.FRONT_LEFT: -1,
+            enums.ThrusterPositions.FRONT_LEFT: 1,
             enums.ThrusterPositions.FRONT_RIGHT: 1,
             enums.ThrusterPositions.REAR_LEFT: 1,
             enums.ThrusterPositions.REAR_RIGHT: 1,
             enums.ThrusterPositions.FRONT_LEFT_VERTICAL: 1,
             enums.ThrusterPositions.FRONT_RIGHT_VERTICAL: 1,
             enums.ThrusterPositions.REAR_LEFT_VERTICAL: 1,
-            enums.ThrusterPositions.REAR_RIGHT_VERTICAL: -1,
+            enums.ThrusterPositions.REAR_RIGHT_VERTICAL: 1,
+        }
+
+        self.reversed_thrust: dict[enums.ThrusterPositions, float] = {
+            enums.ThrusterPositions.FRONT_LEFT: True,
+            enums.ThrusterPositions.FRONT_RIGHT: False,
+            enums.ThrusterPositions.REAR_LEFT: False,
+            enums.ThrusterPositions.REAR_RIGHT: False,
+            enums.ThrusterPositions.FRONT_LEFT_VERTICAL:  False,
+            enums.ThrusterPositions.FRONT_RIGHT_VERTICAL: False,
+            enums.ThrusterPositions.REAR_LEFT_VERTICAL:   False,
+            enums.ThrusterPositions.REAR_RIGHT_VERTICAL: True,
         }
 
         self.thruster_configs: dict[enums.ThrusterPositions, thruster.ThrusterConfig] = {
@@ -137,6 +148,7 @@ class ROVConfig:
                 thruster_position=self.thruster_positions[position],
                 thruster_orientation=self.thruster_orientations[position],
                 thrust=self.thruster_thrusts[position],
+                reversed_thrust=self.reversed_thrust[position]
             ) for position in self.thruster_positions.keys()
         }
 

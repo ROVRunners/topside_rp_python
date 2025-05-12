@@ -2,6 +2,7 @@
 Input is given through lateral_thruster_calc_circular and returned as a FrameThrusters object."""
 
 import math
+from typing import Sequence
 
 import numpy as np
 
@@ -17,23 +18,29 @@ INV_SQRT2 = 0.7071067811865476
 class ThrusterPWM:
     """Basic wrapper for a servo-based PWM thruster."""
 
-    _power: float
+    _thrust: float  # Requested power output, assuming thruster is oriented as the frame expects
     _config: ThrusterConfig
-    _pwm: int  # Cached pwm output for current requested power
+    _pwm: int  # Cached pwm output for current requested power, configuration may reverse polarity if required
+    _power: float
 
     @property
-    def power(self) -> float:
+    def config(self) -> ThrusterConfig:
+        return self._config
+
+    @property
+    def requested_power(self):
+        """The requested power output of the motor"""
         return self._power
+
+    @requested_power.setter
+    def requested_power(self, value):
+        self._power = value
+        self._calculate_pwm()
 
     @property
     def pwm_output(self) -> int:
         """PWM output corresponding to current power setting"""
         return self._pwm
-
-    @power.setter
-    def power(self, value: float):
-        self._power = value
-        self._pwm = self._calculate_pwm()
 
     @property
     def min_pwm_output(self) -> int:
@@ -87,6 +94,7 @@ class ThrusterPWM:
         self._thrust = value
         self.calculate_forces()
         self.calculate_torques()
+        self._calculate_pwm()
 
     @property
     def reverse_polarity(self) -> bool:
@@ -140,10 +148,10 @@ class ThrusterPWM:
         print(f"{self._name} forces: {force}")
 
         # Apply the reverse polarity if needed.
-        if self._config.reverse_polarity:
-            force.x = -force.x
-            force.y = -force.y
-            force.z = -force.z
+        # if self._config.reverse_polarity:
+        #     force.x = -force.x
+        #     force.y = -force.y
+        #     force.z = -force.z
 
         self._forces = force
 
@@ -194,34 +202,45 @@ class ThrusterPWM:
             torque.roll = 0.0
 
         # Apply the reverse polarity if needed.
-        if self._config.reverse_polarity:
-            torque.x = -torque.x
-            torque.y = -torque.y
-            torque.z = -torque.z
+        # if self._config.reverse_polarity:
+        #     torque.x = -torque.x
+        #     torque.y = -torque.y
+        #     torque.z = -torque.z
 
         self._torques = torque
-    
+
     @classmethod
     def _angle_math(cls, orient: float, pos_1: float, pos2: float) -> float:
         if pos2 > 0:
             return math.sin(math.radians(180-orient) - math.atan(pos_1/pos2))
         elif pos2 < 0:
             return math.sin(math.radians(360-orient) - math.atan(pos_1/pos2))
-        
+
         else:
             return (pos_1 / abs(pos_1)) * math.sin(math.radians(180-orient) - math.radians(90)) if pos_1 != 0 else 0
 
     def _calculate_pwm(self) -> int:
         """Calculate a PWM value for the thruster at its current power."""
-        power = -self.power if self._config.reverse_polarity else self.power
-        return int(self.min_pwm_output + 0.5 * (self.max_pwm_output - self.min_pwm_output) * (power + 1))
+        actual_power = self.requested_power * self.thrust
+        if self.config.reversed_thrust:
+            actual_power = -actual_power
+
+        return int(self.min_pwm_output + 0.5 * (self.max_pwm_output - self.min_pwm_output) * (actual_power + 1))
 
     def __repr__(self) -> str:
-        return f"Thruster(power={self.power} pwm={self.pwm_output})"
+        return f"Thruster(power={self.requested_power} pwm={self.pwm_output})"
 
 
 class FrameThrusters:
-    """Wrapper for a ROV frame's thrusters."""
+    """Wrapper for a ROV frame's thrusters.
+
+       A right handed coordinate system is expected
+       The eight motor frame expects the FrontLeft motor to be oriented so positive thrust pushes water to the back of the ROV and to the left of the ROV
+       The front and back motors are mirrored.  To go forward the front motors have a value of 1 and the rear motors a value of -1
+
+        """
+ 
+    _current_power: dict[ThrusterPositions, float] = {}
 
     def __init__(self, thrusters: dict[ThrusterPositions, ThrusterPWM]) -> None:
         """Initialize a new set of thruster values.
@@ -231,8 +250,14 @@ class FrameThrusters:
                 A dictionary of thrusters.
         """
         self.thrusters = thrusters
+        
 
-    def get_pwm(self) -> dict[ThrusterPositions, int]:
+    @property
+    def normalized_output(self):
+        return self._current_power
+
+    @property
+    def pwm(self) -> dict[ThrusterPositions, int]:
         """Get a PWM value for each thruster at its current power."""
         return {position: thruster.pwm_output for position, thruster in self.thrusters.items()}
 
@@ -241,8 +266,10 @@ class FrameThrusters:
             f"', '.join([str(thruster) + '=' + str(thruster.pwm_output) for thruster in self.thrusters.values()])" +
         "}")
 
-    def _thruster_calc(self, motions: dict[Directions, float]) -> None:
-        """Calculate thruster values for a given set of inputs.
+    def _thruster_calc(self, motions: dict[Directions, float]) -> dict[ThrusterPositions, float]:
+        """Calculate thruster values from -1 to 1 for a given set of inputs. Function assumes all 
+        thrusters are oriented correctly and not reversed.  Specified orientation changes and different PWM ranges
+        should be handled in ThrusterPWM configuration
 
         Args:
             motions (dict[Directions, float]):
@@ -250,13 +277,16 @@ class FrameThrusters:
 
         Returns:
             FrameThrusters: A collection of Thrusters at the correct power levels."""
-
+        key_order = []
+        key_forces = []
         # Matrix multiplication using the forces and torques of each thruster to calculate the values needed to achieve
         # the desired direction of motion.
-        motor_matrix: np.array = np.array([
-            [t.forces.x, t.forces.y, t.forces.z, t.torques.yaw, t.torques.pitch, t.torques.roll]
-            for t in self.thrusters.values()
-        ])
+
+        for key, t in self.thrusters.items():
+            key_order.append(key)
+            key_forces.append( [t.forces.x, t.forces.y, t.forces.z, t.torques.yaw, t.torques.pitch, t.torques.roll] )
+
+        motor_matrix: np.array = np.array(key_forces)
 
         desired_direction_matrix: np.array = np.array([
             [motions[Directions.FORWARDS]],
@@ -272,24 +302,87 @@ class FrameThrusters:
         # The result of the matrix multiplication is a 8x1 matrix.
         motor_thrust_array: list[float] = list(motor_thrust_matrix.flatten())
 
-        # Normalize the values to be in the range [-1.0, 1.0].
-        norm_motor_thrust_array = motor_thrust_array.copy()
+        required_thruster_power = self.scale_output(motor_thrust_array, key_order=key_order, requested_motions=motions)
 
-        norm_div = max([abs(val) for val in motor_thrust_array])
-        if norm_div != 0:
-            for i, val in enumerate(norm_motor_thrust_array):
-                norm_motor_thrust_array[i] = val / norm_div
 
-        # Scale the values to be proportional to the highest value in the desired directions. Skip if the multiplier is
-        # 1.0, as this means that the values are already normalized.
-        multiplier = max([abs(val) for val in motions.values()])
-        if multiplier != 1:
-            for i, val in enumerate(norm_motor_thrust_array):
-                norm_motor_thrust_array[i] = val * multiplier
+
+        #
 
         # Set the power of each thruster to the calculated value.
-        for i, position in enumerate(self.thrusters.keys()):
-            self.thrusters[position].power = norm_motor_thrust_array[i]
+#         required_thruster_power = {}
+#         for i, position in enumerate(key_order):
+#             required_thruster_power[position] = norm_motor_thrust_array[i]
+# #            self.thrusters[position].power = norm_motor_thrust_array[i]
+        
+        return required_thruster_power
+
+    def scale_output(self, input_power: Sequence[float],
+                         key_order: list[ThrusterPositions],
+                         requested_motions: dict[Directions, float]) -> dict[ThrusterPositions, float]:
+        """
+        Normalized the input thruster values to ensure the motors deliver output within the requested range.
+
+        :param input_power: Starting power values for each motor
+        :param key_order: The order that each thruster position appears in the motor_thrust_matrix
+        :param motions: Magnitude of each motion type
+        Returns: Thruster power values proportional to the requested input range.
+        """
+        # Separate lateral and vertical thrusters for independent normalization
+
+        lateral_indices = []
+        vertical_indices = []
+        lateral_thrusters = []
+        vertical_thrusters = []
+
+        for i, position in enumerate(key_order):
+            if "_VERTICAL" in str(position):
+                vertical_indices.append(i)
+                vertical_thrusters.append(input_power[i])
+            else:
+                lateral_indices.append(i)
+                lateral_thrusters.append(input_power[i])
+
+        #Calculate the magnitude of the lateral and vertical thruster inputs
+
+        #To be correct we should take the cube root, but I felt the square root was a smoother response curve.  Needs testing in real life
+        horz_magnitude = math.sqrt(requested_motions[Directions.FORWARDS] ** 2 +
+                         requested_motions[Directions.RIGHT] ** 2 +
+                         requested_motions[Directions.YAW] ** 2)
+
+        vert_magnitude = math.sqrt(requested_motions[Directions.UP] ** 2 +
+                                   requested_motions[Directions.ROLL] ** 2 +
+                                   requested_motions[Directions.PITCH] ** 2)
+
+        #Ensure values are in the range of 0, 1 - Not needed if cube root is used to calculate magnitude
+        horz_magnitude = np.clip(horz_magnitude, 0, 1)
+        vert_magnitude = np.clip(vert_magnitude, 0, 1)
+
+        # Normalize lateral thrusters
+        norm_motor_thrust_array = input_power.copy()
+        lateral_norm_max = max([abs(val) for val in lateral_thrusters]) if lateral_thrusters else 1
+        lateral_norm_scalar = horz_magnitude / lateral_norm_max if lateral_norm_max != 0 else 0
+        for i in lateral_indices:
+            norm_motor_thrust_array[i] = input_power[i] * lateral_norm_scalar
+
+        # Normalize vertical thrusters
+        vertical_norm_max = max([abs(val) for val in vertical_thrusters]) if vertical_thrusters else 1
+        vertical_norm_scalar = vert_magnitude / vertical_norm_max if vertical_norm_max != 0 else 0
+        for i in vertical_indices:
+            norm_motor_thrust_array[i] = input_power[i] * vertical_norm_scalar
+
+        thruster_outputs = {}
+        for i in lateral_indices:
+            key = key_order[i]
+            value = norm_motor_thrust_array[i]
+            thruster_outputs[key] = value
+
+        for i in vertical_indices:
+            key = key_order[i]
+            value = norm_motor_thrust_array[i]
+            thruster_outputs[key] = value
+
+        return thruster_outputs
+
 
     # TODO: This function should probably be moved into the ROV-specific files
     @classmethod
@@ -330,7 +423,7 @@ class FrameThrusters:
         # self.rr.power /= INV_SQRT2
         # self.rl.power /= INV_SQRT2
 
-    def get_pwm_values(self, motions: dict[Directions, float]) -> dict[ThrusterPositions, int]:
+    def update_thruster_output(self, motions: dict[Directions, float]) -> dict[ThrusterPositions, int]:
         """Get PWM values for a given set of inputs. USE THIS FUNCTION, NOT THE OTHERS, FROM OUTSIDE THE THRUSTER_PWM
         FILE.
 
@@ -341,6 +434,8 @@ class FrameThrusters:
         Returns:
             list[int]: PWM values for each thruster.
         """
-        self._thruster_calc_circular(motions)
+        self._current_power = self._thruster_calc(motions)
 
-        return self.get_pwm()
+        for position in list(ThrusterPositions):
+            self.thrusters[position].thrust = self._current_power[position]
+

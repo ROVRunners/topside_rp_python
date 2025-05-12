@@ -73,7 +73,7 @@ class PureManual(ControlMode):
 
         # TODO: add sensor data to pids below
         # Get the PWM values for the thrusters based on the controller inputs.
-        pwm_values: dict[ThrusterPositions, int] = self._frame.get_pwm_values(
+        self._frame.update_thruster_output(
             {
                 Directions.FORWARDS: controller.axes[ControllerAxisNames.LEFT_Y].value,
                 Directions.RIGHT: controller.axes[ControllerAxisNames.LEFT_X].value,
@@ -86,6 +86,8 @@ class PureManual(ControlMode):
                 )
             },
         )
+
+        pwm_values: dict[ThrusterPositions, int] = self._frame.pwm
 
         # Theoretically stop the ROV from moving if the B button is toggled. TODO: Fix.
         stop = controller.buttons[ControllerButtonNames.B].toggled

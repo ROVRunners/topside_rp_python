@@ -70,7 +70,8 @@ class ROV(GenericROV):
             ),
         }
 
-        self._control_mode: ControlMode = self._control_mode_dict[ControlModeNames.PID_TUNING]
+        # change default control mode here
+        self._control_mode: ControlMode = self._control_mode_dict[ControlModeNames.MANUAL]
 
     def set_control_mode(self, control_mode: ControlModeNames | ControlMode) -> None:
         """Set the current control mode of the ROV.
