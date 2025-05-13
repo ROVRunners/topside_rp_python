@@ -129,7 +129,7 @@ class ROVConfig:
             enums.ThrusterPositions.REAR_RIGHT_VERTICAL: 1,
         }
 
-        self.reversed_thrust: dict[enums.ThrusterPositions, float] = {
+        self.reversed_thrust: dict[enums.ThrusterPositions, bool] = {
             enums.ThrusterPositions.FRONT_LEFT: True,
             enums.ThrusterPositions.FRONT_RIGHT: False,
             enums.ThrusterPositions.REAR_LEFT: False,
