@@ -35,7 +35,8 @@ class ThrusterPWM:
     @requested_power.setter
     def requested_power(self, value):
         self._power = value
-        self._calculate_pwm()
+        # self._calculate_pwm()
+        self._pwm = self._calculate_pwm()
 
     @property
     def pwm_output(self) -> int:
@@ -436,6 +437,6 @@ class FrameThrusters:
         """
         self._current_power = self._thruster_calc(motions)
 
-        for position in list(ThrusterPositions):
-            self.thrusters[position].thrust = self._current_power[position]
+        for position in self.thrusters:
+            self.thrusters[position].requested_power = self._current_power[position]
 

@@ -113,6 +113,7 @@ class ROVConfig:
                 pwm_pulse_range=typed_range.IntRange(min=1100, max=1900),
                 thruster_position=self.thruster_positions[position],
                 thruster_orientation=self.thruster_orientations[position],
+
             ) for position in self.thruster_positions.keys()
         }
 

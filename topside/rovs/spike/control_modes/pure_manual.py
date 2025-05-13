@@ -47,18 +47,18 @@ class PureManual(ControlMode):
 
     @property
     def inputs(self):
-        return self.inputs
+        return self._inputs
 
     @inputs.setter
     def inputs(self, value):
-        self.inputs = value
+        self._inputs = value
 
     def loop(self):
         """Update thrust values, send commands, and more based on the inputs."""
-        inputs = self._io.controllers
+        self._inputs = self._io.controllers
         # subscriptions = self._io.subscriptions
 
-        controller = inputs[ControllerNames.PRIMARY_DRIVER]
+        controller = self._inputs[ControllerNames.PRIMARY_DRIVER]
 
         # self._dash.update_images({
         #     "topview": gyro_yaw,
