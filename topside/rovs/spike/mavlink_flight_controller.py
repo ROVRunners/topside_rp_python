@@ -1,6 +1,7 @@
 from config.flight_controller import FlightControllerConfig
 from io_systems.mavlink_handler import MavlinkHandler
 from enums import MavlinkMessageTypes
+from wpimath.geometry import Quaternion
 
 from utilities.vector import Vector3
 from utilities.math_help.shared import wrap_angle
@@ -18,6 +19,8 @@ class FlightController:
 
         self._flight_controller_config = flight_controller_config
 
+
+        self._attitude_quat = Quaternion(0, 0, 0, 1)
         self._attitude = Vector3(yaw=0, pitch=0, roll=0)  # radians
         self._attitude_speed = Vector3(yaw=0, pitch=0, roll=0)  # rad/s
         self._lateral_accel = Vector3(x=0, y=0, z=0)  # mG
@@ -25,12 +28,26 @@ class FlightController:
 
         self._currently_calibrating = False
 
+
+    #TODO: fix this so it is irrespective of the order that the quaternion is in
     @property
-    def attitude(self):
-        return self._attitude
+    def attitude(self) -> Vector3:
+        attitude = []
+        quat = self._attitude_quat.normalize().toRotationVector()
+        for i in quat:
+            attitude.append(quat[i])
+        return Vector3(yaw=attitude[0], pitch=attitude[1], roll=attitude[2])
 
     @property
     def attitude_speed(self):
+        return self._attitude_speed
+
+    @property
+    def attitude_quat(self) -> Quaternion:
+        return self._attitude_quat
+
+    @property
+    def attitude_quat_speed(self):
         return self._attitude_speed
 
     @property
@@ -56,23 +73,31 @@ class FlightController:
                 The messages from the mavlink handler.
         """
         if "ATTITUDE" in messages:
+            att = messages["ATTITUDE"]
             self._attitude = Vector3(
-                yaw=wrap_angle(messages["ATTITUDE"]["yaw"]), pitch=wrap_angle(messages["ATTITUDE"]["pitch"]),
-                roll=wrap_angle(messages["ATTITUDE"]["roll"])
+                yaw=wrap_angle(att["yaw"]), pitch=wrap_angle(att["pitch"]),
+                roll=wrap_angle(att["roll"])
             )
             self._attitude_speed = Vector3(
-                yaw=messages["ATTITUDE"]["yawspeed"], pitch=messages["ATTITUDE"]["pitchspeed"], roll=messages["ATTITUDE"]["rollspeed"]
+                yaw=att["yawspeed"], pitch=att["pitchspeed"], roll=att["rollspeed"]
             )
 
-
-
+        if "ATTITUDE_QUATERNION" in messages:
+            attq = messages["ATTITUDE_QUATERNION"]
+            self._attitude = Quaternion(
+                w=attq["w"], x=attq["x"], y=attq["y"], z=attq["z"]
+            )
+            self._attitude_speed = Vector3(
+                roll=attq["rollspeed"], yaw=attq["yawspeed"], pitch=attq["pitchspeed"]
+            )
 
         if "SCALED_IMU" in messages:
+            s_i = messages["SCALED_IMU"]
             self._lateral_accel = Vector3(
-                messages["SCALED_IMU"]["xacc"], messages["SCALED_IMU"]["yacc"], messages["SCALED_IMU"]["zacc"]
+                s_i["xacc"], s_i["yacc"], s_i["zacc"]
             )
             self._compass = Vector3(
-                messages["SCALED_IMU"]["xmag"], messages["SCALED_IMU"]["ymag"], messages["SCALED_IMU"]["zmag"]
+                s_i["xmag"], s_i["ymag"], s_i["zmag"]
             )
 
 
