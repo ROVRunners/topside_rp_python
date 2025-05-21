@@ -1,6 +1,7 @@
 from config.flight_controller import FlightControllerConfig
 from io_systems.mavlink_handler import MavlinkHandler
 from enums import MavlinkMessageTypes
+from wpimath.geometry import Quaternion
 
 from utilities.vector import Vector3
 from utilities.math_help.shared import wrap_angle
@@ -18,6 +19,8 @@ class FlightController:
 
         self._flight_controller_config = flight_controller_config
 
+
+        self._attitude_quat = Quaternion(0, 0, 0, 1)
         self._attitude = Vector3(yaw=0, pitch=0, roll=0)  # radians
         self._attitude_speed = Vector3(yaw=0, pitch=0, roll=0)  # rad/s
         self._lateral_accel = Vector3(x=0, y=0, z=0)  # mG
@@ -25,12 +28,22 @@ class FlightController:
 
         self._currently_calibrating = False
 
+
+    #TODO: fix this so it is irrespective of the order that the quaternion is in
     @property
     def attitude(self):
         return self._attitude
 
     @property
     def attitude_speed(self):
+        return self._attitude_speed
+
+    @property
+    def attitude_quat(self) -> Quaternion:
+        return self._attitude_quat
+
+    @property
+    def attitude_quat_speed(self):
         return self._attitude_speed
 
     @property
@@ -64,8 +77,14 @@ class FlightController:
                 yaw=messages["ATTITUDE"]["yawspeed"], pitch=messages["ATTITUDE"]["pitchspeed"], roll=messages["ATTITUDE"]["rollspeed"]
             )
 
-
-
+        if "ATTITUDE_QUATERNION" in messages:
+            attq = messages["ATTITUDE_QUATERNION"]
+            self._attitude = Quaternion(
+                w=attq["w"], x=attq["x"], y=attq["y"], z=attq["z"]
+            )
+            self._attitude_speed = Vector3(
+                roll=attq["rollspeed"], yaw=attq["yawspeed"], pitch=attq["pitchspeed"]
+            )
 
         if "SCALED_IMU" in messages:
             self._lateral_accel = Vector3(
