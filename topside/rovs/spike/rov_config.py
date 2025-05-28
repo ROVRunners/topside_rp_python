@@ -199,7 +199,7 @@ class ROVConfig:
             "sys_status": 1,
             "scaled_imu": 26,
             "attitude": 30,
-            "attitude_quarternion": 30,
+            "attitude_quarternion": 31,
             "local_position_ned": 32,
         }
 

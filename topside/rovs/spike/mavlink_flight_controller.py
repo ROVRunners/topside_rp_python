@@ -84,8 +84,8 @@ class FlightController:
 
         if "ATTITUDE_QUATERNION" in messages:
             attq = messages["ATTITUDE_QUATERNION"]
-            self._attitude = Quaternion(
-                w=attq["w"], x=attq["x"], y=attq["y"], z=attq["z"]
+            self._attitude_quat = Quaternion(
+                w=attq["q1"], x=attq["q2"], y=attq["q3"], z=attq["q4"]
             )
             self._attitude_speed = Vector3(
                 roll=attq["rollspeed"], yaw=attq["yawspeed"], pitch=attq["pitchspeed"]
