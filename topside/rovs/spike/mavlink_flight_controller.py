@@ -20,7 +20,7 @@ class FlightController:
         self._flight_controller_config = flight_controller_config
 
 
-        self._attitude_quat = Quaternion(0, 0, 0, 1)
+        self._attitude_quat = Quaternion(0, 0, 0, 0)
         self._attitude = Vector3(yaw=0, pitch=0, roll=0)  # radians
         self._attitude_speed = Vector3(yaw=0, pitch=0, roll=0)  # rad/s
         self._lateral_accel = Vector3(x=0, y=0, z=0)  # mG
