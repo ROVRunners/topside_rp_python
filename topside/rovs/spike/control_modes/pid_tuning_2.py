@@ -217,13 +217,15 @@ class PIDTuning(ControlMode):
             pid_impulses=pids,
         )
 
+        self._frame.update_thruster_output(
+            overall_thruster_impulses
+        )
+
         # print(self._controller.axes[ControllerAxisNames.RIGHT_X].value,
         #         self._controller.axes[ControllerAxisNames.RIGHT_Y].value,)
 
         # Get the PWM values for the thrusters based on the controller inputs.
-        pwm_values: dict[ThrusterPositions, int] = self._frame.update_thruster_output(
-            overall_thruster_impulses
-        )
+        pwm_values: dict[ThrusterPositions, int] = self._frame.pwm
 
         # Theoretically stop the ROV from moving if the B button is toggled.
         stop = self._controller.buttons[ControllerButtonNames.B].toggled
@@ -266,7 +268,7 @@ class PIDTuning(ControlMode):
         with open(file_path, "r") as file:
             file_contents = json.load(file)
         
-        print(file_contents)
+        # print(file_contents)
 
         self._kinematics.yaw_pid.Kp = file_contents["yaw"]["P"]
         self._kinematics.yaw_pid.Ki = file_contents["yaw"]["I"]
