@@ -1,3 +1,5 @@
+import math
+
 from config.flight_controller import FlightControllerConfig
 from io_systems.mavlink_handler import MavlinkHandler
 from enums import MavlinkMessageTypes
@@ -32,11 +34,12 @@ class FlightController:
     #TODO: fix this so it is irrespective of the order that the quaternion is in
     @property
     def attitude(self) -> Vector3:
-        attitude = []
-        quat = self._attitude_quat.normalize().toRotationVector()
-        for q in quat:
-            attitude.append(q)
-        return Vector3(yaw=attitude[0], pitch=attitude[1], roll=attitude[2])
+        # attitude = []
+        # quat = self._attitude_quat.normalize().toRotationVector()
+        # for q in quat:
+        #     attitude.append(q)
+        # return Vector3(yaw=attitude[0], pitch=attitude[1], roll=attitude[2])
+        return self._attitude
 
     @property
     def attitude_speed(self):
@@ -75,8 +78,8 @@ class FlightController:
         if "ATTITUDE" in messages:
             att = messages["ATTITUDE"]
             self._attitude = Vector3(
-                yaw=wrap_angle(att["yaw"]), pitch=wrap_angle(att["pitch"]),
-                roll=wrap_angle(att["roll"])
+                yaw=wrap_angle(att["yaw"], min_val=-math.pi), pitch=wrap_angle(att["pitch"], min_val=-math.pi),
+                roll=wrap_angle(att["roll"], min_val=-math.pi)
             )
             self._attitude_speed = Vector3(
                 yaw=att["yawspeed"], pitch=att["pitchspeed"], roll=att["rollspeed"]
