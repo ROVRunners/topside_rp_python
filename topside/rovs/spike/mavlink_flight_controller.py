@@ -34,8 +34,8 @@ class FlightController:
     def attitude(self) -> Vector3:
         attitude = []
         quat = self._attitude_quat.normalize().toRotationVector()
-        for i in quat:
-            attitude.append(quat[i])
+        for q in quat:
+            attitude.append(q)
         return Vector3(yaw=attitude[0], pitch=attitude[1], roll=attitude[2])
 
     @property
