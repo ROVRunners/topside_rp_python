@@ -128,9 +128,9 @@ class PIDTuning(ControlMode):
         # copy(self._flight_controller.attitude))
 
         #adjust for weird gyro thing that jason understands
-        if abs(gyro_orientation.roll) > math.pi / 2:
-            gyro_orientation.pitch = math.pi - gyro_orientation.pitch
-            gyro_orientation.roll -= math.pi
+        # if abs(gyro_orientation.roll) > math.pi / 2:
+        #     gyro_orientation.pitch = math.pi - gyro_orientation.pitch
+        #     gyro_orientation.roll -= math.pi
 
         # Get the depth data from the subscriptions if it exists.
         if "ROV/custom/depth_sensor/depth" in subscriptions:

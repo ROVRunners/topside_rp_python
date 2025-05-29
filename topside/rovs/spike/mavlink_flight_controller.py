@@ -4,6 +4,7 @@ from config.flight_controller import FlightControllerConfig
 from io_systems.mavlink_handler import MavlinkHandler
 from enums import MavlinkMessageTypes
 from wpimath.geometry import Quaternion
+from pymavlink import mavextra, mavexpression
 
 from utilities.vector import Vector3
 from utilities.math_help.shared import wrap_angle
@@ -27,6 +28,7 @@ class FlightController:
         self._attitude_speed = Vector3(yaw=0, pitch=0, roll=0)  # rad/s
         self._lateral_accel = Vector3(x=0, y=0, z=0)  # mG
         self._compass = Vector3(x=0, y=0, z=0)  # mGauss
+        self._dcm_state = mavextra.DCM_State(roll=0, pitch=0, yaw=0)
 
         self._currently_calibrating = False
 
@@ -39,7 +41,7 @@ class FlightController:
         # for q in quat:
         #     attitude.append(q)
         # return Vector3(yaw=attitude[0], pitch=attitude[1], roll=attitude[2])
-        return self._attitude
+        return Vector3(roll=self._dcm_state.roll, pitch=self._dcm_state.pitch, yaw=self._dcm_state.yaw)
 
     @property
     def attitude_speed(self):
@@ -77,6 +79,9 @@ class FlightController:
         """
         if "ATTITUDE" in messages:
             att = messages["ATTITUDE"]
+            self._dcm_state.roll = att["roll"]
+            self._dcm_state.yaw = att["yaw"]
+            self._dcm_state.pitch = att["pitch"]
             self._attitude = Vector3(
                 yaw=wrap_angle(att["yaw"], min_val=-math.pi), pitch=wrap_angle(att["pitch"], min_val=-math.pi),
                 roll=wrap_angle(att["roll"], min_val=-math.pi)
