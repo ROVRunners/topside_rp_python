@@ -4,6 +4,7 @@ from config.flight_controller import FlightControllerConfig
 from io_systems.mavlink_handler import MavlinkHandler
 from enums import MavlinkMessageTypes
 from wpimath.geometry import Quaternion
+from pymavlink import mavextra, mavexpression, rotmat
 
 from utilities.vector import Vector3
 from utilities.math_help.shared import wrap_angle
@@ -23,10 +24,11 @@ class FlightController:
 
 
         self._attitude_quat = Quaternion(0, 0, 0, 0)
-        self._attitude = Vector3(yaw=0, pitch=0, roll=0)  # radians
+        self._attitude = rotmat.Vector3(x=0, y=0, z=0)  # radians
         self._attitude_speed = Vector3(yaw=0, pitch=0, roll=0)  # rad/s
-        self._lateral_accel = Vector3(x=0, y=0, z=0)  # mG
-        self._compass = Vector3(x=0, y=0, z=0)  # mGauss
+        self._lateral_accel = rotmat.Vector3(x=0, y=0, z=0)  # mG
+        self._compass = rotmat.Vector3(x=0, y=0, z=0)  # mGauss
+        self._dcm_state = mavextra.DCM_State(roll=0, pitch=0, yaw=0)
 
         self._currently_calibrating = False
 
@@ -39,7 +41,7 @@ class FlightController:
         # for q in quat:
         #     attitude.append(q)
         # return Vector3(yaw=attitude[0], pitch=attitude[1], roll=attitude[2])
-        return self._attitude
+        return Vector3(roll=self._dcm_state.roll, pitch=self._dcm_state.pitch, yaw=self._dcm_state.yaw)
 
     @property
     def attitude_speed(self):
@@ -77,31 +79,37 @@ class FlightController:
         """
         if "ATTITUDE" in messages:
             att = messages["ATTITUDE"]
-            self._attitude = Vector3(
-                yaw=wrap_angle(att["yaw"], min_val=-math.pi), pitch=wrap_angle(att["pitch"], min_val=-math.pi),
-                roll=wrap_angle(att["roll"], min_val=-math.pi)
+            self._dcm_state.roll = att["roll"]
+            self._dcm_state.yaw = att["yaw"]
+
+            self._attitude = rotmat.Vector3(
+                x=att["yaw"], z=att["pitch"],
+                y=att["roll"]
             )
-            self._attitude_speed = Vector3(
-                yaw=att["yawspeed"], pitch=att["pitchspeed"], roll=att["rollspeed"]
+            self._attitude_speed = rotmat.Vector3(
+                x=att["yawspeed"], z=att["pitchspeed"], y=att["rollspeed"]
             )
 
         if "ATTITUDE_QUATERNION" in messages:
             attq = messages["ATTITUDE_QUATERNION"]
+
             self._attitude_quat = Quaternion(
                 w=attq["q1"], x=attq["q2"], y=attq["q3"], z=attq["q4"]
             )
-            self._attitude_speed = Vector3(
-                roll=attq["rollspeed"], yaw=attq["yawspeed"], pitch=attq["pitchspeed"]
+            self._attitude_speed = rotmat.Vector3(
+                y=attq["rollspeed"], x=attq["yawspeed"], z=attq["pitchspeed"]
             )
 
         if "SCALED_IMU" in messages:
             s_i = messages["SCALED_IMU"]
-            self._lateral_accel = Vector3(
+            self._lateral_accel = rotmat.Vector3(
                 s_i["xacc"], s_i["yacc"], s_i["zacc"]
             )
-            self._compass = Vector3(
+            self._compass = rotmat.Vector3(
                 s_i["xmag"], s_i["ymag"], s_i["zmag"]
             )
+
+        self._dcm_state.update(gyro=self._attitude, accel=self._lateral_accel, mag=self._compass, GPS=0)
 
 
     def calibrate_gyro(self, mavlink: MavlinkHandler) -> None:
