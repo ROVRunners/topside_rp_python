@@ -36,12 +36,12 @@ class FlightController:
     #TODO: fix this so it is irrespective of the order that the quaternion is in
     @property
     def attitude(self) -> Vector3:
-        # attitude = []
-        # quat = self._attitude_quat.normalize().toRotationVector()
-        # for q in quat:
-        #     attitude.append(q)
-        # return Vector3(yaw=attitude[0], pitch=attitude[1], roll=attitude[2])
-        return Vector3(roll=self._dcm_state.roll, pitch=self._dcm_state.pitch, yaw=self._dcm_state.yaw)
+        attitude = []
+        quat = self._attitude_quat.toRotationVector()
+        for q in quat:
+            attitude.append(q)
+        return Vector3(yaw=attitude[0], pitch=attitude[1], roll=attitude[2])
+        # return Vector3(roll=self._dcm_state.roll, pitch=self._dcm_state.pitch, yaw=self._dcm_state.yaw)
 
     @property
     def attitude_speed(self):
