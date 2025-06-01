@@ -229,6 +229,15 @@ class ROVConnection:
 
         commands.clear()
 
+    def publish_mavlink_params(self, params: dict[int, tuple[int, int, int, int, int, int, int]]) -> None:
+        """Send a series of packets from the Raspberry Pi with the specified mavlink parameters."""
+        for key, payload in params.items():
+            # self._last_mavlink_update = time.time()
+            print(f"Publishing {payload} to {key}")
+            self._client.publish(f"PC/mavlink/send_msg/{key}", str(payload)[1:-1])
+
+        params.clear()
+
     def publish_mavlink_data_request(self, mavlink: dict[int, int]) -> None:
         """Send a series of packets from the Raspberry Pi with the specified mavlink data id and interval values.
 

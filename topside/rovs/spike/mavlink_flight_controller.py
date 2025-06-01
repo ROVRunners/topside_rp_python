@@ -32,7 +32,6 @@ class FlightController:
 
         self._currently_calibrating = False
 
-
     #TODO: fix this so it is irrespective of the order that the quaternion is in
     @property
     def attitude(self) -> Vector3:
