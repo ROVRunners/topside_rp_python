@@ -54,7 +54,7 @@ def combine_triggers(positive_trigger: float, negative_trigger: float) -> float:
             The value of the positive trigger.
         negative_trigger (float):
             The value of the negative trigger.
-
+math_help
     Returns:
         float: The combined value of the triggers.
     """
