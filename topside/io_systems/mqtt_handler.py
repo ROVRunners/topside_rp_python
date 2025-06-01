@@ -162,8 +162,8 @@ class ROVConnection:
 
 
     def publish_pins(self, pins: dict[str, Pin]) -> None:
-        """Send a series of packets from the Raspberry Pi with the specified thruster PWM values. To improve
-        performance, only put the PWM values that have changed into the dictionary.
+        """Send a series of packets to the Raspberry Pi with the specified pin and thruster PWM values. To improve
+        performance, only put the values that have changed into the dictionary.
 
         Args:
             pins (dict[str, Pin]):
@@ -203,7 +203,7 @@ class ROVConnection:
             self._client.publish(f"PC/pins/{pos}/freq", value.freq)
 
     def publish_mavlink_commands(self, commands: dict[int, tuple[int, int, int, int, int, int, int]]) -> None:
-        """Send a series of packets from the Raspberry Pi with the specified mavlink commands.
+        """Send a packet to the Raspberry Pi with the specified mavlink commands.
 
         Args:
             commands (dict[int, tuple[int, int, int, int, int, int, int]]):
@@ -230,7 +230,7 @@ class ROVConnection:
         commands.clear()
 
     def publish_mavlink_data_request(self, mavlink: dict[int, int]) -> None:
-        """Send a series of packets from the Raspberry Pi with the specified mavlink data id and interval values.
+        """Send a packet to the Raspberry Pi with the specified mavlink data id and interval values.
 
         Args:
             mavlink (dict[int, int]):
@@ -262,6 +262,19 @@ class ROVConnection:
         for key, interval in changed_mavlink_requests.items():
             self._last_mavlink_update = time.time()
             self._client.publish(f"PC/mavlink/req_id/{key}", interval)
+
+    def publish_mavlink_set_param(self, param_name: bytes, param_value: float, param_type: int) -> None:
+        """Send a packet to the Raspberry Pi with the specified mavlink parameter name, value, and type.
+
+        Args:
+            param_name (bytes):
+                The name of the parameter to set.
+            param_value (float):
+                The value of the parameter to set.
+            param_type (int):
+                The data type of the parameter to set.
+        """
+        self._client.publish(f"PC/mavlink/set_param/{param_name}-{param_type}", str(param_value))
 
     def get_subscriptions(self) -> dict[str, float | str | dict[str, float | str]]:
         """Get the sensor data from the Raspberry Pi.
