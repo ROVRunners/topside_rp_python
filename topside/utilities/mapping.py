@@ -1,8 +1,5 @@
 import math
 
-# from topside.utilities import Range
-import range
-
 
 tau = math.pi * 2
 

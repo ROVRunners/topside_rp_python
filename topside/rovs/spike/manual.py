@@ -1,35 +1,46 @@
-from typing import Callable
+"""
+"""
 
 import hardware.thruster_pwm as thruster_pwm
-import mqtt_handler
-import rovs.spike.enums as enums
+import enums
+import kinematics as kms
+from imu import IMU
 import controller_input
+from io_systems.io_handler import IO
+from utilities.vector import Vector3
+from dashboard import Dashboard
 
 
 class Manual:
-    """The manual control class for the ROV."""
+    """The manual control class for the ROV.
+    takes an inputs and maps and sends outputs to the rov connection
+    """
 
-    def __init__(self, frame: thruster_pwm.FrameThrusters, output_map: dict[str, Callable]) -> None:
+    def __init__(self, frame: thruster_pwm.FrameThrusters, io: IO, kinematics: kms.Kinematics, imu: IMU, dash: Dashboard) -> None:
         """Initialize the Manual object.
 
         Args:
             frame (thruster_pwm.FrameThrusters):
                 The objects of the thrusters mounted to the frame.
-            output_map (dict[str, Callable]):
-                The output map for the Manual class to access MQTT and other functions.
+            io (IO):
+                The IO (input output) object.
+            kinematics (kinematics.Kinematics):
+                The Kinematics object housing the PIDs.
         """
-
         self._frame = frame
-        self._output_map = output_map
+        self._io = io
+        self._kinematics = kinematics
+        self._imu = imu
+        self._dash = dash
 
-        # Set up the callables for the MQTT handler.
-        self._send_commands: mqtt_handler.ROVConnection.publish_commands = output_map["rov_command"]
-        self._set_thrusters: mqtt_handler.ROVConnection.publish_thruster_pwm = output_map["rov_thrusters"]
+        self._imu.initialize_imu(self._io.i2c_handler.i2cs["imu"])
+
+        # Set up the objects
+        # self._rov_connection: mqtt_handler.ROVConnection = self._main_system.rov_connection
+        # self._input_handler: controller_input.InputHandler = self._main_system.input_handler
 
         # self.sensor_data = {}
-        # self.controller_data = {}
         # self.terminal_data = {}
-        # self.pwm_values = []
 
         # Add whatever you need initialized here.
 
@@ -41,53 +52,92 @@ class Manual:
     def inputs(self, value):
         self.inputs = value
 
-    def update(self, inputs: dict[str, dict[enums.ControllerButtonNames | enums.ControllerAxisNames | str, any]]):
-        """Update thrust values based on the inputs.
+    def loop(self):
+        """Update thrust values, send commands, and more based on the inputs."""
+        inputs = self._io.controllers
 
-        Args:
-            inputs (dict[str, dict[enums.ControllerButtonNames | enums.ControllerAxisNames | str, any]]):
-                The inputs from the controller, sensors, and otherwise.
-        """
-        controller = inputs["controller"]
-        subscriptions = inputs["subscriptions"]
+        controller = inputs[enums.ControllerNames.PRIMARY_DRIVER]
 
-        if "ROV_sensor_data" in subscriptions:
-            sensor_data = subscriptions["ROV_sensor_data"]
+        subscriptions = self._io.subscriptions
+        i2c = self._io.i2c_handler.i2cs
+
+
+        # Get the gyro data from the subscriptions if it exists.
+        if "imu" in i2c:
+            self._imu.update(i2c["imu"])
+            gyro_yaw = self._imu.yaw
+            gyro_pitch = self._imu.pitch
+            gyro_roll = self._imu.roll
+        else:
+            gyro_yaw = 0
+            gyro_pitch = 0
+            gyro_roll = 0
+
+        # Get the accelerometer data from the subscriptions if it exists.
+        if "imu" in i2c:
+            accel_x = self._imu.accel_x
+            accel_y = self._imu.accel_y
+            accel_z = self._imu.accel_z
+        else:
+            accel_x = 0
+            accel_y = 0
+            accel_z = 0
+
+        # Get the depth data from the subscriptions if it exists.
+        if "ROV/sensor_data/depth" in subscriptions:
+            depth = subscriptions["ROV/sensor_data/depth"]
+        else:
+            depth = 0
+
+        # Get the leak warning data from the subscriptions if it exists.
+        if "ROV/sensor_data/leak" in subscriptions:
+            leak = subscriptions["ROV/sensor_data/leak"]
+        else:
+            leak = 0
+
+        self._dash.update_images({
+            "topview": gyro_yaw,
+            "frontview": gyro_roll,
+            "sideview": gyro_pitch
+        })
 
         # Convert the triggers to a single value.
-        right_trigger = controller[enums.ControllerAxisNames.RIGHT_TRIGGER]
-        left_trigger = controller[enums.ControllerAxisNames.LEFT_TRIGGER]
-        vertical = controller_input.combine_triggers(left_trigger, right_trigger)
+        right_trigger = controller.axes[enums.ControllerAxisNames.RIGHT_TRIGGER]
+        left_trigger = controller.axes[enums.ControllerAxisNames.LEFT_TRIGGER]
+        vertical = controller_input.combine_triggers(left_trigger.value, right_trigger.value)
 
-        # Break down the sensor data into its components (more can be added as needed).
-        # gyro: dict[str, float] = sensor_data["gyroscope"]
-        # accel: dict[str, float] = sensor_data["accelerometer"]
-        # depth: float = sensor_data["depth"]
-        # leak: bool = sensor_data["leak"]
+        self._kinematics.update_target_position(
+            Vector3(
+                controller.axes[enums.ControllerAxisNames.RIGHT_X].value,
+                controller.axes[enums.ControllerAxisNames.RIGHT_Y].value,
+                0,
+            ),
+            vertical,
+        )
 
-        # TODO: Add any other input processing software like a PID here. Also, a PID should probably be
-        #  implemented in a separate class due to it being generally applicable to all ROVs.
-
+        # TODO: add sensor data to pids below
         # Get the PWM values for the thrusters based on the controller inputs.
-        pwm_values: dict[enums.ThrusterPositions, int] = self._frame.get_pwm_values(
+        self._frame.update_thruster_output(
             {
-                enums.Directions.FORWARDS: controller[enums.ControllerAxisNames.LEFT_Y],
-                enums.Directions.RIGHT: controller[enums.ControllerAxisNames.LEFT_X],
-                enums.Directions.UP: vertical,
-                enums.Directions.YAW: controller[enums.ControllerAxisNames.RIGHT_X],
-                enums.Directions.PITCH: controller[enums.ControllerAxisNames.RIGHT_Y],
-                enums.Directions.ROLL: 0,
+                enums.Directions.FORWARDS: controller.axes[enums.ControllerAxisNames.LEFT_Y].value,
+                enums.Directions.RIGHT: controller.axes[enums.ControllerAxisNames.LEFT_X].value,
+                enums.Directions.UP: self._kinematics.depth_pid(depth),
+                enums.Directions.YAW: self._kinematics.yaw_pid(gyro_yaw),
+                enums.Directions.PITCH: self._kinematics.pitch_pid(gyro_pitch),
+                enums.Directions.ROLL: self._kinematics.roll_pid(gyro_roll),
             },
         )
 
-        if controller[enums.ControllerButtonNames.B]:
-            stop = True
-        else:
-            stop = False
+        pwm_values = self._frame.pwm
+
+        # Test to see if button press toggles are working.
+        stop = controller.buttons[enums.ControllerButtonNames.B].toggled
 
         # Publish the PWM values to the MQTT broker.
-        self._set_thrusters(pwm_values)
-        self._send_commands({
+        for thruster, pwm in pwm_values.items():
+            self._io.gpio_handler.pins[thruster].val = 1500
+
+        self._io.rov_comms.publish_commands({
             "stop": stop,
         })
 

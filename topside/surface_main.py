@@ -1,15 +1,12 @@
 """Main file for the surface station."""
-import os
-import sys
 import time
-from typing import Callable
 
-import socket_handler
+import rov
+import rov_config
+
 import controller_input
-import mqtt_handler
-
-import rovs.spike.rov as rov
-import rovs.spike.rov_config as rov_config
+from io_systems import gpio_handler, i2c_handler, mqtt_handler, mavlink_handler
+from io_systems.io_handler import IO
 
 
 class MainSystem:
@@ -25,42 +22,43 @@ class MainSystem:
         self._loops_per_second = 60
         self._nanoseconds_per_loop = 1_000_000_000 // self._loops_per_second
 
-################################################################
-        """change which ROV is used here"""  # TODO: No.
+        # Set up the configuration for the ROV.
         self.rov_config = rov_config.ROVConfig()
-################################################################
 
-        self.video_port = self.rov_config.video_port
-        self.comms_port = self.rov_config.comms_port
-        self.host_ip = self.rov_config.host_ip
+        # Get the communications interface information.
+        self._video_port = self.rov_config.video_port
+        self._comms_port = self.rov_config.comms_port
+        self._host_ip = self.rov_config.host_ip
 
         # TODO: Set this up to receive the video stream(s)
         # self.socket = socket_handler.SocketHandler(self, self.pi_ip, self.video_port)
 
-        self.controller = controller_input.Controller(self.rov_config.controller_config)
+        # Set up the input handler to handle the controller inputs.
+        self.input_handler = controller_input.InputHandler(self.rov_config.controllers)
 
         # The MQTT handler is used to communicate with the ROV sending and receiving thruster commands and sensor data.
-        self.rov_connection = mqtt_handler.ROVConnection(self.host_ip, self.comms_port)
+        self.rov_connection = mqtt_handler.ROVConnection(self._host_ip, self._comms_port)
+
+        self.gpio_handler = gpio_handler.GPIOHandler(self.rov_config.pins)
+
+        self.i2c_handler = i2c_handler.I2CHandler(self.rov_config.i2cs)
+
+        self.mavlink_handler = mavlink_handler.MavlinkHandler()
 
         # TODO: Incorporate terminal input and openCV video stream(s). Maybe incorporate a video stream switching
         #  system.
-        self.input_map: dict[str, Callable[[], any]] = {
-            "controller": self.controller.get_inputs,
-            "subscriptions": self.rov_connection.get_subscriptions,
-            # "socket": self.socket.get_video,
-        }
-        # TODO: Create an output map for the Manual class to access mqtt and other functions.
-        self.output_map: dict[str, Callable] = {
-            "rov_command": self.rov_connection.publish_commands,
-            "rov_thrusters": self.rov_connection.publish_thruster_pwm,
-            # "socket": self.socket,
-            # "video": None,
-            "shutdown": self.shutdown,
-        }
-
-        self._rov = rov.ROV(self.rov_config, self.input_map, self.output_map)
+        # self.input_map: dict[str, Callable[[], any]] = {
+        #     "controller": self.input_handler.controllers,
+        #     "subscriptions": self.rov_connection.get_subscriptions,
+        #     # "socket": self.socket.get_video,
+        # }
+        self._io = IO(
+            self.gpio_handler, self.i2c_handler, self.mavlink_handler, self.input_handler, self.rov_connection
+        )
 
         self.rov_connection.connect()
+
+        self._rov = rov.ROV(self.rov_config, self._io)
 
         # self.socket.connect_outbound()
         # self.socket.start_listening()
@@ -72,7 +70,7 @@ class MainSystem:
         start_loop: int = time.monotonic_ns()
 
         # Execute the loop of the ROV.
-        self._rov.run()
+        self._rov.loop()
 
         # Rate limit the loop to the specified number of loops per second.
         end_loop: int = time.monotonic_ns()
@@ -80,7 +78,6 @@ class MainSystem:
         sleep_time: float = (self._nanoseconds_per_loop - loop_time) / 1_000_000_000
         if sleep_time > 0:
             time.sleep(sleep_time)
-            # print(sleep_time)
 
     def shutdown(self) -> None:
         """Shuts down the system and its subsystems."""
@@ -90,5 +87,3 @@ class MainSystem:
         # self.socket.shutdown()
         # Delay to let things close properly
         time.sleep(.25)
-
-

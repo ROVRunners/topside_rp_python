@@ -8,12 +8,16 @@ class SocketHandler:
         """Initialize the SocketHandler object."""
         pass
 
-    def connect_outbound(self):
-        """Connect to the Raspberry Pi."""
+    def start_listening(self):
+        """Await a connection attempt from the Raspberry Pi."""
         pass
 
     def get_video(self):
         """Get the video stream from the Raspberry Pi."""
+        pass
+
+    def get_frame(self):
+        """Get the frame from the Raspberry Pi."""
         pass
 
     def shutdown(self):

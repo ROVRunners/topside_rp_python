@@ -1,5 +1,7 @@
 
-from utilities.personal_funations import *
+from utilities.personal_functions import *
+
+
 class CommandHandler:
     def __init__(self, main_system):
         self.main_system = main_system
