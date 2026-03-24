@@ -3,7 +3,6 @@ import math
 from config.flight_controller import FlightControllerConfig
 from io_systems.mavlink_handler import MavlinkHandler
 from enums import MavlinkMessageTypes
-
 from wpimath.geometry import Quaternion
 from pymavlink import mavextra, mavexpression, rotmat
 

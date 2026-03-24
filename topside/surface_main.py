@@ -1,8 +1,8 @@
 """Main file for the surface station."""
 import time
 
-import rov
-import rov_config
+import rovs.cali.rov as rov
+import rovs.cali.rov_config as rov_config
 
 import controller_input
 from io_systems import gpio_handler, i2c_handler, mqtt_handler, mavlink_handler
