@@ -10,7 +10,7 @@ from hardware.i2c import I2C
 
 import config.thruster as thruster
 from config.pin import PinConfig
-# from config.i2c import I2CConfig
+from config.i2c import I2CConfig
 from config.kinematics import KinematicsConfig
 from config.pid import PIDConfig
 from config.imu import IMUConfig
@@ -154,19 +154,18 @@ class ROVConfig:
         ### PI I/O ###
 
         self.pins: dict[str, Pin] = {
-            enums.ThrusterPositions.FRONT_LEFT: Pin(PinConfig(id=17, mode="PWMus", val=1500, freq=50)),
-            enums.ThrusterPositions.FRONT_RIGHT: Pin(PinConfig(id=22, mode="PWMus", val=1500, freq=50)),
-            enums.ThrusterPositions.REAR_LEFT: Pin(PinConfig(id=5, mode="PWMus", val=1500, freq=50)),
-            enums.ThrusterPositions.REAR_RIGHT: Pin(PinConfig(id=6, mode="PWMus", val=1500, freq=50)),
-            enums.ThrusterPositions.FRONT_LEFT_VERTICAL: Pin(PinConfig(id=26, mode="PWMus", val=1500, freq=50)),
-            enums.ThrusterPositions.FRONT_RIGHT_VERTICAL: Pin(PinConfig(id=19, mode="PWMus", val=1500, freq=50)),
-            enums.ThrusterPositions.REAR_LEFT_VERTICAL: Pin(PinConfig(id=27, mode="PWMus", val=1500, freq=50)),
-            enums.ThrusterPositions.REAR_RIGHT_VERTICAL: Pin(PinConfig(id=13, mode="PWMus", val=1500, freq=50)),
-
+            enums.ThrusterPositions.FRONT_LEFT: Pin(PinConfig(id=13, mode="PWMus", val=1500, freq=50)),
+            enums.ThrusterPositions.FRONT_RIGHT: Pin(PinConfig(id=16, mode="PWMus", val=1500, freq=50)),
+            enums.ThrusterPositions.REAR_LEFT: Pin(PinConfig(id=19, mode="PWMus", val=1500, freq=50)),
+            enums.ThrusterPositions.REAR_RIGHT: Pin(PinConfig(id=20, mode="PWMus", val=1500, freq=50)),
+            enums.ThrusterPositions.FRONT_LEFT_VERTICAL: Pin(PinConfig(id=21, mode="PWMus", val=1500, freq=50)),
+            enums.ThrusterPositions.FRONT_RIGHT_VERTICAL: Pin(PinConfig(id=26, mode="PWMus", val=1500, freq=50)),
+            enums.ThrusterPositions.REAR_LEFT_VERTICAL: Pin(PinConfig(id=12, mode="PWMus", val=1500, freq=50)),
+            enums.ThrusterPositions.REAR_RIGHT_VERTICAL: Pin(PinConfig(id=26, mode="PWMus", val=1500, freq=50)),
         }
 
         self.i2cs: dict[str, I2C] = {
-            # "imu": I2C(I2CConfig(addr=0x6A, reading_registers={"gyro": (0x28, 6), "accel": (0x22, 6)}),)
+            "imu": I2C(I2CConfig(addr=0x6A, reading_registers={"gyro": (0x28, 6), "accel": (0x22, 6)}),)
         }
 
         self.imu_config = IMUConfig(

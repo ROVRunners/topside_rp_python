@@ -15,7 +15,6 @@ with open(f"{current_directory}/launch_config.fngr", "r") as file:
         if "rov_name" == line.lower().split("=")[0].strip():
             rov_name = line.split("=")[1].strip()
             break
-
 if not rov_name:
     raise Exception("rov_name not found in launch_config.fngr")
 
