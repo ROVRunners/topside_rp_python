@@ -68,3 +68,13 @@ topside/config/__pycache__/flight_controller.cpython-311.pyc
 topside/utilities/__pycache__/live_integration.cpython-311.pyc
 topside/utilities/__pycache__/live_integration.cpython-311.pyc
 topside/utilities/__pycache__/live_integration.cpython-311.pyc
+topside/rovs/cali/__pycache__/__init__.cpython-311.pyc
+topside/rovs/cali/__pycache__/enums.cpython-311.pyc
+topside/rovs/cali/__pycache__/rov_config.cpython-311.pyc
+topside/rovs/cali/__pycache__/rov.cpython-311.pyc
+topside/rovs/spike/control_modes/__pycache__/pid_tuning_2.cpython-311.pyc
+topside/utilities/math_help/__pycache__/__init__.cpython-311.pyc
+topside/utilities/math_help/__pycache__/ema.cpython-311.pyc
+topside/utilities/math_help/__pycache__/range.cpython-311.pyc
+topside/utilities/math_help/__pycache__/shared.cpython-311.pyc
+topside/rovs/spike/control_modes/__pycache__/pid_tuning_2.cpython-311.pyc

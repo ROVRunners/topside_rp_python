@@ -235,23 +235,12 @@ class ThrusterPWM:
 class FrameThrusters:
     """Wrapper for a ROV frame's thrusters.
 
-       A right handed coordinate system is expected
-       The eight motor frame expects the FrontLeft motor to be oriented so positive thrust pushes water to the back of the ROV and to the left of the ROV
-       The front and back motors are mirrored.  To go forward the front motors have a value of 1 and the rear motors a value of -1
-
-        """
+       A right handed coordinate system is expected.
+       The eight motor frame expects the FrontLeft motor to be oriented so positive thrust pushes water to the back of the ROV and to the left of the ROV.
+       The front and back motors are mirrored. To go forward the front motors have a value of 1 and the rear motors a value of -1.
+    """
  
     _current_power: dict[ThrusterPositions, float] = {}
-
-    def __init__(self, thrusters: dict[ThrusterPositions, ThrusterPWM]) -> None:
-        """Initialize a new set of thruster values.
-
-        Args:
-            thrusters (dict[ThrusterPositions, ThrusterPWM]):
-                A dictionary of thrusters.
-        """
-        self.thrusters = thrusters
-        
 
     @property
     def normalized_output(self):
@@ -262,22 +251,43 @@ class FrameThrusters:
         """Get a PWM value for each thruster at its current power."""
         return {position: thruster.pwm_output for position, thruster in self.thrusters.items()}
 
-    def __repr__(self) -> str:
-        return ("FrameThrusters(" +
-            f"', '.join([str(thruster) + '=' + str(thruster.pwm_output) for thruster in self.thrusters.values()])" +
-        "}")
+    def __init__(self, thrusters: dict[ThrusterPositions, ThrusterPWM]) -> None:
+        """Initialize a new set of thruster values.
 
-    def _thruster_calc(self, motions: dict[Directions, float]) -> dict[ThrusterPositions, float]:
-        """Calculate thruster values from -1 to 1 for a given set of inputs. Function assumes all 
-        thrusters are oriented correctly and not reversed.  Specified orientation changes and different PWM ranges
-        should be handled in ThrusterPWM configuration
+        Args:
+            thrusters (dict[ThrusterPositions, ThrusterPWM]):
+                A dictionary of thrusters.
+        """
+        self.thrusters = thrusters
+
+    def update_thruster_output(self, motions: dict[Directions, float]) -> dict[ThrusterPositions, int]:
+        """Get PWM values for a given set of inputs. USE THIS FUNCTION, NOT THE OTHERS, FROM OUTSIDE THE THRUSTER_PWM
+        FILE.
 
         Args:
             motions (dict[Directions, float]):
                 A dictionary of thruster orientations and their values.
 
         Returns:
-            FrameThrusters: A collection of Thrusters at the correct power levels."""
+            list[int]: PWM values for each thruster.
+        """
+        self._current_power = self._thruster_calc(motions)
+
+        for position in self.thrusters:
+            self.thrusters[position].requested_power = self._current_power[position]
+
+    def _thruster_calc(self, motions: dict[Directions, float]) -> dict[ThrusterPositions, float]:
+        """Calculate thruster values from -1 to 1 for a given set of inputs. Function assumes all 
+        thrusters are oriented correctly and not reversed. Specified orientation changes and different PWM ranges
+        should be handled in ThrusterPWM configuration.
+
+        Args:
+            motions (dict[Directions, float]):
+                A dictionary of thruster orientations and their values.
+
+        Returns:
+            FrameThrusters: A collection of Thrusters at the correct power levels.
+        """
         key_order = []
         key_forces = []
         # Matrix multiplication using the forces and torques of each thruster to calculate the values needed to achieve
@@ -303,11 +313,11 @@ class FrameThrusters:
         # The result of the matrix multiplication is a 8x1 matrix.
         motor_thrust_array: list[float] = list(motor_thrust_matrix.flatten())
 
-        required_thruster_power = self.scale_output(motor_thrust_array, key_order=key_order, requested_motions=motions)
+        required_thruster_power = self._scale_output(motor_thrust_array, key_order=key_order, requested_motions=motions)
 
 
 
-        #
+
 
         # Set the power of each thruster to the calculated value.
 #         required_thruster_power = {}
@@ -317,16 +327,20 @@ class FrameThrusters:
         
         return required_thruster_power
 
-    def scale_output(self, input_power: Sequence[float],
-                         key_order: list[ThrusterPositions],
-                         requested_motions: dict[Directions, float]) -> dict[ThrusterPositions, float]:
-        """
-        Normalized the input thruster values to ensure the motors deliver output within the requested range.
+    def _scale_output(self, input_power: Sequence[float], key_order: list[ThrusterPositions],
+                      requested_motions: dict[Directions, float]) -> dict[ThrusterPositions, float]:
+        """Normalized the input thruster values to ensure the motors deliver output within the requested range.
 
-        :param input_power: Starting power values for each motor
-        :param key_order: The order that each thruster position appears in the motor_thrust_matrix
-        :param motions: Magnitude of each motion type
-        Returns: Thruster power values proportional to the requested input range.
+        Args:
+            input_power (Sequence[float]):
+                Starting power values for each motor.
+            key_order (list[ThrusterPositions]):
+                The order that each thruster position appears in the motor_thrust_matrix.
+            motions (dict[Directions, float]):
+                Magnitude of each motion type.
+
+        Returns:
+            dict[ThrusterPositions, float]: Thruster power values proportional to the requested input range.
         """
         # Separate lateral and vertical thrusters for independent normalization
 
@@ -424,19 +438,8 @@ class FrameThrusters:
         # self.rr.power /= INV_SQRT2
         # self.rl.power /= INV_SQRT2
 
-    def update_thruster_output(self, motions: dict[Directions, float]) -> dict[ThrusterPositions, int]:
-        """Get PWM values for a given set of inputs. USE THIS FUNCTION, NOT THE OTHERS, FROM OUTSIDE THE THRUSTER_PWM
-        FILE.
-
-        Args:
-            motions (dict[Directions, float]):
-                A dictionary of thruster orientations and their values.
-
-        Returns:
-            list[int]: PWM values for each thruster.
-        """
-        self._current_power = self._thruster_calc(motions)
-
-        for position in self.thrusters:
-            self.thrusters[position].requested_power = self._current_power[position]
+    def __repr__(self) -> str:
+        return ("FrameThrusters(" +
+            f"', '.join([str(thruster) + '=' + str(thruster.pwm_output) for thruster in self.thrusters.values()])" +
+        "}")
 

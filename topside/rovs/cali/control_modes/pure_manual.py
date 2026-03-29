@@ -4,7 +4,6 @@ from typing import Callable
 from hardware.thruster_pwm import FrameThrusters
 from enums import Directions, ControllerAxisNames, ControllerButtonNames, ThrusterPositions, ControllerNames
 import kinematics as kms
-from controller_input import combine_triggers
 from io_systems.io_handler import IO
 from dashboard import Dashboard
 
@@ -69,9 +68,9 @@ class PureManual(ControlMode):
         # Convert the triggers to a single value.
         right_trigger = controller.axes[ControllerAxisNames.RIGHT_TRIGGER]
         left_trigger = controller.axes[ControllerAxisNames.LEFT_TRIGGER]
-        vertical = combine_triggers(left_trigger.value, right_trigger.value)
+        vertical = left_trigger.value - right_trigger.value
 
-        # TODO: add sensor data to pids below
+        # TODO: Add sensor data to pids below
         # Get the PWM values for the thrusters based on the controller inputs.
         self._frame.update_thruster_output(
             {

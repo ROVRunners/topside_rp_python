@@ -47,7 +47,7 @@ class InputHandler:
 
 
 def combine_triggers(positive_trigger: float, negative_trigger: float) -> float:
-    """Combines the values of the two triggers into a single value.
+    """Deprecated! Combines the values of the two triggers into a single value.
 
     Args:
         positive_trigger (float):
