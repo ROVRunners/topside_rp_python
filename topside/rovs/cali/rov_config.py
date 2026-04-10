@@ -85,17 +85,17 @@ class ROVConfig:
             ThrusterPositions.REAR_VERTICAL:  Vector3(  0, -24.75, 11),
         }
 
-        #is this the thrust vector or the motor casing?
+        #is this the thrust vector or the motor casing? [Motor casing. Black cone with wire is front]
         self.thruster_orientations: dict[ThrusterPositions, Vector3] = {
             ThrusterPositions.FRONT_LEFT: Vector3(
                 # Left rotation is positive in all of the following cases.
                 yaw= -30,   # Set by viewing the ROV from the top, looking down. 0 degrees is the front of the ROV.
-                pitch=0,  # Set by viewing the ROV from its left side. 0 degrees is vertical up.
-                roll= 90    # Set by viewing the ROV from its rear. 0 degrees is vertical up.
+                pitch=90,   # Set by viewing the ROV from its left side. 0 degrees is vertical up.
+                roll=-90,   # Set by viewing the ROV from its rear. 0 degrees is vertical up.
             ),
-            ThrusterPositions.FRONT_RIGHT:    Vector3(yaw=  30, pitch= 0, roll= -90),
-            ThrusterPositions.REAR_LEFT:      Vector3(yaw=-150, pitch=0, roll=  90),
-            ThrusterPositions.REAR_RIGHT:     Vector3(yaw= 150, pitch=0, roll= -90),
+            ThrusterPositions.FRONT_RIGHT:    Vector3(yaw=  30, pitch= 90, roll=  90),
+            ThrusterPositions.REAR_LEFT:      Vector3(yaw=-150, pitch=-90, roll=  90),
+            ThrusterPositions.REAR_RIGHT:     Vector3(yaw= 150, pitch=-90, roll= -90),
             ThrusterPositions.FRONT_VERTICAL: Vector3(yaw=   0, pitch=  0, roll= 180),
             ThrusterPositions.REAR_VERTICAL:  Vector3(yaw=   0, pitch=  0, roll=-180),
         }
