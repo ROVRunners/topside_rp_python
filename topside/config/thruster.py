@@ -29,8 +29,10 @@ class ThrusterConfig(NamedTuple):
             which it pushes changes nothing.
         thrust (float):
             The thrust of the thruster. This is a scalar value from 0 to 1 that determines the force that the thruster will
-            generate if mounted in the direction the frame expects.  If it is reversed, set the reverse flag to true. The value is unitless and is only used to compare the relative thrust of different thrusters.
-        reverse_thrust (bool): Set to true if the thruster is reversed, this will invert the pwm output only.
+            generate if mounted in the direction the frame expects. If it is reversed, set the reverse flag to true.
+            The value is unitless and is only used to compare the relative thrust of different thrusters.
+        reverse_thrust (bool):
+            Set to true if the thruster is reversed, this will invert the pwm output only.
         reverse_polarity (bool):
             Whether the thruster has reverse polarity.
     """
@@ -38,6 +40,5 @@ class ThrusterConfig(NamedTuple):
     pwm_pulse_range: typed_range.IntRange
     thruster_position: Vector3 = Vector3(0, 0, 0)
     thruster_orientation: Vector3 = Vector3(0, 0, 0)
-    reversed_thrust: bool = False
     thrust: float = 1.0
     reverse_polarity: bool = False

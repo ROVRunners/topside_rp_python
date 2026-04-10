@@ -56,7 +56,7 @@ class ROV(GenericROV):
 
         # Set up control modes.
         self._control_mode_dict: dict[ControlModeNames: ControlMode] = {
-            ControlModeNames.TESTING: Manual(
+            ControlModeNames.MANUAL: Manual(
                 self._frame, self._io, self._kinematics, self._flight_controller, self._dash, self.set_control_mode,
             ),
             # ControlModes.DEPTH_HOLD: DepthHold(
@@ -65,13 +65,13 @@ class ROV(GenericROV):
             ControlModeNames.PID_TUNING: PIDTuning(
                 self._frame, self._io, self._kinematics, self._flight_controller, self._dash, self.set_control_mode,
             ),
-            ControlModeNames.MANUAL: PureManual(
+            ControlModeNames.TESTING: PureManual(
                 self._frame, self._io, self._kinematics, self.set_control_mode, self._dash
             ),
         }
 
-        # change default control mode here
-        self._control_mode: ControlMode = self._control_mode_dict[ControlModeNames.MANUAL]
+        # Change default control mode here
+        self._control_mode: ControlMode = self._control_mode_dict[ControlModeNames.TESTING]
 
     def set_control_mode(self, control_mode: ControlModeNames | ControlMode) -> None:
         """Set the current control mode of the ROV.

@@ -312,7 +312,6 @@ class ThrusterPositions(enum.StrEnum):
     FRONT_VERTICAL = "FRONT_VERTICAL",
     REAR_VERTICAL = "REAR_VERTICAL",
 
-
     def __repr__(self):
         return self.value
 
@@ -331,11 +330,11 @@ class Directions(enum.StrEnum):
         UP (str):
             The force a thruster generates in the up direction.
         YAW (str):
-            The force a thruster generates in the clockwise yaw axis.
+            The force a thruster generates in the counter-clockwise yaw axis.
         PITCH (str):
-            The force a thruster generates in the pitch axis (front tipping up).
+            The force a thruster generates in the pitch axis (rear tipping up).
         ROLL (str):
-            The force a thruster generates in the roll axis (left side tipping up).
+            The force a thruster generates in the roll axis (right side tipping up).
     """
     FORWARDS = "FORWARDS",
     RIGHT = "RIGHT",
